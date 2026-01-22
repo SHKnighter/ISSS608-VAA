@@ -3,11 +3,17 @@ title: "Hands-on Exercise 1"
 author: "Bao Sihan"
 ---
 
-# Getting Started
+# Learning outcome
 
-## Install and launching R packages
+In this exercise, I practice the basic idea of **Layered Grammar of Graphics** using **ggplot2**.\
+By the end, I should be able to build common statistical charts by combining key components: **data**, **aes()**, **geoms**, **stats**, **facets**, **coordinates**, and **themes**.
 
-The code chunk below uses p_load() of pacman package to check if tidyverse packages are installed in the computer. If they are, then they will be launched into R.
+# Getting started
+
+## Installing and loading the required libraries
+
+The code chunk below uses `p_load()` from **pacman** to check whether the packages are installed.\
+If not installed, it will install them; if installed, it will load them into the R session.
 
 ```{r}
 pacman::p_load(tidyverse)
@@ -15,295 +21,359 @@ pacman::p_load(tidyverse)
 
 ## Importing the data
 
-```{r}
-exam_data <-read_csv("data/Exam_data.csv")
-```
-
-# Plotting a simple bar chart
+Here we import the dataset `Exam_data.csv` using `read_csv()` (from **readr**, which is part of tidyverse).
 
 ```{r}
-ggplot(data = exam_data, 
-       aes(x = RACE)) + 
-  geom_bar()
+exam_data <- read_csv("data/Exam_data.csv")
 ```
 
-## Plotting a simple histogram
+Quick notes about the dataset:
+
+-   It contains year-end exam results for a cohort of Primary 3 students.
+-   Categorical variables: `ID`, `CLASS`, `GENDER`, `RACE`
+-   Continuous variables: `MATHS`, `ENGLISH`, `SCIENCE`
+
+# Introducing ggplot2
+
+**ggplot2** is a package for creating data-driven graphics using the idea of *Grammar of Graphics*.\
+Instead of “drawing” a chart in one step, we build a plot layer by layer.
+
+## R Graphics vs ggplot2 (a quick comparison)
+
+Below is a simple histogram using **base R**.
+
+```{r}
+hist(exam_data$MATHS)
+```
+
+Now we do a similar plot using **ggplot2**.\
+Although the code is longer, ggplot2 is more flexible and scalable when plots become more complex.
 
 ```{r}
 ggplot(data=exam_data, aes(x = MATHS)) +
-  geom_histogram(bins=10, 
+  geom_histogram(bins=10,
                  boundary = 100,
-                 color="black", 
+                 color="black",
                  fill="grey") +
   ggtitle("Distribution of Maths scores")
 ```
 
-# Essential Grammatical Elements in ggplot2: data
+# Grammar of Graphics (why it matters)
 
-Let us call the ggplot() function using the code chunk on the right.
+A key idea is: a good chart can be described as a set of *building blocks*.
+
+In ggplot2, we usually think in these components:
+
+-   **Data**: the dataset to plot.
+-   **Aesthetics (aes)**: how variables map to visual properties (x, y, color, size, etc.).
+-   **Geoms**: what marks to draw (bar, point, line, histogram, etc.).
+-   **Stats**: transformations or summaries (counts, means, smooth lines, etc.).
+-   **Facets**: split data into small multiples.
+-   **Coordinates**: how to project data (flip axes, zoom ranges, etc.).
+-   **Themes**: style of non-data elements (background, text, grid, etc.).
+
+# Essential Grammatical Elements in ggplot2
+
+## 1) data
+
+Calling `ggplot()` with only `data=` gives a blank canvas (a ggplot object).
 
 ```{r}
 ggplot(data=exam_data)
 ```
 
-# Essential Grammatical Elements in ggplot2: Aesthetic mappings
+## 2) Aesthetic mappings: `aes()`
+
+Here we add an aesthetic mapping (x-axis is `MATHS`).\
+Still no geom, so it will not draw points/bars yet.
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x= MATHS))
 ```
 
-# Essential Grammatical Elements in ggplot2: geom
+## 3) Geoms (geometric objects)
 
-## Geometric Objects: geom_bar
+A plot needs at least one geom. We add geoms with `+`.
+
+### geom_bar (bar chart for counts)
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x=RACE)) +
   geom_bar()
 ```
 
-## Geometric Objects: geom_dotplot
+### geom_dotplot
+
+A dotplot is useful to see a binned distribution using dots.
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x = MATHS)) +
   geom_dotplot(dotsize = 0.5)
 ```
 
+We can adjust `binwidth` and hide the y-axis:
+
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x = MATHS)) +
-  geom_dotplot(binwidth=2.5,         
-               dotsize = 0.5) +      
-  scale_y_continuous(NULL,           
-                     breaks = NULL)  
+  geom_dotplot(binwidth=2.5,
+               dotsize = 0.5) +
+  scale_y_continuous(NULL,
+                     breaks = NULL)
 ```
 
-## Geometric Objects: geom_histogram()
+### geom_histogram
+
+Default histogram:
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x = MATHS)) +
-  geom_histogram()       
+  geom_histogram()
 ```
 
-## Modifying a geometric object by changing geom()
+#### Modifying a geom (change parameters in geom)
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x= MATHS)) +
-  geom_histogram(bins=20,            
-                 color="black",      
-                 fill="light blue")  
+  geom_histogram(bins=20,
+                 color="black",
+                 fill="light blue")
 ```
 
-## Modifying a geometric object by changing aes()
+#### Modifying the mapping (change `aes()`)
+
+Here we map `fill` to `GENDER` so different genders get different fills.
 
 ```{r}
-ggplot(data=exam_data, 
-       aes(x= MATHS, 
+ggplot(data=exam_data,
+       aes(x= MATHS,
            fill = GENDER)) +
-  geom_histogram(bins=20, 
+  geom_histogram(bins=20,
                  color="grey30")
 ```
 
-## Geometric Objects: geom-density()
+### geom_density
+
+Density plot for a smooth distribution curve:
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x = MATHS)) +
-  geom_density()           
+  geom_density()
 ```
 
+If we add `colour = GENDER`, we will get separate curves by gender.
+
 ```{r}
-ggplot(data=exam_data, 
-       aes(x = MATHS, 
+ggplot(data=exam_data,
+       aes(x = MATHS,
            colour = GENDER)) +
   geom_density()
 ```
 
-## Geometric Objects: geom_boxplot
+### geom_boxplot
+
+Boxplot is good for comparing distribution between groups.
 
 ```{r}
-ggplot(data=exam_data, 
-       aes(y = MATHS,       
-           x= GENDER)) +    
-  geom_boxplot()            
-```
-
-```{r}
-ggplot(data=exam_data, 
-       aes(y = MATHS, 
+ggplot(data=exam_data,
+       aes(y = MATHS,
            x= GENDER)) +
-  geom_boxplot(notch=TRUE)       
+  geom_boxplot()
 ```
 
-## Geometric Objects: geom_violin
+Notched boxplot:
 
 ```{r}
-ggplot(data=exam_data, 
-       aes(y = MATHS, 
+ggplot(data=exam_data,
+       aes(y = MATHS,
            x= GENDER)) +
-  geom_violin()         
+  geom_boxplot(notch=TRUE)
 ```
 
-## Geometric Objects: geom_point()
+### geom_violin
+
+Violin plot shows the distribution shape.
 
 ```{r}
-ggplot(data=exam_data, 
-       aes(x= MATHS, 
+ggplot(data=exam_data,
+       aes(y = MATHS,
+           x= GENDER)) +
+  geom_violin()
+```
+
+### geom_point (scatterplot)
+
+```{r}
+ggplot(data=exam_data,
+       aes(x= MATHS,
            y=ENGLISH)) +
-  geom_point()                    
+  geom_point()
 ```
 
-## geom objects can be combined
+### Combine geoms
+
+Here we combine a boxplot with jittered points to show both summary + individual values.
 
 ```{r}
-ggplot(data=exam_data, 
-       aes(y = MATHS, 
+ggplot(data=exam_data,
+       aes(y = MATHS,
            x= GENDER)) +
-  geom_boxplot() +                    
-  geom_point(position="jitter", 
-             size = 0.5)                 
+  geom_boxplot() +
+  geom_point(position="jitter",
+             size = 0.5)
 ```
 
 # Essential Grammatical Elements in ggplot2: stat
 
+Stats are used when we want **summaries** or **transformations** (e.g., mean points, smoothing lines).
+
 ## Working with stat()
 
+A boxplot itself uses statistical transformation internally:
+
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(y = MATHS, x= GENDER)) +
-  geom_boxplot()          
+  geom_boxplot()
 ```
 
-## Working with stat - the stat_summary() method
+## stat_summary() method (add mean)
+
+We can add mean points using `stat_summary()`.
 
 ```{r}
-ggplot(data=exam_data, 
-       aes(y = MATHS, x= GENDER)) +
-  geom_boxplot() +
-  stat_summary(geom = "point",       
-               fun = "mean",         
-               colour ="red",        
-               size=4)                         
-```
-
-## Working with stat - the geom() method
-
-```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(y = MATHS, x= GENDER)) +
   geom_boxplot() +
-  geom_point(stat="summary",        
-             fun="mean",           
-             colour="red",          
-             size=4)                                
+  stat_summary(geom = "point",
+               fun = "mean",
+               colour ="red",
+               size=4)
 ```
 
-## Adding a best fit curve on a scatterplot?
+## Using geom() but override stat
+
+Same idea, but we use `geom_point()` with `stat="summary"`:
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
+       aes(y = MATHS, x= GENDER)) +
+  geom_boxplot() +
+  geom_point(stat="summary",
+             fun="mean",
+             colour="red",
+             size=4)
+```
+
+## Add a best fit curve on a scatterplot
+
+Default smooth:
+
+```{r}
+ggplot(data=exam_data,
        aes(x= MATHS, y=ENGLISH)) +
   geom_point() +
-  geom_smooth(size=0.5)                     
+  geom_smooth(size=0.5)
 ```
 
+We can specify a linear model explicitly:
+
 ```{r}
-ggplot(data=exam_data, 
-       aes(x= MATHS, 
+ggplot(data=exam_data,
+       aes(x= MATHS,
            y=ENGLISH)) +
   geom_point() +
-  geom_smooth(method=lm, 
-              linewidth=0.5)                   
+  geom_smooth(method=lm,
+              linewidth=0.5)
 ```
 
 # Essential Grammatical Elements in ggplot2: Facets
 
-## Working with facet_wrap()
+Facets split the data into subsets and create multiple panels.
+
+## facet_wrap()
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x= MATHS)) +
   geom_histogram(bins=20) +
-    facet_wrap(~ CLASS)                       
+  facet_wrap(~ CLASS)
 ```
 
-## facet_grid() function
+## facet_grid()
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x= MATHS)) +
   geom_histogram(bins=20) +
-    facet_grid(~ CLASS)                        
+  facet_grid(~ CLASS)
 ```
 
 # Essential Grammatical Elements in ggplot2: Coordinates
 
-## Working with Coordinate
+Coordinates control how we view the plot space.
+
+## coord_flip()
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x=RACE)) +
-  geom_bar()                       
+  geom_bar()
 ```
 
+Flip the axes:
+
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x=RACE)) +
   geom_bar() +
-  coord_flip()                      
+  coord_flip()
 ```
 
-## Changing the y- and x-axis range
+## Changing x/y range with coord_cartesian()
+
+This is a “zoom” without dropping data outside the range.
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x= MATHS, y=ENGLISH)) +
   geom_point() +
-  geom_smooth(method=lm, size=0.5)                      
-```
-
-```{r}
-ggplot(data=exam_data, 
-       aes(x= MATHS, y=ENGLISH)) +
-  geom_point() +
-  geom_smooth(method=lm, 
-              size=0.5) +  
+  geom_smooth(method=lm,
+              size=0.5) +
   coord_cartesian(xlim=c(0,100),
-                  ylim=c(0,100))                      
+                  ylim=c(0,100))
 ```
 
-# Essential Grammatical Elements in ggplot2: themes
+# Essential Grammatical Elements in ggplot2: Themes
 
-## Working with theme
+Themes control non-data styling. Here are three common theme presets.
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x=RACE)) +
   geom_bar() +
   coord_flip() +
-  theme_gray()                   
+  theme_gray()
 ```
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x=RACE)) +
   geom_bar() +
   coord_flip() +
-  theme_classic()                      
+  theme_classic()
 ```
 
 ```{r}
-ggplot(data=exam_data, 
+ggplot(data=exam_data,
        aes(x=RACE)) +
   geom_bar() +
   coord_flip() +
-  theme_minimal()                   
+  theme_minimal()
 ```
-
-
-
-
