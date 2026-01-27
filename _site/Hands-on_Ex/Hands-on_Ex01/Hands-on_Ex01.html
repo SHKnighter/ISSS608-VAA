@@ -75,62 +75,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="quarto-light">
+<body class="fullcontent quarto-light">
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-  <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul>
-  <li><a href="#learning-outcome" id="toc-learning-outcome" class="nav-link active" data-scroll-target="#learning-outcome">Learning outcome</a></li>
-  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting started</a>
-  <ul class="collapse">
-  <li><a href="#installing-and-loading-the-required-libraries" id="toc-installing-and-loading-the-required-libraries" class="nav-link" data-scroll-target="#installing-and-loading-the-required-libraries">Installing and loading the required libraries</a></li>
-  <li><a href="#importing-the-data" id="toc-importing-the-data" class="nav-link" data-scroll-target="#importing-the-data">Importing the data</a></li>
-  </ul></li>
-  <li><a href="#introducing-ggplot2" id="toc-introducing-ggplot2" class="nav-link" data-scroll-target="#introducing-ggplot2">Introducing ggplot2</a>
-  <ul class="collapse">
-  <li><a href="#r-graphics-vs-ggplot2-a-quick-comparison" id="toc-r-graphics-vs-ggplot2-a-quick-comparison" class="nav-link" data-scroll-target="#r-graphics-vs-ggplot2-a-quick-comparison">R Graphics vs ggplot2 (a quick comparison)</a></li>
-  </ul></li>
-  <li><a href="#grammar-of-graphics-why-it-matters" id="toc-grammar-of-graphics-why-it-matters" class="nav-link" data-scroll-target="#grammar-of-graphics-why-it-matters">Grammar of Graphics (why it matters)</a></li>
-  <li><a href="#essential-grammatical-elements-in-ggplot2" id="toc-essential-grammatical-elements-in-ggplot2" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2">Essential Grammatical Elements in ggplot2</a>
-  <ul class="collapse">
-  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">1) data</a></li>
-  <li><a href="#aesthetic-mappings-aes" id="toc-aesthetic-mappings-aes" class="nav-link" data-scroll-target="#aesthetic-mappings-aes">2) Aesthetic mappings: <code>aes()</code></a></li>
-  <li><a href="#geoms-geometric-objects" id="toc-geoms-geometric-objects" class="nav-link" data-scroll-target="#geoms-geometric-objects">3) Geoms (geometric objects)</a>
-  <ul class="collapse">
-  <li><a href="#geom_bar-bar-chart-for-counts" id="toc-geom_bar-bar-chart-for-counts" class="nav-link" data-scroll-target="#geom_bar-bar-chart-for-counts">geom_bar (bar chart for counts)</a></li>
-  <li><a href="#geom_dotplot" id="toc-geom_dotplot" class="nav-link" data-scroll-target="#geom_dotplot">geom_dotplot</a></li>
-  <li><a href="#geom_histogram" id="toc-geom_histogram" class="nav-link" data-scroll-target="#geom_histogram">geom_histogram</a></li>
-  <li><a href="#geom_density" id="toc-geom_density" class="nav-link" data-scroll-target="#geom_density">geom_density</a></li>
-  <li><a href="#geom_boxplot" id="toc-geom_boxplot" class="nav-link" data-scroll-target="#geom_boxplot">geom_boxplot</a></li>
-  <li><a href="#geom_violin" id="toc-geom_violin" class="nav-link" data-scroll-target="#geom_violin">geom_violin</a></li>
-  <li><a href="#geom_point-scatterplot" id="toc-geom_point-scatterplot" class="nav-link" data-scroll-target="#geom_point-scatterplot">geom_point (scatterplot)</a></li>
-  <li><a href="#combine-geoms" id="toc-combine-geoms" class="nav-link" data-scroll-target="#combine-geoms">Combine geoms</a></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#essential-grammatical-elements-in-ggplot2-stat" id="toc-essential-grammatical-elements-in-ggplot2-stat" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2-stat">Essential Grammatical Elements in ggplot2: stat</a>
-  <ul class="collapse">
-  <li><a href="#working-with-stat" id="toc-working-with-stat" class="nav-link" data-scroll-target="#working-with-stat">Working with stat()</a></li>
-  <li><a href="#stat_summary-method-add-mean" id="toc-stat_summary-method-add-mean" class="nav-link" data-scroll-target="#stat_summary-method-add-mean">stat_summary() method (add mean)</a></li>
-  <li><a href="#using-geom-but-override-stat" id="toc-using-geom-but-override-stat" class="nav-link" data-scroll-target="#using-geom-but-override-stat">Using geom() but override stat</a></li>
-  <li><a href="#add-a-best-fit-curve-on-a-scatterplot" id="toc-add-a-best-fit-curve-on-a-scatterplot" class="nav-link" data-scroll-target="#add-a-best-fit-curve-on-a-scatterplot">Add a best fit curve on a scatterplot</a></li>
-  </ul></li>
-  <li><a href="#essential-grammatical-elements-in-ggplot2-facets" id="toc-essential-grammatical-elements-in-ggplot2-facets" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2-facets">Essential Grammatical Elements in ggplot2: Facets</a>
-  <ul class="collapse">
-  <li><a href="#facet_wrap" id="toc-facet_wrap" class="nav-link" data-scroll-target="#facet_wrap">facet_wrap()</a></li>
-  <li><a href="#facet_grid" id="toc-facet_grid" class="nav-link" data-scroll-target="#facet_grid">facet_grid()</a></li>
-  </ul></li>
-  <li><a href="#essential-grammatical-elements-in-ggplot2-coordinates" id="toc-essential-grammatical-elements-in-ggplot2-coordinates" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2-coordinates">Essential Grammatical Elements in ggplot2: Coordinates</a>
-  <ul class="collapse">
-  <li><a href="#coord_flip" id="toc-coord_flip" class="nav-link" data-scroll-target="#coord_flip">coord_flip()</a></li>
-  <li><a href="#changing-xy-range-with-coord_cartesian" id="toc-changing-xy-range-with-coord_cartesian" class="nav-link" data-scroll-target="#changing-xy-range-with-coord_cartesian">Changing x/y range with coord_cartesian()</a></li>
-  </ul></li>
-  <li><a href="#essential-grammatical-elements-in-ggplot2-themes" id="toc-essential-grammatical-elements-in-ggplot2-themes" class="nav-link" data-scroll-target="#essential-grammatical-elements-in-ggplot2-themes">Essential Grammatical Elements in ggplot2: Themes</a></li>
-  </ul>
-</nav>
-</div>
+
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
