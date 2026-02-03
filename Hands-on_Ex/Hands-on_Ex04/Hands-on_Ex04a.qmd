@@ -1,0 +1,159 @@
+---
+title: "Hands-on Exercise 4A: Funnel Plots for Fair Comparisons"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-location: right
+    toc-depth: 3
+execute:
+  warning: false
+  message: false
+---
+
+# 8.1 Overview
+
+In this hands-on exercise, I practise **funnel plots** for fair comparison across sub-districts.\
+I follow the structure in the teaching notes and create:
+
+-   funnel plots using **FunnelPlotR**,
+-   a static funnel plot built step-by-step with **ggplot2**, and
+-   an interactive version using **plotly**.
+
+# 8.2 Installing and launching R packages
+
+```{r}
+pacman::p_load(tidyverse, FunnelPlotR, plotly, knitr)
+```
+
+# 8.3 Importing data
+
+```{r}
+covid19 <- read_csv("../data/COVID-19_DKI_Jakarta.csv") %>%
+  mutate_if(is.character, as.factor)
+
+knitr::kable(head(covid19), format = "html")
+```
+
+# 8.4 FunnelPlotR methods
+
+## 8.4.1 The basic plot
+
+```{r}
+funnel_plot(
+  .data = covid19,
+  numerator = Positive,
+  denominator = Death,
+  group = `Sub-district`
+)
+```
+
+## 8.4.2 Makeover 1
+
+Use `data_type = "PR"` to show proportions (Death / Positive), and zoom by `xrange` and `yrange`.
+
+```{r}
+funnel_plot(
+  .data = covid19,
+  numerator = Death,
+  denominator = Positive,
+  group = `Sub-district`,
+  data_type = "PR",
+  xrange = c(0, 6500),
+  yrange = c(0, 0.05)
+)
+```
+
+## 8.4.3 Makeover 2
+
+Remove outlier labels and add titles.
+
+```{r}
+funnel_plot(
+  .data = covid19,
+  numerator = Death,
+  denominator = Positive,
+  group = `Sub-district`,
+  data_type = "PR",
+  xrange = c(0, 6500),
+  yrange = c(0, 0.05),
+  label = NA,
+  title = "Cumulative COVID-19 Fatality Rate by Cumulative Total Number of COVID-19 Positive Cases",
+  x_label = "Cumulative COVID-19 Positive Cases",
+  y_label = "Cumulative Fatality Rate"
+)
+```
+
+# 8.5 Funnel plot with ggplot2
+
+## 8.5.1 Computing the derived fields
+
+```{r}
+df <- covid19 %>%
+  mutate(rate = Death / Positive) %>%
+  mutate(rate.se = sqrt((rate * (1 - rate)) / Positive)) %>%
+  filter(rate > 0)
+
+fit.mean <- weighted.mean(df$rate, 1 / df$rate.se^2)
+```
+
+## 8.5.2 Compute 95% and 99.9% control limits
+
+```{r}
+number.seq <- seq(1, max(df$Positive), 1)
+
+number.ll95  <- fit.mean - 1.96 * sqrt((fit.mean * (1 - fit.mean)) / number.seq)
+number.ul95  <- fit.mean + 1.96 * sqrt((fit.mean * (1 - fit.mean)) / number.seq)
+number.ll999 <- fit.mean - 3.29 * sqrt((fit.mean * (1 - fit.mean)) / number.seq)
+number.ul999 <- fit.mean + 3.29 * sqrt((fit.mean * (1 - fit.mean)) / number.seq)
+
+dfCI <- data.frame(
+  number.ll95, number.ul95, number.ll999, number.ul999,
+  number.seq, fit.mean
+)
+```
+
+## 8.5.3 Static funnel plot
+
+```{r}
+p <- ggplot(df, aes(x = Positive, y = rate)) +
+  geom_point(aes(label = `Sub-district`), alpha = 0.4) +
+  geom_line(data = dfCI, aes(x = number.seq, y = number.ll95),
+            size = 0.4, colour = "grey40", linetype = "dashed") +
+  geom_line(data = dfCI, aes(x = number.seq, y = number.ul95),
+            size = 0.4, colour = "grey40", linetype = "dashed") +
+  geom_line(data = dfCI, aes(x = number.seq, y = number.ll999),
+            size = 0.4, colour = "grey40") +
+  geom_line(data = dfCI, aes(x = number.seq, y = number.ul999),
+            size = 0.4, colour = "grey40") +
+  geom_hline(data = dfCI, aes(yintercept = fit.mean),
+             size = 0.4, colour = "grey40") +
+  coord_cartesian(ylim = c(0, 0.05)) +
+  annotate("text", x = 1,   y = -0.13, label = "95%", size = 3, colour = "grey40") +
+  annotate("text", x = 4.5, y = -0.18, label = "99%", size = 3, colour = "grey40") +
+  ggtitle("Cumulative Fatality Rate by Cumulative Number of COVID-19 Cases") +
+  xlab("Cumulative Number of COVID-19 Cases") +
+  ylab("Cumulative Fatality Rate") +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 12),
+    legend.position = c(0.91, 0.85),
+    legend.title = element_text(size = 7),
+    legend.text = element_text(size = 7),
+    legend.background = element_rect(colour = "grey60", linetype = "dotted"),
+    legend.key.height = unit(0.3, "cm")
+  )
+
+p
+```
+
+## 8.5.4 Interactive funnel plot (plotly + ggplot2)
+
+```{r}
+fp_ggplotly <- ggplotly(
+  p,
+  tooltip = c("label", "x", "y")
+)
+
+fp_ggplotly
+```

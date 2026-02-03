@@ -1,0 +1,97 @@
+---
+title: "Hands-on Exercise 4C: Visual Statistical Analysis"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-location: right
+    toc-depth: 3
+execute:
+  warning: false
+  message: false
+---
+
+# 10.1 Overview
+
+In this hands-on exercise, I practise **visual statistical analysis** using `ggstatsplot`. The plots include statistical test results directly in the visual.
+
+# 10.2 Installing and launching R packages
+
+```{r}
+pacman::p_load(ggstatsplot, tidyverse)
+```
+
+# 10.3 Importing data
+
+```{r}
+exam <- read_csv("../data/Exam_data.csv")
+glimpse(exam)
+```
+
+# 10.4 One-sample test: gghistostats()
+
+```{r}
+set.seed(1234)
+
+gghistostats(
+  data = exam,
+  x = ENGLISH,
+  type = "bayes",
+  test.value = 60,
+  xlab = "English scores"
+)
+```
+
+# 10.5 Two-sample mean test: ggbetweenstats()
+
+```{r}
+ggbetweenstats(
+  data = exam,
+  x = GENDER,
+  y = MATHS,
+  type = "np",
+  messages = FALSE
+)
+```
+
+# 10.6 One-way ANOVA: ggbetweenstats()
+
+```{r}
+ggbetweenstats(
+  data = exam,
+  x = RACE,
+  y = ENGLISH,
+  type = "p",
+  mean.ci = TRUE,
+  pairwise.comparisons = TRUE,
+  pairwise.display = "s",
+  p.adjust.method = "fdr",
+  messages = FALSE
+)
+```
+
+# 10.7 Significant test of correlation: ggscatterstats()
+
+```{r}
+ggscatterstats(
+  data = exam,
+  x = MATHS,
+  y = ENGLISH,
+  marginal = FALSE
+)
+```
+
+# 10.8 Significant test of association: ggbarstats()
+
+```{r}
+exam1 <- exam %>%
+  mutate(
+    MATHS_bins = cut(MATHS, breaks = c(0, 60, 75, 85, 100))
+  )
+
+ggbarstats(
+  data = exam1,
+  x = MATHS_bins,
+  y = GENDER
+)
+```

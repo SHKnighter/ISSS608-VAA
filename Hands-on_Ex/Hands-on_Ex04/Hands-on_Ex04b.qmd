@@ -1,0 +1,172 @@
+---
+title: "Hands-on Exercise 4B: Visualising Distribution"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-location: right
+    toc-depth: 3
+execute:
+  warning: false
+  message: false
+---
+
+# 9.1 Overview
+
+In this hands-on exercise, I practise two distribution visualisation methods using `Exam_data.csv`:
+
+-   **Ridgeline plots** (ggridges)
+-   **Raincloud plots** (ggdist)
+
+# 9.2 Installing and launching R packages
+
+```{r}
+pacman::p_load(ggdist, ggridges, ggthemes, colorspace, tidyverse)
+```
+
+# 9.3 Importing data
+
+```{r}
+exam <- read_csv("../data/Exam_data.csv")
+glimpse(exam)
+```
+
+# 9.4 Ridgeline plots
+
+## 9.4.1 Basic ridgeline plot
+
+```{r}
+ggplot(exam, aes(x = ENGLISH, y = CLASS)) +
+  geom_density_ridges(
+    scale = 3,
+    rel_min_height = 0.01,
+    bandwidth = 3.4,
+    fill = lighten("#7097BB", 0.3),
+    color = "white"
+  ) +
+  scale_x_continuous(
+    name = "English grades",
+    expand = c(0, 0)
+  ) +
+  scale_y_discrete(name = NULL, expand = expansion(add = c(0.2, 2.6))) +
+  theme_ridges()
+```
+
+## 9.4.2 Varying fill colors along the x axis
+
+```{r}
+ggplot(exam, aes(x = ENGLISH, y = CLASS, fill = stat(x))) +
+  geom_density_ridges_gradient(
+    scale = 3,
+    rel_min_height = 0.01
+  ) +
+  scale_fill_viridis_c(name = "Temp. [F]", option = "C") +
+  scale_x_continuous(
+    name = "English grades",
+    expand = c(0, 0)
+  ) +
+  scale_y_discrete(name = NULL, expand = expansion(add = c(0.2, 2.6))) +
+  theme_ridges()
+```
+
+## 9.4.3 Mapping tail probabilities (ecdf)
+
+```{r}
+ggplot(exam,
+       aes(x = ENGLISH,
+           y = CLASS,
+           fill = 0.5 - abs(0.5 - stat(ecdf)))) +
+  stat_density_ridges(
+    geom = "density_ridges_gradient",
+    calc_ecdf = TRUE
+  ) +
+  scale_fill_viridis_c(
+    name = "Tail probability",
+    direction = -1
+  ) +
+  theme_ridges()
+```
+
+## 9.4.4 Ridgeline plots with quantile lines
+
+```{r}
+ggplot(exam,
+       aes(x = ENGLISH,
+           y = CLASS,
+           fill = factor(stat(quantile)))) +
+  stat_density_ridges(
+    geom = "density_ridges_gradient",
+    calc_ecdf = TRUE,
+    quantiles = 4,
+    quantile_lines = TRUE
+  ) +
+  scale_fill_viridis_d(name = "Quartiles") +
+  theme_ridges()
+```
+
+# 9.5 Raincloud plots
+
+## 9.5.1 Half-eye
+
+```{r}
+ggplot(exam, aes(x = RACE, y = ENGLISH)) +
+  stat_halfeye(
+    adjust = 0.5,
+    justification = -0.2,
+    .width = 0,
+    point_colour = NA
+  )
+```
+
+## 9.5.2 Add boxplot
+
+```{r}
+ggplot(exam, aes(x = RACE, y = ENGLISH)) +
+  stat_halfeye(
+    adjust = 0.5,
+    justification = -0.2,
+    .width = 0,
+    point_colour = NA
+  ) +
+  geom_boxplot(width = 0.20, outlier.shape = NA)
+```
+
+## 9.5.3 Add dot plot
+
+```{r}
+ggplot(exam, aes(x = RACE, y = ENGLISH)) +
+  stat_halfeye(
+    adjust = 0.5,
+    justification = -0.2,
+    .width = 0,
+    point_colour = NA
+  ) +
+  geom_boxplot(width = 0.20, outlier.shape = NA) +
+  stat_dots(
+    side = "left",
+    justification = 1.2,
+    binwidth = 0.5,
+    dotsize = 1.5
+  )
+```
+
+## 9.5.4 Finishing touch
+
+```{r}
+ggplot(exam, aes(x = RACE, y = ENGLISH)) +
+  stat_halfeye(
+    adjust = 0.5,
+    justification = -0.2,
+    .width = 0,
+    point_colour = NA
+  ) +
+  geom_boxplot(width = 0.20, outlier.shape = NA) +
+  stat_dots(
+    side = "left",
+    justification = 1.2,
+    binwidth = 0.5,
+    dotsize = 1.5
+  ) +
+  coord_flip() +
+  theme_economist()
+```

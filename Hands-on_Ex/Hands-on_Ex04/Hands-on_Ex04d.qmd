@@ -1,0 +1,217 @@
+---
+title: "Hands-on Exercise 4D: Visualising Uncertainty"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-location: right
+    toc-depth: 3
+execute:
+  warning: false
+  message: false
+---
+
+# 11.1 Overview
+
+In this hands-on exercise, I practise uncertainty visualisation using:
+
+-   ggplot2 error bars (standard error + confidence intervals),
+-   interactive error bars (plotly + crosstalk),
+-   ggdist intervals, and
+-   Hypothetical Outcome Plots (HOPs) with ungeviz.
+
+# 11.2 Installing and launching R packages
+
+```{r}
+pacman::p_load(
+  plotly, crosstalk, DT,
+  ggdist, ggridges, colorspace,
+  gganimate, tidyverse, knitr
+)
+```
+
+# 11.3 Importing data
+
+```{r}
+exam <- read_csv("../data/Exam_data.csv")
+```
+
+# 11.4 Summary statistics
+
+```{r}
+my_sum <- exam %>%
+  group_by(RACE) %>%
+  summarise(
+    n = n(),
+    mean = mean(MATHS),
+    sd = sd(MATHS),
+    .groups = "drop"
+  ) %>%
+  mutate(se = sd / sqrt(n - 1))
+
+knitr::kable(head(my_sum), format = "html")
+```
+
+# 11.5 Error bars with ggplot2
+
+## 11.5.1 Standard error bars
+
+```{r}
+ggplot(my_sum) +
+  geom_errorbar(
+    aes(
+      x = RACE,
+      ymin = mean - se,
+      ymax = mean + se
+    ),
+    width = 0.2,
+    colour = "black",
+    alpha = 0.9,
+    linewidth = 0.5
+  ) +
+  geom_point(
+    aes(x = RACE, y = mean),
+    stat = "identity",
+    color = "red",
+    size = 1.5,
+    alpha = 1
+  ) +
+  ggtitle("Standard error of mean maths score by race")
+```
+
+## 11.5.2 95% confidence interval error bars
+
+```{r}
+ggplot(my_sum) +
+  geom_errorbar(
+    aes(
+      x = reorder(RACE, -mean),
+      ymin = mean - 1.96 * se,
+      ymax = mean + 1.96 * se
+    ),
+    width = 0.2,
+    colour = "black",
+    alpha = 0.9,
+    linewidth = 0.5
+  ) +
+  geom_point(
+    aes(x = RACE, y = mean),
+    stat = "identity",
+    color = "red",
+    size = 1.5,
+    alpha = 1
+  ) +
+  labs(
+    x = "Maths score",
+    title = "95% confidence interval of mean maths score by race"
+  )
+```
+
+## 11.5.3 Interactive error bars (99% CI)
+
+```{r}
+shared_df <- SharedData$new(my_sum)
+
+p_int <- ggplot(shared_df) +
+  geom_errorbar(
+    aes(
+      x = reorder(RACE, -mean),
+      ymin = mean - 2.58 * se,
+      ymax = mean + 2.58 * se
+    ),
+    width = 0.2,
+    colour = "black",
+    alpha = 0.9,
+    size = 0.5
+  ) +
+  geom_point(
+    aes(x = RACE, y = mean),
+    stat = "identity",
+    color = "red",
+    size = 1.5,
+    alpha = 1
+  ) +
+  labs(
+    x = "Race",
+    y = "Mean maths score",
+    title = "Interactive error bars (99% CI)"
+  )
+
+crosstalk::bscols(
+  widths = c(4, 8),
+  ggplotly(p_int, tooltip = c("x", "y")),
+  DT::datatable(shared_df, class = "compact")
+)
+```
+
+# 11.6 ggdist intervals
+
+## 11.6.1 stat_pointinterval()
+
+```{r}
+exam %>%
+  ggplot(aes(x = RACE, y = MATHS)) +
+  stat_pointinterval() +
+  labs(
+    title = "Visualising confidence intervals of mean math score",
+    subtitle = "Mean Point + Multiple-interval plot"
+  )
+```
+
+```{r}
+exam %>%
+  ggplot(aes(x = RACE, y = MATHS)) +
+  stat_pointinterval(
+    .width = 0.95,
+    .point = median,
+    .interval = qi
+  ) +
+  labs(
+    title = "Visualising confidence intervals of median math score",
+    subtitle = "Median Point + Multiple-interval plot"
+  )
+```
+
+## 11.6.2 stat_gradientinterval()
+
+```{r}
+exam %>%
+  ggplot(aes(x = RACE, y = MATHS)) +
+  stat_gradientinterval(
+    fill = "skyblue",
+    show.legend = TRUE
+  ) +
+  labs(
+    title = "Visualising confidence intervals of mean math score",
+    subtitle = "Gradient + interval plot"
+  )
+```
+
+# 11.7 Hypothetical Outcome Plots (HOPs)
+
+## 11.7.1 Install ungeviz (one-time)
+
+```{r}
+# devtools::install_github("wilkelab/ungeviz")
+```
+
+## 11.7.2 Build HOPs animation
+
+```{r, eval=FALSE}
+library(ungeviz)
+
+ggplot(data = exam, aes(x = factor(RACE), y = MATHS)) +
+  geom_point(
+    position = position_jitter(height = 0.3, width = 0.05),
+    size = 0.4,
+    color = "#0072B2",
+    alpha = 1/2
+  ) +
+  geom_hpline(
+    data = sampler(25, group = RACE),
+    height = 0.6,
+    color = "#D55E00"
+  ) +
+  theme_bw() +
+  transition_states(.draw, 1, 3)
+```
