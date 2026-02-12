@@ -1,0 +1,229 @@
+---
+title: "Hands-on Exercise 06: Visual Correlation Analysis"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+execute:
+  warning: false
+  message: false
+---
+
+## 6.1 Overview
+
+Correlation coefficient measures the **strength and direction** of a linear relationship between two variables (range **-1 to 1**).\
+In this hands-on, we will:
+
+-   build correlation matrix and scatterplot matrix using base `pairs()`,
+-   enhance the matrix by adding correlation coefficients,
+-   visualise correlations using **ggcorrmat** (ggstatsplot) and **corrplot**,
+-   explore layouts (lower/upper/mixed) + significance test + reordering.
+
+## 6.2 Installing and launching R packages
+
+```{r}
+pacman::p_load(corrplot, ggstatsplot, tidyverse)
+```
+
+## 6.3 Importing and preparing the data set
+
+We use the Wine Quality dataset (CSV in `data/` folder).
+
+```{r}
+wine <- read_csv("../data/wine_quality.csv")
+glimpse(wine)
+```
+
+For correlation matrix, we focus on the numeric columns (usually columns 2 to 12).
+
+```{r}
+wine_num <- wine[, 2:12]
+```
+
+## 6.4 Building the correlation matrix: pairs()
+
+### 6.4.1 Basic scatterplot matrix
+
+```{r}
+pairs(wine_num)
+```
+
+### 6.4.2 Drawing only one triangle (lower / upper)
+
+Lower triangle only:
+
+```{r}
+pairs(wine_num, upper.panel = NULL)
+```
+
+Upper triangle only:
+
+```{r}
+pairs(wine_num, lower.panel = NULL)
+```
+
+### 6.4.3 Add correlation coefficients
+
+We replace one panel with a correlation-number panel.
+
+```{r}
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y, use = "complete.obs"))
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  txt <- paste0(prefix, txt)
+  if (missing(cex.cor)) cex.cor <- 0.8 / strwidth(txt)
+  text(0.5, 0.5, txt, cex = cex.cor * (1 + r) / 2)
+}
+
+pairs(wine_num, upper.panel = panel.cor)
+```
+
+## 6.5 Visualising correlation matrix: ggcorrmat()
+
+A clean, publication-style correlation plot.
+
+```{r}
+ggstatsplot::ggcorrmat(
+  data = wine,
+  cor.vars = 1:11,               # adjust if your dataset has different columns
+  ggcorrplot.args = list(outline.color = "black"),
+  hc.order = TRUE,
+  tl.cex = 10,
+  title = "Correlogram for wine dataset",
+  subtitle = "Pearson correlation (x = non-significant at p < 0.05; Holm adjustment)"
+)
+```
+
+### 6.6 Building multiple plots (faceting by a group)
+
+If you have a group variable like `type` (red/white), you can facet the correlogram.
+
+```{r}
+wine <- wine %>%
+  janitor::clean_names() %>%
+  mutate(type = as.factor(type))
+
+num_vars <- wine %>% select(where(is.numeric)) %>% names()
+stopifnot(length(num_vars) >= 2)
+
+wine_corr <- wine %>% select(type, all_of(num_vars))
+
+ggstatsplot::grouped_ggcorrmat(
+  data = wine_corr,
+  cor.vars = num_vars,
+  grouping.var = type,   # ✅ 注意这里！！
+  type = "robust",
+  p.adjust.method = "holm",
+  plotgrid.args = list(ncol = 2),
+  ggcorrplot.args = list(outline.color = "black"),
+  hc.order = TRUE,
+  tl.cex = 10,
+  annotation.args = list(
+    title = "Correlogram for wine dataset",
+    caption = "Dataset: UCI Machine Learning Repository"
+  )
+)
+```
+
+## 6.7 Visualising correlation matrix using corrplot
+
+### 6.7.1 Getting started
+
+```{r}
+wine_cor <- cor(wine_num, use = "complete.obs")
+corrplot(wine_cor)
+```
+
+### 6.7.2 Visual geometries (ellipse)
+
+```{r}
+corrplot(wine_cor, method = "ellipse")
+```
+
+### 6.7.3 Working with layout (lower)
+
+```{r}
+corrplot(wine_cor, method = "ellipse", type = "lower")
+```
+
+You can customize diagonal and text color:
+
+```{r}
+corrplot(wine_cor, method = "ellipse", type = "lower",
+         diag = FALSE, tl.col = "black")
+```
+
+### 6.7.4 Mixed layout (numbers + shapes)
+
+```{r}
+corrplot.mixed(wine_cor,
+               lower = "ellipse",
+               upper = "number",
+               tl.pos = "lt",
+               diag = "l",
+               tl.col = "black")
+```
+
+### 6.7.5 Combine corrgram with significance test
+
+Compute p-values using `cor.test()` pairwise, then pass into `corrplot()` via `p.mat`.
+
+```{r}
+cor.mtest <- function(mat, conf.level = 0.95) {
+  mat <- as.matrix(mat)
+  n <- ncol(mat)
+  p.mat <- matrix(NA, n, n)
+  diag(p.mat) <- 0
+  for (i in 1:(n - 1)) {
+    for (j in (i + 1):n) {
+      tmp <- cor.test(mat[, i], mat[, j], conf.level = conf.level)
+      p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+    }
+  }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
+  p.mat
+}
+
+wine_sig <- cor.mtest(wine_num)
+
+corrplot(wine_cor,
+         method = "number",
+         type = "lower",
+         diag = FALSE,
+         tl.col = "black",
+         tl.srt = 45,
+         p.mat = wine_sig,
+         sig.level = 0.05)
+```
+
+### 6.7.6 Reorder a corrgram
+
+```{r}
+corrplot.mixed(wine_cor,
+               lower = "ellipse",
+               upper = "number",
+               tl.pos = "lt",
+               diag = "l",
+               order = "AOE",
+               tl.col = "black")
+```
+
+### 6.7.7 Reordering using hierarchical clustering (hclust)
+
+```{r}
+corrplot(wine_cor,
+         method = "ellipse",
+         tl.pos = "lt",
+         order = "hclust",
+         hclust.method = "ward.D",
+         addrect = 3)
+```
+
+## Notes / Tips
+
+-   If your dataset has missing values, use `use = "complete.obs"` in `cor()`.
+-   Always sanity-check: correlation ≠ causation.

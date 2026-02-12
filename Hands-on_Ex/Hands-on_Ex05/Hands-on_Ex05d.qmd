@@ -1,0 +1,154 @@
+---
+title: "Hands-on Exercise 15: Visual Multivariate Analysis with Parallel Coordinates Plot"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+execute:
+  warning: false
+  message: false
+---
+
+## 15.1 Overview
+
+Parallel coordinates plots (PCP) are designed for **high-dimensional numeric data**.\
+They are powerful for **interactive exploration** (detecting clusters and patterns) but can be cluttered with many observations.
+
+In this hands-on, we will:
+
+-   create static PCP using **GGally::ggparcoord()**,
+-   create interactive PCP using **parallelPlot**,
+-   improve readability with scaling, grouping, facets and rotated axis labels.
+
+## 15.2 Installing and launching R packages
+
+```{r}
+pacman::p_load(GGally, parallelPlot, tidyverse)
+```
+
+## 15.3 Data preparation
+
+```{r}
+wh <- read_csv("../data/WHData-2018.csv")
+glimpse(wh)
+```
+
+## 15.4 Plotting static parallel coordinates plot (GGally)
+
+### 15.4.1 Simple parallel coordinates plot
+
+```{r}
+ggparcoord(
+  data = wh,
+  columns = c(7:12)
+)
+```
+
+### 15.4.2 With grouping + scaling + transparency + boxplot
+
+```{r}
+ggparcoord(
+  data = wh,
+  columns = c(7:12),
+  groupColumn = 2,          # e.g., Region (adjust if your file differs)
+  scale = "uniminmax",
+  alphaLines = 0.2,
+  boxplot = TRUE,
+  title = "Parallel Coordinates Plot of World Happiness Variables"
+)
+```
+
+### 15.4.3 Facet by Region
+
+```{r}
+ggparcoord(
+  data = wh,
+  columns = c(7:12),
+  groupColumn = 2,
+  scale = "uniminmax",
+  alphaLines = 0.2,
+  boxplot = TRUE,
+  title = "Multiple Parallel Coordinates Plots of World Happiness Variables by Region"
+) +
+  facet_wrap(~ Region)
+```
+
+### 15.4.4 Rotate x-axis text labels
+
+```{r}
+ggparcoord(
+  data = wh,
+  columns = c(7:12),
+  groupColumn = 2,
+  scale = "uniminmax",
+  alphaLines = 0.2,
+  boxplot = TRUE,
+  title = "Multiple Parallel Coordinates Plots of World Happiness Variables by Region"
+) +
+  facet_wrap(~ Region) +
+  theme(axis.text.x = element_text(angle = 30))
+```
+
+Adjust `hjust` to avoid overlapping with the plot area:
+
+```{r}
+ggparcoord(
+  data = wh,
+  columns = c(7:12),
+  groupColumn = 2,
+  scale = "uniminmax",
+  alphaLines = 0.2,
+  boxplot = TRUE,
+  title = "Multiple Parallel Coordinates Plots of World Happiness Variables by Region"
+) +
+  facet_wrap(~ Region) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+## 15.5 Interactive parallel coordinates plot: parallelPlot
+
+### 15.5.1 Basic interactive plot
+
+A typical workflow is to select the target + predictors, then call `parallelPlot()`.
+
+```{r}
+wh_pp <- wh %>%
+  dplyr::select(`Happiness score`, c(7:12))
+
+parallelPlot(wh_pp, width = 320, height = 250)
+```
+
+### 15.5.2 Rotate axis labels
+
+```{r}
+parallelPlot(wh_pp, rotateTitle = TRUE)
+```
+
+### 15.5.3 Change colour scheme
+
+```{r}
+parallelPlot(
+  wh_pp,
+  continuousCS = "YlOrRd",
+  rotateTitle = TRUE
+)
+```
+
+### 15.5.4 Add histogram on each axis
+
+```{r}
+histoVisibility <- rep(TRUE, ncol(wh_pp))
+
+parallelPlot(
+  wh_pp,
+  rotateTitle = TRUE,
+  histoVisibility = histoVisibility
+)
+```
+
+## Notes / Tips
+
+-   If the plot is too cluttered, try filtering a subset (e.g., one region), or sampling rows.
+-   Scaling (`uniminmax`) is usually required because each variable has different ranges.

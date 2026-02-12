@@ -24,6 +24,16 @@ website:
             href: Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04c.html
           - text: "Hands-on Ex04D"
             href: Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04d.html
+          - text: "Hands-on Ex05A"
+            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05a.html
+          - text: "Hands-on Ex05B"
+            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05b.html
+          - text: "Hands-on Ex05C"
+            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05c.html
+          - text: "Hands-on Ex05D"
+            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05d.html
+          - text: "Hands-on Ex05E"
+            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05e.html
 
     right:
       - href: index.html

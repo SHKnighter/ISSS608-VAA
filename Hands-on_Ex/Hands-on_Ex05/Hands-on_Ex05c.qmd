@@ -1,0 +1,177 @@
+---
+title: "Hands-on Exercise 14: Heatmap for Visualising and Analysing Multivariate Data"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+execute:
+  warning: false
+  message: false
+---
+
+## 14.1 Overview
+
+Heatmaps show multivariate patterns using color intensity (good for spotting **clusters**, **similarity**, and **outliers**).\
+In this hands-on, we will create:
+
+-   static heatmaps (base `heatmap()`),
+-   interactive heatmaps using **heatmaply**,
+-   different data transformations (scale / normalize / percentize),
+-   clustering method selection + number of clusters,
+-   ordering with **seriation**.
+
+## 14.2 Installing and launching R packages
+
+```{r}
+pacman::p_load(seriation, dendextend, heatmaply, tidyverse)
+```
+
+## 14.3 Importing and preparing the data set
+
+We use World Happiness 2018 dataset (CSV in `data/` folder).
+
+```{r}
+wh <- read_csv("../data/WHData-2018.csv")
+glimpse(wh)
+```
+
+### 14.3.1 Use Country as row names
+
+```{r}
+wh <- wh %>% mutate(Country = as.character(Country))
+row.names(wh) <- wh$Country
+```
+
+### 14.3.2 Transform data frame into matrix
+
+Select columns that represent numeric indicators (adjust indices if your file differs).
+
+```{r}
+wh1 <- wh %>% dplyr::select(c(3, 7:12))
+wh_matrix <- data.matrix(wh1)
+```
+
+## 14.4 Static heatmap (base heatmap())
+
+### 14.4.1 Default heatmap
+
+```{r}
+wh_heatmap <- heatmap(wh_matrix, Rowv = NA, Colv = NA)
+```
+
+### 14.4.2 Cluster heatmap + scaling
+
+Because variables have different ranges, scaling often helps.
+
+```{r}
+wh_heatmap <- heatmap(
+  wh_matrix,
+  scale = "column",
+  cexRow = 0.6,
+  cexCol = 0.8,
+  margins = c(10, 4)
+)
+```
+
+## 14.5 Creating interactive heatmap (heatmaply)
+
+### 14.5.1 Basic heatmaply
+
+```{r}
+heatmaply(wh_matrix)
+```
+
+### 14.5.2 Data transformation options
+
+**Scaling** (z-score) column-wise:
+
+```{r}
+heatmaply(wh_matrix, scale = "column")
+```
+
+**Normalising** (0–1 scale) on the input data (typically after selecting numeric cols):
+
+```{r}
+heatmaply(normalize(wh_matrix))
+```
+
+**Percentising** (convert each value into percentile rank):
+
+```{r}
+heatmaply(percentize(wh_matrix))
+```
+
+### 14.5.3 Clustering method & number of clusters
+
+You can compare clustering methods using `dendextend` (one practical workflow is to compute distances and evaluate).\
+Below shows a commonly-used approach consistent with the lecture workflow: estimate the number of clusters (k) via silhouette.
+
+```{r}
+# distance and clustering
+wh_d <- dist(normalize(wh_matrix), method = "euclidean")
+wh_clust <- hclust(wh_d, method = "average")
+
+# find a reasonable k using silhouette (heatmaply provides helpers in some setups)
+num_k <- find_k(wh_clust)
+plot(num_k)
+```
+
+Then plot with a selected k (example: k = 3):
+
+```{r}
+heatmaply(
+  normalize(wh_matrix),
+  dist_method = "euclidean",
+  hclust_method = "average",
+  k_row = 3
+)
+```
+
+### 14.5.4 Seriation (re-ordering)
+
+Seriation reorders rows/columns to make similar items adjacent. Try different methods:
+
+```{r}
+heatmaply(normalize(wh_matrix), seriate = "OLO")
+heatmaply(normalize(wh_matrix), seriate = "GW")
+heatmaply(normalize(wh_matrix), seriate = "mean")
+heatmaply(normalize(wh_matrix), seriate = "none")
+```
+
+### 14.5.5 Colour palettes
+
+Use a single-hue palette (e.g., Blues) to avoid misleading diverging colors when all values are positive.
+
+```{r}
+heatmaply(
+  normalize(wh_matrix),
+  seriate = "none",
+  colors = viridisLite::viridis(256)
+)
+```
+
+### 14.5.6 Finishing touch
+
+Add clearer labels and tune margins/font sizes.
+
+```{r}
+heatmaply(
+  normalize(wh_matrix),
+  seriate = "none",
+  colors = viridisLite::viridis(256),
+  k_row = 5,
+  margins = c(50, 200, 60, 20),
+  fontsize_row = 4,
+  fontsize_col = 5,
+  main = "World Happiness Score and Variables by Country, 2018",
+  xlab = "World Happiness Indicators",
+  ylab = "World Countries"
+)
+```
+
+## Notes / Tips
+
+-   Heatmaps are very sensitive to scaling: always decide if you need raw vs scaled values.
+-   If your row labels become unreadable, consider filtering top-N countries or using interactive mode.
