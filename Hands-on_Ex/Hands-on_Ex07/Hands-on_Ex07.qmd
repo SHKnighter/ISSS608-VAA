@@ -1,0 +1,372 @@
+---
+title: "Hands-on Exercise 07: Time-oriented Data Visual Analytics"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    code-tools: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## 17.1 Overview
+
+This hands-on focuses on **time-oriented visual analytics**. I follow the teacher’s workflow but add short student-style notes (what I observed, what I think it implies), while keeping the page clean and Netlify-friendly.
+
+We will build:
+
+-   **Calendar heatmap** (weekday × hour) for attack rhythms,
+-   **Cycle plot** (month panels across years) for seasonality,
+-   **Slopegraph-style comparison** (two time points) for changes.
+
+## 17.2 Setup
+
+### 17.2.1 Packages
+
+```{r}
+pacman::p_load(
+  tidyverse, lubridate, readxl, knitr,
+  viridis, ggthemes, ggrepel
+)
+```
+
+### 17.2.2 Locale fix (important on Chinese Windows)
+
+On Chinese systems, `weekdays()` can return weekday names in Chinese (e.g., 星期一).\
+That will not match English factor levels and can turn `wkday` into `NA`.
+
+```{r}
+Sys.setlocale("LC_TIME", "English")
+```
+
+> If `"English"` fails on your machine, try `"C"` or `"en_US.UTF-8"`.
+
+### 17.2.3 Small helper: compact table preview
+
+```{r}
+show_head <- function(df, n = 6, caption = NULL) {
+  knitr::kable(head(df, n), caption = caption)
+}
+```
+
+## 17.4 Calendar heatmap (weekday × hour)
+
+### 17.4.1 Import data
+
+Dataset: `eventlog.csv` (stored at project root `data/`).\
+This qmd is in a subfolder, so I use `../data/...` paths.
+
+```{r}
+attacks_raw <- read_csv("../data/eventlog.csv", show_col_types = FALSE)
+show_head(attacks_raw, caption = "Preview of eventlog.csv")
+```
+
+### 17.4.2 Data preparation (robust timezone handling)
+
+In practice, the `tz` column may contain invalid or missing timezone strings.\
+`lubridate::with_tz()` requires a valid Olson/IANA timezone name, otherwise rendering fails.
+
+Strategy: - force `tz` to **character**, - replace invalid / empty `tz` with `"UTC"`, - parse timestamps as UTC first, then convert to local tz, - extract weekday and hour.
+
+```{r}
+make_hr_wkday <- function(ts, tz) {
+
+  tz <- as.character(tz)[1]
+
+  tz <- dplyr::if_else(
+    is.na(tz) | tz == "" | !(tz %in% OlsonNames()),
+    "UTC",
+    tz
+  )
+
+  real_times <- with_tz(ymd_hms(ts, tz = "UTC"), tz = tz)
+
+  tibble(
+    wkday = weekdays(real_times),
+    hour  = hour(real_times)
+  )
+}
+
+wkday_levels <- c("Sunday", "Monday", "Tuesday", "Wednesday",
+                  "Thursday", "Friday", "Saturday")
+
+attacks <- attacks_raw %>%
+  mutate(
+    tz = as.character(tz),
+    tz = dplyr::if_else(is.na(tz) | tz == "" | !(tz %in% OlsonNames()), "UTC", tz)
+  ) %>%
+  group_by(tz) %>%
+  group_modify(~ bind_cols(.x, make_hr_wkday(.x$timestamp, unique(.x$tz)[1]))) %>%
+  ungroup() %>%
+  mutate(
+    wkday = factor(wkday, levels = wkday_levels),
+    hour  = factor(hour, levels = 0:23)
+  )
+
+show_head(attacks, caption = "Processed attacks table (preview)")
+```
+
+**Observation:** After setting `LC_TIME` to English, the weekday labels are in English and the ordering is consistent (Sun → Sat).
+
+### 17.4.3 Single calendar heatmap
+
+```{r}
+grouped_all <- attacks %>%
+  count(wkday, hour, name = "n") %>%
+  drop_na()
+```
+
+::: panel-tabset
+## Plot
+
+```{r}
+ggplot(grouped_all, aes(x = hour, y = wkday, fill = n)) +
+  geom_tile(color = "white", linewidth = 0.15) +
+  scale_fill_viridis_c(option = "C", name = "# attacks") +
+  labs(
+    title = "Attacks by weekday and hour (all countries)",
+    subtitle = "Calendar heatmap reveals weekly rhythm and peak hours",
+    x = "Hour of day", y = NULL
+  ) +
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5),
+    panel.grid = element_blank(),
+    legend.position = "right"
+  )
+```
+
+## Code
+
+```{r}
+# grouped_all = count of attacks for each weekday-hour tile
+# geom_tile + viridis palette are reliable and readable for heatmaps
+```
+:::
+
+**Insight:** The heatmap makes “busy windows” obvious. Concentrated peaks can be consistent with automated behavior or coordinated timing.
+
+### 17.4.4 Multiple calendar heatmaps (top 4 source countries)
+
+Instead of printing a long table, I only display the top 10 summary rows.
+
+```{r}
+attacks_by_country <- attacks %>%
+  count(source_country, name = "n") %>%
+  mutate(pct = n / sum(n)) %>%
+  arrange(desc(n))
+
+knitr::kable(
+  head(attacks_by_country, 10) %>% mutate(pct = scales::percent(pct)),
+  caption = "Top source countries (Top 10)"
+)
+```
+
+```{r}
+top4 <- attacks_by_country %>% slice(1:4) %>% pull(source_country)
+
+top4_attacks <- attacks %>%
+  filter(source_country %in% top4) %>%
+  count(source_country, wkday, hour, name = "n") %>%
+  mutate(source_country = factor(source_country, levels = top4)) %>%
+  drop_na()
+```
+
+::: panel-tabset
+## Plot
+
+```{r}
+ggplot(top4_attacks, aes(x = hour, y = wkday, fill = n)) +
+  geom_tile(color = "white", linewidth = 0.15) +
+  scale_fill_viridis_c(option = "C", name = "# attacks") +
+  facet_wrap(~source_country, ncol = 2) +
+  labs(
+    title = "Attacks by weekday and hour (Top 4 source countries)",
+    subtitle = "Compare country-specific rhythms side-by-side",
+    x = "Hour of day", y = NULL
+  ) +
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5),
+    panel.grid = element_blank(),
+    strip.text = element_text(face = "bold"),
+    legend.position = "right"
+  )
+```
+
+## Code
+
+```{r}
+# facet_wrap compares patterns across the top 4 source countries
+```
+:::
+
+**Observation:** Some countries show sharper hourly peaks, while others have a flatter pattern.
+
+**Insight:** Cross-country differences suggest different “attack styles” (scheduled bursts vs continuous scanning).
+
+## 17.5 Cycle plot (seasonality across years)
+
+A cycle plot compares the same month across multiple years by faceting on month.
+
+### 17.5.1 Import arrivals data
+
+```{r}
+air <- read_excel("../data/arrivals_by_air.xlsx")
+show_head(air, caption = "Preview of arrivals_by_air.xlsx")
+```
+
+### 17.5.2 Derive month and year
+
+```{r}
+air2 <- air %>%
+  rename(`Month-Year` = 1) %>%
+  mutate(
+    `Month-Year` = as.Date(`Month-Year`),
+    month = factor(month(`Month-Year`), levels = 1:12, labels = month.abb),
+    year  = year(`Month-Year`)
+  )
+```
+
+### 17.5.3 Vietnam example + monthly benchmark
+
+```{r}
+vietnam <- air2 %>%
+  select(Vietnam, month, year) %>%
+  filter(year >= 2010)
+
+hline_data <- vietnam %>%
+  group_by(month) %>%
+  summarise(avgvalue = mean(Vietnam, na.rm = TRUE), .groups = "drop")
+```
+
+::: panel-tabset
+## Plot
+
+```{r}
+ggplot(vietnam, aes(x = year, y = Vietnam, group = month)) +
+  geom_line(color = "gray35", linewidth = 0.45) +
+  geom_hline(data = hline_data, aes(yintercept = avgvalue),
+             linetype = "dashed", linewidth = 0.5, color = "red") +
+  facet_grid(~month) +
+  labs(
+    title = "Visitor arrivals from Vietnam by air (Cycle plot)",
+    subtitle = "Dashed red line = long-run monthly mean (benchmark)",
+    x = "Year", y = "No. of visitors"
+  ) +
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5),
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold")
+  )
+```
+
+## Code
+
+```{r}
+# facet by month to compare within-month patterns across years
+# dashed red line gives a stable monthly baseline
+```
+:::
+
+**Observation:** Some months systematically sit above the baseline, indicating persistent seasonal peaks.
+
+**Insight:** Cycle plot is good for detecting seasonality, but if we want to highlight shocks, a line chart with annotated events may be clearer.
+
+## 17.6 Slopegraph-style comparison (1961 vs 1980)
+
+The slopegraph compares rice yields at two time points for top Asian countries.\
+To avoid overlapping labels, I use **ggrepel** and keep the plot uncluttered.
+
+### 17.6.1 Import rice dataset
+
+```{r}
+rice <- read_csv("../data/rice.csv", show_col_types = FALSE)
+show_head(rice, caption = "Preview of rice.csv")
+```
+
+### 17.6.2 Prepare dataset (top countries, 1961 vs 1980)
+
+```{r}
+rice2 <- rice %>%
+  filter(Year %in% c(1961, 1980)) %>%
+  mutate(Year = factor(Year, levels = c(1961, 1980)))
+
+top_countries <- rice2 %>%
+  group_by(Country) %>%
+  summarise(avg_yield = mean(Yield, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(avg_yield)) %>%
+  slice(1:12) %>%
+  pull(Country)
+
+rice_wide <- rice2 %>%
+  filter(Country %in% top_countries) %>%
+  select(Country, Year, Yield) %>%
+  pivot_wider(names_from = Year, values_from = Yield) %>%
+  drop_na() %>%
+  mutate(Country = fct_reorder(Country, `1980`))
+```
+
+::: panel-tabset
+## Plot
+
+```{r}
+p_slope <- ggplot(rice_wide) +
+  geom_segment(aes(x = 1, xend = 2, y = `1961`, yend = `1980`),
+               linewidth = 0.7, alpha = 0.85, color = "gray35") +
+  geom_point(aes(x = 1, y = `1961`), size = 2.2) +
+  geom_point(aes(x = 2, y = `1980`), size = 2.2) +
+  ggrepel::geom_text_repel(
+    aes(x = 1, y = `1961`, label = Country),
+    direction = "y", hjust = 1.1, size = 3,
+    segment.color = "gray70", max.overlaps = Inf
+  ) +
+  ggrepel::geom_text_repel(
+    aes(x = 2, y = `1980`, label = Country),
+    direction = "y", hjust = -0.1, size = 3,
+    segment.color = "gray70", max.overlaps = Inf
+  ) +
+  scale_x_continuous(breaks = c(1, 2), labels = c("1961", "1980")) +
+  labs(
+    title = "Rice yield change of top Asian countries: 1961 vs 1980",
+    subtitle = "Slope indicates direction and magnitude of change",
+    x = NULL, y = "Yield"
+  ) +
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  coord_cartesian(clip = "off") +
+  theme(plot.margin = margin(5.5, 50, 5.5, 50))
+
+p_slope
+```
+
+## Code
+
+```{r}
+# ggrepel prevents label overlap without relying on fragile slopegraph packages
+```
+:::
+
+**Observation:** Countries with steeper upward slopes improved yield substantially from 1961 to 1980.
+
+**Insight:** This two-point comparison is easy to read, but it hides intermediate-year volatility. A small-multiples time series would complement it well.
+
+## 17.8 Conclusion
+
+-   Locale (`LC_TIME`) is critical on non-English systems; otherwise weekday factors may become `NA`.
+-   Clean timezone values before `with_tz()` to prevent rendering failures.
+-   Calendar heatmap + cycle plot + slopegraph provide complementary views of time patterns: rhythm, seasonality, and change.

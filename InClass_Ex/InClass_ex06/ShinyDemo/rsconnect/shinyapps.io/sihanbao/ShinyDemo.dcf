@@ -1,0 +1,12 @@
+name: ShinyDemo
+title: ShinyDemo
+username: sihanbao
+account: sihanbao
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16729707
+bundleId: 11610440
+url: https://sihanbao.shinyapps.io/ShinyDemo/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
