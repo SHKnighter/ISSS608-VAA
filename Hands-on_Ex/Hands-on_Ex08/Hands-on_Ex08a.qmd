@@ -1,0 +1,381 @@
+---
+title: "Hands-on Exercise 21: Choropleth Mapping with R"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    number-sections: true
+    code-fold: true
+    code-tools: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## 21.1 Overview
+
+Choropleth mapping is used to visualise areal differences by shading polygons with attribute values. In this exercise, I follow the lecturer's workflow to build choropleth maps for Singapore planning subzones. Compared with a raw default map, the later sections show how data classification, colour scheme and layout settings can improve readability.
+
+## 21.2 Getting Started
+
+```{r}
+pacman::p_load(sf, tmap, tidyverse, readr)
+```
+
+## 21.3 Importing Data into R
+
+### 21.3.1 Import geospatial data
+
+```{r}
+mpsz <- st_read("../data/MP14_SUBZONE_WEB_PL.shp")
+```
+
+### 21.3.2 Import attribute data
+
+```{r}
+popdata <- read_csv("../data/respopagesextod2011to2020.csv", show_col_types = FALSE)
+```
+
+```{r}
+knitr::kable(head(popdata, 6))
+```
+
+### 21.3.3 Data preparation
+
+To match the lecturer's example, I prepare the year 2020 table and derive the following variables:
+
+-   `YOUNG`: age group 0 to 24
+-   `ECONOMY ACTIVE`: age group 25 to 64
+-   `AGED`: age group 65 and above
+-   `TOTAL`: total population
+-   `DEPENDENCY`: `(YOUNG + AGED) / ECONOMY ACTIVE`
+
+```{r}
+popdata2020 <- popdata %>%
+  filter(Time == 2020) %>%
+  mutate(
+    age_start = readr::parse_number(AG),
+    age_group = case_when(
+      age_start < 25 ~ "YOUNG",
+      age_start < 65 ~ "ECONOMY ACTIVE",
+      TRUE ~ "AGED"
+    )
+  ) %>%
+  group_by(PA, SZ, age_group) %>%
+  summarise(POP = sum(Pop), .groups = "drop") %>%
+  tidyr::complete(
+    PA,
+    SZ,
+    age_group = c("YOUNG", "ECONOMY ACTIVE", "AGED"),
+    fill = list(POP = 0)
+  ) %>%
+  pivot_wider(names_from = age_group, values_from = POP) %>%
+  mutate(
+    TOTAL = YOUNG + `ECONOMY ACTIVE` + AGED,
+    DEPENDENCY = (YOUNG + AGED) / `ECONOMY ACTIVE`
+  ) %>%
+  select(PA, SZ, YOUNG, `ECONOMY ACTIVE`, AGED, TOTAL, DEPENDENCY)
+```
+
+```{r}
+knitr::kable(head(popdata2020, 6))
+```
+
+### 21.3.4 Joining attribute data and geospatial data
+
+To make the join work correctly, I standardise the case of the planning area and subzone names first.
+
+```{r}
+popdata2020 <- popdata2020 %>%
+  mutate(
+    PA = toupper(PA),
+    SZ = toupper(SZ)
+  ) %>%
+  filter(`ECONOMY ACTIVE` > 0)
+
+mpsz_pop2020 <- left_join(mpsz, popdata2020, by = c("SUBZONE_N" = "SZ"))
+```
+
+## 21.4 Choropleth Mapping using `tmap`
+
+### 21.4.1 Quick choropleth map using `qtm()`
+
+```{r}
+tmap_mode("plot")
+qtm(mpsz_pop2020, fill = "DEPENDENCY")
+```
+
+**Observation:** This first map is quick to produce, but the styling is still very basic. The legend and border treatment are good enough for exploration, but not yet presentation quality.
+
+### 21.4.2 A cleaner choropleth map using map elements
+
+::: panel-tabset
+## Plot
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(
+      style = "quantile",
+      n = 5,
+      values = "brewer.blues"
+    ),
+    fill.legend = tm_legend(title = "Dependency ratio")
+  ) +
+  tm_title("Distribution of Dependency Ratio by planning subzone") +
+  tm_layout(frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type = "8star", size = 2) +
+  tm_grid(alpha = 0.2) +
+  tm_credits(
+    "Source: Planning sub-zone boundary from Urban Redevelopment Authority (URA)\nPopulation data from Department of Statistics DOS",
+    position = c("left", "bottom")
+  )
+```
+
+## Code
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(
+      style = "quantile",
+      n = 5,
+      values = "brewer.blues"
+    ),
+    fill.legend = tm_legend(title = "Dependency ratio")
+  ) +
+  tm_title("Distribution of Dependency Ratio by planning subzone") +
+  tm_layout(frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type = "8star", size = 2) +
+  tm_grid(alpha = 0.2) +
+  tm_credits(
+    "Source: Planning sub-zone boundary from Urban Redevelopment Authority (URA)\nPopulation data from Department of Statistics DOS",
+    position = c("left", "bottom")
+  )
+```
+:::
+
+**Insight:** This version looks much closer to a cartographic map. The title, legend, compass and credits make the output easier to interpret and more suitable for reporting.
+
+### 21.4.3 Drawing a base map
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons()
+```
+
+### 21.4.4 Drawing choropleth map by `tm_polygons()`
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons("DEPENDENCY")
+```
+
+### 21.4.5 Separating fill and border
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_fill("DEPENDENCY") +
+  tm_borders(lwd = 0.1, alpha = 0.5)
+```
+
+**Observation:** When borders are added separately, the subzone boundaries become much clearer, especially in the dense central region.
+
+### 21.4.6 Data classification methods of `tmap`
+
+#### 21.4.6.1 Jenks classification
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(style = "jenks", n = 5)
+  ) +
+  tm_borders(fill_alpha = 0.5)
+```
+
+#### 21.4.6.2 Equal classification
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(style = "equal", n = 5)
+  ) +
+  tm_borders(fill_alpha = 0.5)
+```
+
+#### 21.4.6.3 Quantile classification
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(style = "quantile", n = 5)
+  ) +
+  tm_borders(fill_alpha = 0.5)
+```
+
+**Student note:** The quantile version spreads areas more evenly across classes, so visually it is easier to compare the subzones. In contrast, equal intervals tend to leave many observations in similar light shades when the distribution is uneven.
+
+#### 21.4.6.4 Fixed breaks
+
+It is a good habit to check summary statistics before deciding custom breaks.
+
+```{r}
+summary(mpsz_pop2020$DEPENDENCY)
+```
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    breaks = c(0, 0.60, 0.70, 0.80, 0.90, 1.00)
+  ) +
+  tm_borders(fill_alpha = 0.5)
+```
+
+**Observation:** With fixed breaks, the legend becomes more policy-friendly because the cut points are chosen deliberately rather than fully determined by the software.
+
+### 21.4.7 Colour scheme
+
+#### 21.4.7.1 Green palette
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(
+      style = "quantile",
+      n = 5,
+      values = "brewer.greens"
+    )
+  ) +
+  tm_borders(fill_alpha = 0.5)
+```
+
+#### 21.4.7.2 Reversed green palette
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(
+      style = "quantile",
+      n = 5,
+      values = "-brewer.greens"
+    )
+  ) +
+  tm_borders(fill_alpha = 0.5)
+```
+
+**Student note:** I personally prefer the blue palette here because it looks slightly cleaner. But the reversed palette is useful when I want darker colours to emphasise lower values instead of higher values.
+
+### 21.4.8 Map layouts
+
+#### 21.4.8.1 Map legend and title
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(
+      style = "jenks",
+      n = 5,
+      values = "brewer.greens"
+    ),
+    fill.legend = tm_legend(title = "Dependency ratio")
+  ) +
+  tm_borders(fill_alpha = 0.5) +
+  tm_title("Distribution of Dependency Ratio by planning subzone\n(Jenks classification)")
+```
+
+#### 21.4.8.2 Map style
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_fill(
+    "DEPENDENCY",
+    style = "quantile",
+    palette = "Greens"
+  ) +
+  tm_borders(alpha = 0.5) +
+  tm_style("classic")
+```
+
+#### 21.4.8.3 Cartographic furniture
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    "DEPENDENCY",
+    fill.scale = tm_scale_intervals(
+      style = "quantile",
+      n = 5,
+      values = "brewer.blues"
+    ),
+    fill.legend = tm_legend(title = "Dependency ratio")
+  ) +
+  tm_title("Distribution of Dependency Ratio by planning subzone") +
+  tm_layout(frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type = "8star", size = 2) +
+  tm_grid(alpha = 0.2) +
+  tm_credits(
+    "Source: Planning Sub-zone boundary from Urban Redevelopment Authority (URA)\nPopulation data from Department of Statistics DOS",
+    position = c("left", "bottom")
+  )
+```
+
+### 21.4.9 Drawing small multiple choropleth maps
+
+#### 21.4.9.1 Multiple values in one aesthetic argument
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_fill(c("YOUNG", "AGED"),
+          style = "equal",
+          palette = "Blues") +
+  tm_layout(legend.position = c("right", "bottom")) +
+  tm_borders(alpha = 0.5) +
+  tm_style("white")
+```
+
+#### 21.4.9.2 Multiple small maps using `tm_polygons()`
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons(
+    c("DEPENDENCY", "AGED"),
+    style = c("equal", "quantile"),
+    palette = list("Blues", "Greens")
+  ) +
+  tm_layout(legend.position = c("right", "bottom"))
+```
+
+#### 21.4.9.3 Group-by variable using `tm_facets()`
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_fill(
+    "DEPENDENCY",
+    style = "quantile",
+    palette = "Blues",
+    midpoint = NA
+  ) +
+  tm_facets(by = "REGION_N", free.coords = TRUE) +
+  tm_layout(
+    legend.show = FALSE,
+    title.position = c("center", "center"),
+    title.size = 1.0
+  ) +
+  tm_borders(alpha = 0.5)
+```
+
+**Final reflection:** Across all versions, the same data can give different impressions depending on classification and layout. This exercise reminded me that choropleth mapping is not just about plotting values. It is also about choosing a design that supports a fair visual comparison.

@@ -1,0 +1,132 @@
+---
+title: "Hands-on Exercise 22: Visualising Geospatial Point Data"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    number-sections: true
+    code-fold: true
+    code-tools: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## 22.1 Overview
+
+This exercise focuses on proportional symbol mapping. Instead of shading polygons, we now map point locations and use symbol size to represent the magnitude of an attribute. Following the lecturer's example, I use Singapore Pools outlets and branches to create interactive symbol maps with `tmap`.
+
+## 22.2 Getting Started
+
+```{r}
+pacman::p_load(sf, tmap, tidyverse, readr)
+```
+
+## 22.3 Geospatial Data Wrangling
+
+### 22.3.1 Import the data
+
+```{r}
+sgpools <- read_csv("../data/SGPools_svy21.csv", show_col_types = FALSE)
+```
+
+```{r}
+knitr::kable(head(sgpools, 10))
+```
+
+### 22.3.2 Create an `sf` data frame from an aspatial data frame
+
+```{r}
+sgpools_sf <- st_as_sf(
+  sgpools,
+  coords = c("XCOORD", "YCOORD"),
+  crs = 3414
+)
+```
+
+```{r}
+sgpools_sf
+```
+
+**Observation:** After conversion, the data becomes a point feature collection. The geometry column is added automatically, and the CRS is Singapore SVY21.
+
+## 22.4 Drawing Proportional Symbol Map
+
+### 22.4.1 Start with interactive mode
+
+```{r}
+tmap_mode("view")
+```
+
+### 22.4.2 Basic interactive point symbol map
+
+```{r}
+tm_shape(sgpools_sf) +
+  tm_bubbles(
+    fill = "red",
+    size = 1,
+    col = "black",
+    lwd = 1
+  )
+```
+
+**Student note:** This version is useful for checking the outlet locations quickly, but all points still look equally important because the size is fixed.
+
+### 22.4.3 Make it proportional
+
+```{r}
+tm_shape(sgpools_sf) +
+  tm_bubbles(
+    fill = "red",
+    size = "Gp1Gp2 Winnings",
+    col = "black",
+    lwd = 1
+  )
+```
+
+**Observation:** Once symbol size is linked to winnings, the large-value outlets become much easier to spot. This is a more meaningful design because size is now encoding data rather than acting as decoration.
+
+### 22.4.4 Add outlet type as colour
+
+```{r}
+tm_shape(sgpools_sf) +
+  tm_bubbles(
+    fill = "OUTLET TYPE",
+    size = "Gp1Gp2 Winnings",
+    col = "black",
+    lwd = 1
+  )
+```
+
+**Insight:** Combining size and colour adds another layer of comparison. I can now compare both outlet type and winnings at the same time, although too many visual variables would eventually make the map harder to read.
+
+### 22.4.5 Faceted interactive map
+
+```{r}
+tm_shape(sgpools_sf) +
+  tm_bubbles(
+    fill = "OUTLET TYPE",
+    size = "Gp1Gp2 Winnings",
+    col = "black",
+    lwd = 1
+  ) +
+  tm_facets(
+    by = "OUTLET TYPE",
+    nrow = 1,
+    sync = TRUE
+  )
+```
+
+**Student note:** The synced faceted view is helpful because it separates Branch and Outlet into two windows while keeping the same zoom level. That makes the comparison much cleaner.
+
+### 22.4.6 Switch back to plot mode
+
+```{r}
+tmap_mode("plot")
+```
+
+## 22.5 Short reflection
+
+Compared with choropleth maps, proportional symbol maps are better when the data is attached to exact locations rather than areas. In this example, symbol size is a natural choice because winnings are numeric and vary by outlet. The faceted interactive map is my favourite version because it balances detail and readability.

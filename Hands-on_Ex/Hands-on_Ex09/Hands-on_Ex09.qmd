@@ -1,0 +1,768 @@
+---
+title: "Hands-on Exercise 09: Modelling, Visualising and Analysing Network Data"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    number-sections: true
+    code-fold: true
+    code-tools: true
+    df-print: paged
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+## 27.1 Overview
+
+In this hands-on exercise, I worked on a communication network dataset and used R to model, visualise and analyse network structure. Compared with ordinary tabular analysis, network analysis focuses more on relationships among actors. In this case, employees are represented as nodes and email interactions are represented as edges.
+
+This chapter is useful because it shows how tidy data can be transformed into graph objects and then explored from different angles, such as layout, centrality, community structure and interactive visualisation.
+
+## 27.2 Getting Started
+
+### 27.2.1 Installing and loading the required packages
+
+```{r}
+pacman::p_load(
+  tidyverse,
+  lubridate,
+  tidygraph,
+  igraph,
+  ggraph,
+  visNetwork,
+  knitr,
+  scales,
+  viridis,
+  RColorBrewer,
+  ggrepel,
+  patchwork,
+  htmlwidgets
+)
+```
+
+### 27.2.2 Setting global options
+
+I set the time locale to English because my computer system is in Chinese. This avoids weekday labels becoming Chinese and then failing to match English factor levels in later plots.
+
+```{r}
+Sys.setlocale("LC_TIME", "English")
+
+theme_set(theme_minimal(base_size = 12))
+
+options(
+  dplyr.summarise.inform = FALSE,
+  scipen = 999
+)
+```
+
+## 27.3 The Data
+
+### 27.3.1 Importing the edges and nodes data
+
+```{r}
+edges_raw <- readr::read_csv("../data/GAStech_email_edge-v2.csv", show_col_types = FALSE) %>%
+  rename_with(~tolower(gsub("[^A-Za-z0-9]+", "_", .x)))
+
+nodes_raw <- readr::read_csv("../data/GAStech_email_node.csv", show_col_types = FALSE) %>%
+  rename_with(~tolower(gsub("[^A-Za-z0-9]+", "_", .x)))
+```
+
+### 27.3.2 Previewing the nodes data
+
+```{r}
+knitr::kable(head(nodes_raw, 8), caption = "Preview of employee nodes data")
+```
+
+Observation: The node file stores employee-level information such as identity and role-related attributes.
+
+Insight: These attributes are important because later I can map them to node colour, group, or facet, which makes the network much easier to interpret.
+
+### 27.3.3 Importing network data from files
+
+```{r}
+knitr::kable(head(edges_raw, 8), caption = "Preview of email edges data")
+```
+
+Observation: The edge file records sender-receiver relationships and includes a date field.
+
+Insight: This means the data is suitable not only for structural network analysis but also for some simple time-oriented comparison, such as weekday patterns.
+
+### 27.3.4 Helper functions for robust wrangling
+
+```{r}
+pick_first_existing <- function(df, candidates) {
+  nm <- intersect(candidates, names(df))
+  if (length(nm) == 0) NA_character_ else nm[1]
+}
+
+parse_sent_datetime <- function(x) {
+  suppressWarnings(
+    lubridate::parse_date_time(
+      x,
+      orders = c(
+        "mdy HMS", "mdy HM", "mdy IMS p", "mdy IM p", "mdy",
+        "ymd HMS", "ymd HM", "ymd",
+        "dmy HMS", "dmy HM", "dmy"
+      )
+    )
+  )
+}
+```
+
+### 27.3.5 Wrangling the data
+
+```{r}
+edge_from_col <- pick_first_existing(edges_raw, c("source", "from", "sender", "src"))
+edge_to_col   <- pick_first_existing(edges_raw, c("target", "to", "receiver", "dst"))
+edge_date_col <- pick_first_existing(edges_raw, c("sentdate", "sent_date", "date", "timestamp", "time"))
+
+node_id_col    <- pick_first_existing(nodes_raw, c("id", "name", "label", "email"))
+node_label_col <- pick_first_existing(nodes_raw, c("label", "name", "id", "email"))
+node_dept_col  <- pick_first_existing(nodes_raw, c("department", "dept", "unit", "division"))
+node_title_col <- pick_first_existing(nodes_raw, c("title", "position", "role", "job_title"))
+
+edges_clean <- edges_raw %>%
+  mutate(across(everything(), as.character)) %>%
+  transmute(
+    from = .data[[edge_from_col]],
+    to   = .data[[edge_to_col]],
+    sent_dt = if (!is.na(edge_date_col)) parse_sent_datetime(.data[[edge_date_col]]) else as.POSIXct(NA),
+    sent_date = as.Date(sent_dt)
+  ) %>%
+  filter(!is.na(from), !is.na(to), from != to) %>%
+  mutate(
+    weekday = weekdays(sent_date),
+    weekday = factor(
+      weekday,
+      levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
+      ordered = TRUE
+    )
+  )
+
+nodes_clean <- nodes_raw %>%
+  mutate(across(everything(), as.character)) %>%
+  transmute(
+    name = .data[[node_id_col]],
+    label = .data[[node_label_col]],
+    department = if (!is.na(node_dept_col)) .data[[node_dept_col]] else "Unknown",
+    title = if (!is.na(node_title_col)) .data[[node_title_col]] else "Unknown"
+  ) %>%
+  distinct(name, .keep_all = TRUE)
+
+missing_nodes <- tibble(
+  name = setdiff(unique(c(edges_clean$from, edges_clean$to)), nodes_clean$name),
+  label = setdiff(unique(c(edges_clean$from, edges_clean$to)), nodes_clean$name),
+  department = "Unknown",
+  title = "Unknown"
+)
+
+nodes_clean <- bind_rows(nodes_clean, missing_nodes) %>%
+  distinct(name, .keep_all = TRUE)
+```
+
+### 27.3.6 Reviewing the revised data fields
+
+```{r}
+knitr::kable(head(edges_clean, 8), caption = "Revised edge data after wrangling")
+```
+
+Observation: The date field has been converted into a proper datetime and weekday has been standardised.
+
+Insight: This cleaned structure is much safer for later visualisation because it avoids common issues caused by inconsistent text labels or date formats.
+
+### 27.3.7 Aggregating the edge list
+
+```{r}
+edges_agg <- edges_clean %>%
+  count(from, to, weekday, name = "weight")
+
+edges_total <- edges_clean %>%
+  count(from, to, name = "weight")
+
+knitr::kable(head(edges_agg, 10), caption = "Aggregated edge list by sender, receiver and weekday")
+```
+
+Observation: Instead of keeping every email row, the data is now summarised into communication ties with weights.
+
+Insight: This step makes the graph less noisy and helps highlight stronger relationships between employees.
+
+## 27.4 Creating Network Objects Using tidygraph
+
+### 27.4.1 The tbl_graph object
+
+```{r}
+graph_tbl <- igraph::graph_from_data_frame(
+  d = edges_total,
+  vertices = nodes_clean,
+  directed = TRUE
+) %>%
+  tidygraph::as_tbl_graph()
+```
+
+### 27.4.2 Adding node metrics
+
+```{r}
+graph_metrics <- graph_tbl %>%
+  activate(nodes) %>%
+  mutate(
+    indegree = centrality_degree(mode = "in"),
+    outdegree = centrality_degree(mode = "out"),
+    degree = centrality_degree(mode = "all"),
+    betweenness = centrality_betweenness(directed = TRUE),
+    closeness = centrality_closeness(mode = "out"),
+    pagerank = centrality_pagerank(directed = TRUE)
+  )
+```
+
+### 27.4.3 Preparing subgraphs for clearer plots
+
+```{r}
+set.seed(608)
+
+top_nodes <- graph_metrics %>%
+  activate(nodes) %>%
+  as_tibble() %>%
+  slice_max(order_by = degree, n = 35) %>%
+  pull(name)
+
+graph_top <- graph_metrics %>%
+  convert(to_subgraph, name %in% top_nodes)
+
+graph_undirected <- graph_metrics %>%
+  to_undirected() %>%
+  convert(to_simple)
+```
+
+## 27.5 Plotting Static Network Graphs with ggraph
+
+### 27.5.1 Plotting a basic network graph
+
+```{r}
+set.seed(608)
+
+ggraph(graph_top, layout = "fr") +
+  geom_edge_link(alpha = 0.25, colour = "grey45") +
+  geom_node_point(size = 2.3, colour = "black") +
+  labs(
+    title = "Basic network graph",
+    subtitle = "Top employees by overall degree"
+  )
+```
+
+Observation: A dense core appears in the middle of the graph, while several smaller nodes stay around the edges.
+
+Insight: This suggests that communication is concentrated around a relatively small group of employees rather than being evenly distributed across the organisation.
+
+### 27.5.2 Changing the default network graph theme
+
+```{r}
+set.seed(608)
+
+ggraph(graph_top, layout = "fr") +
+  geom_edge_link(alpha = 0.25, colour = "grey50") +
+  geom_node_point(size = 2.5, colour = "black") +
+  theme_graph() +
+  labs(
+    title = "Basic network graph with theme_graph()",
+    subtitle = "A cleaner graph theme improves readability"
+  )
+```
+
+Observation: The graph looks cleaner after removing the usual axes and panel elements.
+
+Insight: For network plots, axes do not usually carry direct meaning, so a graph-specific theme helps the audience focus on structure instead.
+
+### 27.5.3 Changing the coloring of the plot
+
+```{r}
+set.seed(608)
+
+ggraph(graph_top, layout = "fr") +
+  geom_edge_link(alpha = 0.4, colour = "#FA8072") +
+  geom_node_point(size = 2.8, colour = "#FDE725") +
+  theme_graph(background = "grey10") +
+  labs(
+    title = "Network graph with customised colour scheme",
+    subtitle = "High contrast improves visual emphasis"
+  )
+```
+
+Observation: The dark background makes the nodes and links stand out much more clearly.
+
+Insight: Colour is not just decorative. In dense network visualisation, a good contrast can improve readability a lot.
+
+### 27.5.4 Working with graph layouts
+
+```{r}
+layout_tbl <- tidyr::crossing(
+  layout_name = c("fr", "kk", "graphopt", "stress", "circle", "dh"),
+  graph_id = 1
+)
+
+set.seed(608)
+
+layout_plots <- purrr::map(layout_tbl$layout_name, function(lay) {
+  ggraph(graph_top, layout = lay) +
+    geom_edge_link(alpha = 0.25, colour = "grey55") +
+    geom_node_point(aes(size = degree), colour = "#F46D43") +
+    scale_size_continuous(range = c(2, 7), guide = "none") +
+    theme_graph() +
+    labs(title = paste("layout =", lay))
+})
+
+patchwork::wrap_plots(layout_plots, ncol = 3)
+```
+
+Observation: Different layouts produce very different visual impressions even though the underlying network is exactly the same.
+
+Insight: Layout selection matters a lot in network analysis. A poor layout can hide structure, while a suitable layout can reveal clusters, bridges and hubs more clearly.
+
+### 27.5.5 Fruchterman-Reingold layout with centrality-based node size
+
+```{r}
+set.seed(608)
+
+ggraph(graph_metrics, layout = "fr") +
+  geom_edge_link(alpha = 0.10, colour = "grey65") +
+  geom_node_point(aes(size = degree), colour = "#F46D43", alpha = 0.9) +
+  scale_size_continuous(range = c(1.5, 10)) +
+  theme_graph() +
+  labs(
+    title = "Fruchterman-Reingold layout",
+    subtitle = "Node size is mapped to degree centrality"
+  )
+```
+
+Observation: A few nodes are much larger than the rest, which means they have many more connections.
+
+Insight: Degree centrality is a direct and intuitive way to identify communication hubs in this network.
+
+### 27.5.6 Adding and removing vertices and edges to form the network
+
+```{r}
+set.seed(608)
+
+graph_filtered <- graph_metrics %>%
+  activate(edges) %>%
+  filter(weight >= quantile(weight, 0.75, na.rm = TRUE)) %>%
+  activate(nodes) %>%
+  filter(degree >= quantile(degree, 0.60, na.rm = TRUE))
+
+ggraph(graph_filtered, layout = "fr") +
+  geom_edge_link(alpha = 0.35, colour = "grey35") +
+  geom_node_point(aes(size = degree, colour = department)) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_colour_brewer(palette = "Dark2") +
+  theme_graph() +
+  labs(
+    title = "Filtered network",
+    subtitle = "Only stronger edges and more connected employees are retained",
+    colour = "Department"
+  )
+```
+
+Observation: After filtering, the overall structure becomes much less cluttered and the main communication backbone is easier to see.
+
+Insight: Removing weaker edges is often useful in practice because it helps distinguish stable communication patterns from occasional contact.
+
+### 27.5.7 Modifying edge aesthetics
+
+```{r}
+set.seed(608)
+
+ggraph(graph_filtered, layout = "fr") +
+  geom_edge_link(aes(width = weight, alpha = weight), colour = "grey20") +
+  geom_node_point(aes(size = degree, colour = department)) +
+  scale_edge_width(range = c(0.3, 2.2)) +
+  scale_edge_alpha(range = c(0.15, 0.75)) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_colour_brewer(palette = "Set2") +
+  theme_graph() +
+  labs(
+    title = "Network with edge aesthetics mapped to communication intensity",
+    subtitle = "Thicker and darker lines represent stronger email ties",
+    colour = "Department"
+  )
+```
+
+Observation: Some links become much more prominent after width and alpha are mapped to edge weight.
+
+Insight: Edge aesthetics are helpful because not all connections are equally important. Weight can reveal which ties are more active or persistent.
+
+## 27.6 Creating Forest Graphs and Faceted Graphs
+
+### 27.6.1 Creating forest graphs
+
+To create a more tree-like view, I select the strongest outgoing ties from a highly connected employee and visualise a local ego network.
+
+```{r}
+central_node <- graph_metrics %>%
+  activate(nodes) %>%
+  as_tibble() %>%
+  slice_max(order_by = outdegree, n = 1) %>%
+  pull(name)
+
+ego_vertices <- igraph::ego(as.igraph(graph_metrics), order = 1, nodes = central_node, mode = "all")[[1]]
+forest_graph <- induced_subgraph(as.igraph(graph_metrics), vids = ego_vertices) %>%
+  as_tbl_graph() %>%
+  activate(nodes) %>%
+  mutate(local_degree = centrality_degree())
+
+set.seed(608)
+
+ggraph(forest_graph, layout = "tree") +
+  geom_edge_link(colour = "grey45") +
+  geom_node_point(aes(size = local_degree, colour = department)) +
+  geom_node_text(aes(label = label), repel = TRUE, size = 3) +
+  scale_colour_brewer(palette = "Dark2") +
+  theme_graph() +
+  labs(
+    title = "Tree-like local ego network",
+    subtitle = paste("A local communication structure around", central_node),
+    colour = "Department"
+  )
+```
+
+Observation: The tree layout highlights who is directly connected to the central employee and whether those contacts are spread across different departments.
+
+Insight: This kind of local view is helpful when the full network is too dense and I want to focus on one person or one communication neighbourhood.
+
+### 27.6.2 Working with facet_edges()
+
+```{r}
+edge_weekday_tbl <- edges_agg %>%
+  filter(!is.na(weekday)) %>%
+  count(weekday, sort = TRUE)
+
+top_weekdays <- edge_weekday_tbl %>%
+  slice_head(n = 4) %>%
+  pull(weekday) %>%
+  as.character()
+
+graph_by_weekday <- igraph::graph_from_data_frame(
+  edges_agg %>% filter(as.character(weekday) %in% top_weekdays),
+  vertices = nodes_clean,
+  directed = TRUE
+) %>%
+  as_tbl_graph()
+
+set.seed(608)
+
+ggraph(graph_by_weekday, layout = "fr") +
+  geom_edge_link(aes(alpha = weight), colour = "grey35") +
+  geom_node_point(colour = "#F46D43", size = 2.8) +
+  facet_edges(~weekday) +
+  theme_graph() +
+  labs(
+    title = "Faceted network by weekday using facet_edges()",
+    subtitle = "Edges are separated by weekday while node positions remain stable"
+  )
+```
+
+Observation: The number and density of edges vary across weekdays.
+
+Insight: This suggests that communication intensity is not constant during the week. Some days appear busier and more interconnected than others.
+
+### 27.6.3 A framed facet graph
+
+```{r}
+set.seed(608)
+
+ggraph(graph_by_weekday, layout = "fr") +
+  geom_edge_link(aes(alpha = weight), colour = "#2C7FB8") +
+  geom_node_point(aes(colour = department), size = 2.5) +
+  facet_edges(~weekday) +
+  scale_colour_brewer(palette = "Set2") +
+  theme_graph() +
+  theme(strip.text = element_text(face = "bold")) +
+  labs(
+    title = "Framed faceted network graph",
+    subtitle = "Department colours help compare node groups across weekday panels",
+    colour = "Department"
+  )
+```
+
+Observation: The coloured nodes make it easier to compare whether the same departments remain active across different weekday panels.
+
+Insight: Faceted graphs are useful because they keep the overall structure comparable while allowing one variable to change panel by panel.
+
+### 27.6.4 Working with facet_nodes()
+
+```{r}
+major_dept <- nodes_clean %>%
+  count(department, sort = TRUE) %>%
+  slice_head(n = 6) %>%
+  pull(department)
+
+graph_major_dept <- graph_metrics %>%
+  activate(nodes) %>%
+  mutate(department = if_else(department %in% major_dept, department, "Other"))
+
+set.seed(608)
+
+ggraph(graph_major_dept, layout = "fr") +
+  geom_edge_link(alpha = 0.08, colour = "grey55") +
+  geom_node_point(aes(colour = department, size = degree)) +
+  facet_nodes(~department) +
+  scale_colour_brewer(palette = "Set2") +
+  scale_size_continuous(range = c(1.5, 8), guide = "none") +
+  theme_graph() +
+  labs(
+    title = "Faceted network by department using facet_nodes()",
+    subtitle = "Each panel highlights one department while preserving the common layout",
+    colour = "Department"
+  )
+```
+
+Observation: Some departments appear more central and densely connected than others.
+
+Insight: This kind of view is useful for understanding whether communication is balanced across organisational units or dominated by a few key groups.
+
+## 27.7 Network Metrics Analysis
+
+### 27.7.1 Computing centrality indices
+
+```{r}
+centrality_long <- graph_metrics %>%
+  activate(nodes) %>%
+  as_tibble() %>%
+  select(label, degree, indegree, outdegree, betweenness, closeness, pagerank) %>%
+  slice_max(order_by = degree, n = 10) %>%
+  pivot_longer(-label, names_to = "metric", values_to = "value")
+
+ggplot(centrality_long, aes(x = reorder(label, value), y = value, fill = metric)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Top 10 employees by degree and other centrality measures",
+    x = NULL,
+    y = "Metric value",
+    fill = "Metric"
+  )
+```
+
+Observation: The top employees under degree centrality also tend to score relatively high in some other metrics, but not always in exactly the same order.
+
+Insight: Different centrality measures capture different meanings. Degree shows how connected a node is, while betweenness and closeness reflect more structural roles.
+
+### 27.7.2 Visualising centrality relationships
+
+```{r}
+node_metrics_tbl <- graph_metrics %>%
+  activate(nodes) %>%
+  as_tibble()
+
+ggplot(node_metrics_tbl, aes(x = degree, y = betweenness, colour = department)) +
+  geom_point(alpha = 0.75, size = 3) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.6, colour = "grey25") +
+  scale_colour_brewer(palette = "Dark2") +
+  labs(
+    title = "Relationship between degree and betweenness",
+    subtitle = "More connected employees often also play bridging roles",
+    x = "Degree centrality",
+    y = "Betweenness centrality",
+    colour = "Department"
+  )
+```
+
+Observation: Nodes with higher degree often have higher betweenness, although there is still noticeable variation.
+
+Insight: This means some highly connected employees are also important bridges, but a node can be popular without necessarily controlling many shortest paths.
+
+### 27.7.3 Visualising network matrix
+
+```{r}
+mat_nodes <- graph_metrics %>%
+  activate(nodes) %>%
+  as_tibble() %>%
+  slice_max(order_by = degree, n = 20) %>%
+  pull(name)
+
+mat_graph <- graph_metrics %>%
+  convert(to_subgraph, name %in% mat_nodes)
+
+adj_mat <- as.matrix(igraph::as_adjacency_matrix(as.igraph(mat_graph), attr = "weight", sparse = FALSE))
+
+adj_df <- as.data.frame(adj_mat) %>%
+  mutate(from = rownames(adj_mat)) %>%
+  pivot_longer(-from, names_to = "to", values_to = "weight")
+
+ggplot(adj_df, aes(x = from, y = to, fill = log1p(weight))) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "C") +
+  coord_equal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Adjacency matrix view of the top 20 employees",
+    x = "Sender",
+    y = "Receiver",
+    fill = "log1p(weight)"
+  )
+```
+
+Observation: The matrix shows clusters of stronger communication, as well as several sender-receiver pairs with almost no activity.
+
+Insight: A matrix view complements node-link diagrams well because it reduces overlap and helps detect dense blocks more clearly.
+
+### 27.7.4 Visualising community
+
+```{r}
+community_obj <- cluster_louvain(as.igraph(graph_undirected), weights = E(as.igraph(graph_undirected))$weight)
+
+graph_community <- graph_undirected %>%
+  activate(nodes) %>%
+  mutate(community = as.factor(membership(community_obj)))
+
+set.seed(608)
+
+ggraph(graph_community, layout = "fr") +
+  geom_edge_link(alpha = 0.12, colour = "grey60") +
+  geom_node_point(aes(colour = community, size = degree)) +
+  scale_colour_brewer(palette = "Set3") +
+  scale_size_continuous(range = c(2, 9)) +
+  theme_graph() +
+  labs(
+    title = "Community structure of the communication network",
+    subtitle = "Louvain clustering reveals subgroups inside the organisation",
+    colour = "Community"
+  )
+```
+
+Observation: The network can be separated into several communities instead of forming one completely homogeneous mass.
+
+Insight: Community detection is useful because it helps reveal substructures that may correspond to departments, work teams, or recurring collaboration groups.
+
+## 27.8 Building Interactive Network Graph with visNetwork
+
+### 27.8.1 Data preparation
+
+```{r}
+vis_nodes <- graph_community %>%
+  activate(nodes) %>%
+  as_tibble() %>%
+  mutate(
+    id = name,
+    label = label,
+    value = scales::rescale(degree, to = c(8, 35)),
+    group = department,
+    title = paste0(
+      "<p><b>", label, "</b><br>",
+      "Department: ", department, "<br>",
+      "Title: ", title, "<br>",
+      "Degree: ", round(degree, 0), "<br>",
+      "Betweenness: ", round(betweenness, 2), "<br>",
+      "Community: ", community, "</p>"
+    )
+  ) %>%
+  select(id, label, value, group, title, community)
+
+edge_tbl <- graph_community %>%
+  activate(edges) %>%
+  as_tibble()
+
+if (!"weight" %in% names(edge_tbl)) {
+  edge_tbl <- edge_tbl %>%
+    mutate(weight = 1)
+}
+
+vis_edges <- edge_tbl %>%
+  transmute(
+    from,
+    to,
+    value = weight,
+    title = paste0("Email count: ", weight),
+    arrows = "to"
+  )
+```
+
+### 27.8.2 Plotting the first interactive network graph
+
+```{r}
+visNetwork(vis_nodes, vis_edges, width = "100%", height = "650px") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+  visEdges(smooth = FALSE, color = list(opacity = 0.35)) %>%
+  visNodes(borderWidth = 1) %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) %>%
+  visLegend()
+```
+
+Observation: The interactive graph is much easier to explore because I can zoom, drag, hover and inspect node details.
+
+Insight: For dense networks, interactivity is very useful because static plots can quickly become crowded when many nodes and edges are shown together.
+
+### 27.8.3 Working with layout
+
+```{r}
+visNetwork(vis_nodes, vis_edges, width = "100%", height = "650px") %>%
+  visIgraphLayout(layout = "layout_nicely") %>%
+  visEdges(smooth = FALSE, color = list(opacity = 0.30)) %>%
+  visPhysics(solver = "forceAtlas2Based") %>%
+  visOptions(highlightNearest = list(enabled = TRUE, degree = 1)) %>%
+  visInteraction(navigationButtons = TRUE) %>%
+  visLegend()
+```
+
+Observation: Different interactive layouts arrange the same network in slightly different ways.
+
+Insight: Just like static layouts, interactive layouts also affect how easily users can interpret clusters and hubs.
+
+### 27.8.4 Working with interactive buttons: groups
+
+```{r}
+visNetwork(vis_nodes, vis_edges, width = "100%", height = "650px") %>%
+  visIgraphLayout(layout = "layout_with_kk") %>%
+  visEdges(smooth = FALSE, color = list(opacity = 0.25)) %>%
+  visOptions(
+    highlightNearest = TRUE,
+    selectedBy = "group",
+    nodesIdSelection = TRUE
+  ) %>%
+  visInteraction(navigationButtons = TRUE) %>%
+  visLegend()
+```
+
+Observation: Group-based filtering helps focus on one department at a time and reduces visual overload.
+
+Insight: This function is practical for presentations because users can quickly check where one organisational group sits inside the wider network.
+
+### 27.8.5 Working with interactive buttons: community
+
+```{r}
+vis_nodes_comm <- vis_nodes %>%
+  mutate(group = paste("Community", community))
+
+visNetwork(vis_nodes_comm, vis_edges, width = "100%", height = "650px") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+  visEdges(smooth = FALSE, color = list(opacity = 0.25)) %>%
+  visOptions(
+    highlightNearest = TRUE,
+    selectedBy = "group",
+    nodesIdSelection = TRUE
+  ) %>%
+  visInteraction(navigationButtons = TRUE) %>%
+  visLegend()
+```
+
+Observation: When the nodes are grouped by community instead of department, the subgroup structure becomes even more obvious.
+
+Insight: This shows that detected communication communities are not necessarily identical to formal organisational departments.
+
+## 27.9 Conclusion
+
+Overall, this exercise helped me understand that network analysis is not only about drawing connected dots. It also involves choosing suitable graph objects, layouts, aesthetics and metrics to reveal meaningful structure. In this email network, I observed a dense core, several important hub nodes, and a visible community structure.
+
+From a student perspective, the most useful lesson is that one network can look very different depending on how it is visualised. Because of that, it is important to compare more than one layout or metric before making conclusions.
+
+## 27.10 References
+
+Wickham, H., Navarro, D., & Pedersen, T. L. (2024). *ggplot2: Elegant Graphics for Data Analysis*.
+
+Pedersen, T. L. (2024). *ggraph: An Implementation of Grammar of Graphics for Graphs and Networks*.
+
+Csardi, G., & Nepusz, T. (2006). *The igraph software package for complex network research*.
+
+Almende B.V. and Contributors. (2024). *visNetwork: Network Visualization using vis.js Library*.
