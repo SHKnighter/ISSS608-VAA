@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 22: Visualising Geospatial Point Data"
+title: "Hands-on Exercise 8B: Visualising Geospatial Point Data"
 author: "Bao Sihan"
 format:
   html:

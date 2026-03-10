@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 21: Choropleth Mapping with R"
+title: "Hands-on Exercise 8A: Choropleth Mapping with R"
 author: "Bao Sihan"
 format:
   html:
