@@ -1,0 +1,392 @@
+---
+title: "Take-Home Exercise 2: Data Preparation and Exploratory Data Analysis"
+author: "Bao Sihan"
+date: last-modified
+format:
+  html:
+    theme: flatly
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    code-tools: true
+    df-print: paged
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+## Introduction
+
+This page presents the data preparation workflow and the exploratory data analysis (EDA) module for our team project based on the **COFINFAD: Colombian Fintech Financial Analytics Dataset**. The dataset contains one customer-level table and one transaction-level table. For this module, I first combine the two sources into a customer-level analytical dataset, and then use a series of visualisations to understand customer profile, transaction intensity, spending distribution, and temporal activity patterns.
+
+The purpose of this page is twofold. First, it documents the shared preparation logic that can also support the clustering and decision tree modules prepared by my teammates. Second, it focuses on broad exploratory analysis so that the later confirmatory module can build on a clearer understanding of the data structure and the main behavioural patterns.
+
+## Installing and loading the required packages
+
+```{r}
+required_packages <- c(
+  "tidyverse", "plotly", "DT", "janitor", "lubridate",
+  "scales", "RColorBrewer", "patchwork", "knitr"
+)
+
+for (pkg in required_packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cloud.r-project.org")
+    library(pkg, character.only = TRUE)
+  }
+}
+
+Sys.setlocale("LC_TIME", "English")
+theme_set(theme_minimal(base_size = 12))
+options(scipen = 999)
+set.seed(6082)
+```
+
+## Data preparation
+
+### Reading the two source files
+
+```{r}
+customer_data <- readr::read_csv("../data/customer_data.csv", show_col_types = FALSE)
+transactions_data <- readr::read_csv("../data/transactions_data.csv", show_col_types = FALSE)
+
+dim(customer_data)
+dim(transactions_data)
+```
+
+The customer table stores demographic, product adoption, satisfaction, and customer-level behaviour variables. The transaction table stores the detailed transaction records with transaction date, amount, and transaction type. Since this EDA module needs both customer profile and transaction behaviour, both tables are required.
+
+### Cleaning and merging the two datasets
+
+The following code follows the same shared preparation logic used by our team. I kept the main structure from my teammate's workflow and only added a few safe derived variables that are helpful for plotting.
+
+```{r}
+# clean column names
+customer_data <- customer_data %>% janitor::clean_names()
+transactions_data <- transactions_data %>% janitor::clean_names()
+
+# inspect names without printing long outputs
+customer_cols <- names(customer_data)
+transaction_cols <- names(transactions_data)
+
+# convert date if a date column exists
+if ("date" %in% names(transactions_data)) {
+  transactions_data <- transactions_data %>%
+    dplyr::mutate(date = as.Date(date))
+}
+
+# helper function for dominant transaction type
+mode_value <- function(x) {
+  x <- x[!is.na(x)]
+  if (length(x) == 0) return(NA_character_)
+  names(sort(table(x), decreasing = TRUE))[1]
+}
+
+# aggregate transaction-level data into customer-level behavioural indicators
+tx_summary <- transactions_data %>%
+  dplyr::group_by(customer_id) %>%
+  dplyr::summarise(
+    tx_total_count = dplyr::n(),
+    tx_avg_amount = mean(amount, na.rm = TRUE),
+    tx_total_amount = sum(amount, na.rm = TRUE),
+    tx_type_diversity = dplyr::n_distinct(type),
+    dominant_tx_type = mode_value(type),
+    .groups = "drop"
+  )
+
+# merge customer and transaction summaries
+df <- customer_data %>%
+  dplyr::left_join(tx_summary, by = "customer_id") %>%
+  dplyr::mutate(
+    city = stringr::str_trim(stringr::str_extract(location, "^[^,]+")),
+    log_tx_total_amount = log1p(tx_total_amount),
+    log_tx_avg_amount = log1p(tx_avg_amount),
+    log_clv = log1p(customer_lifetime_value)
+  )
+```
+
+### Preview of the prepared tables
+
+::::: columns
+::: {.column width="50%"}
+```{r}
+DT::datatable(
+  head(customer_data, 8),
+  rownames = FALSE,
+  options = list(pageLength = 5, scrollX = TRUE)
+)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+DT::datatable(
+  head(transactions_data, 8),
+  rownames = FALSE,
+  options = list(pageLength = 5, scrollX = TRUE)
+)
+```
+:::
+:::::
+
+```{r}
+DT::datatable(
+  head(df, 8),
+  rownames = FALSE,
+  options = list(pageLength = 5, scrollX = TRUE)
+)
+```
+
+Observation: The merged table keeps the rich customer attributes and also adds behaviour variables directly summarised from the transaction log.
+
+Insight: This prepared dataset is more suitable for visual analytics because it lets us compare demographic factors and behavioural outcomes in one place, which is important for both the EDA and later modelling tasks.
+
+## Data overview
+
+### Missing values overview
+
+```{r}
+missing_tbl <- df %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "missing_count") %>%
+  mutate(missing_pct = missing_count / nrow(df)) %>%
+  arrange(desc(missing_count)) %>%
+  slice_head(n = 12)
+
+ggplot(missing_tbl, aes(x = reorder(variable, missing_count), y = missing_count, fill = missing_pct)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_gradient(low = "#B2DF8A", high = "#1B7837", labels = scales::percent_format()) +
+  labs(
+    title = "Top variables with missing values",
+    x = NULL,
+    y = "Number of missing values",
+    fill = "Missing %"
+  )
+```
+
+Observation: Missing values are concentrated in a small number of customer feedback and credit-related fields, while most profile and transaction variables are complete.
+
+Insight: This is useful for the current module because the main behavioural variables needed for EDA are already fairly complete. It also means that later modelling can selectively handle missingness instead of dropping the whole dataset.
+
+### Small descriptive summary of selected variables
+
+```{r}
+summary_tbl <- df %>%
+  summarise(
+    customers = n(),
+    mean_age = mean(age, na.rm = TRUE),
+    median_tx_count = median(tx_total_count, na.rm = TRUE),
+    median_tx_amount = median(tx_total_amount, na.rm = TRUE),
+    mean_churn_probability = mean(churn_probability, na.rm = TRUE),
+    mean_active_products = mean(active_products, na.rm = TRUE)
+  ) %>%
+  mutate(
+    median_tx_count = round(median_tx_count, 2),
+    mean_age = round(mean_age, 2),
+    median_tx_amount = round(median_tx_amount, 2),
+    mean_churn_probability = round(mean_churn_probability, 3),
+    mean_active_products = round(mean_active_products, 2)
+  )
+
+knitr::kable(summary_tbl, caption = "Selected descriptive statistics of the prepared customer-level dataset")
+```
+
+Observation: The median transaction amount is much lower than what the raw maximum values suggest, which already hints at a strongly right-skewed distribution.
+
+Insight: Because financial variables are highly skewed, later visualisations use `log1p()` where appropriate. This keeps the plots interpretable without simply removing large but valid values.
+
+## Exploratory Data Analysis
+
+### Distribution of selected numerical variables
+
+```{r}
+num_plot_data <- df %>%
+  transmute(
+    Age = age,
+    `Household size` = household_size,
+    `App logins frequency` = app_logins_frequency,
+    `Feature usage diversity` = feature_usage_diversity,
+    `Log total transaction amount` = log1p(tx_total_amount),
+    `Log average transaction amount` = log1p(tx_avg_amount)
+  ) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "value")
+
+ggplot(num_plot_data, aes(x = value, fill = variable)) +
+  geom_histogram(bins = 30, color = "white", alpha = 0.85, show.legend = FALSE) +
+  facet_wrap(~ variable, scales = "free", ncol = 2) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Distribution of selected numerical variables",
+    x = NULL,
+    y = "Count"
+  )
+```
+
+Observation: Customer age is relatively concentrated around the middle age range, while transaction amount variables remain heavily skewed even after log transformation.
+
+Insight: The dataset seems to describe a mature customer base rather than a student-heavy one. At the same time, spending behaviour is still very uneven, meaning that a relatively small group of customers contributes much larger transaction amounts.
+
+### Distribution of key categorical variables
+
+```{r}
+p_gender <- ggplot(df, aes(x = gender, fill = gender)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "Gender", x = NULL, y = "Count")
+
+p_income <- ggplot(df, aes(x = income_bracket, fill = income_bracket)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "Income bracket", x = NULL, y = "Count") +
+  theme(axis.text.x = element_text(angle = 15, hjust = 1))
+
+p_segment <- ggplot(df, aes(x = customer_segment, fill = customer_segment)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(title = "Customer segment", x = NULL, y = "Count")
+
+p_type <- ggplot(df, aes(x = dominant_tx_type, fill = dominant_tx_type)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(title = "Dominant transaction type", x = NULL, y = "Count")
+
+(p_gender + p_income) / (p_segment + p_type)
+```
+
+Observation: The dataset is quite balanced by gender, but it is not balanced across income groups or customer segments. Medium-income and occasional customers are the largest groups, and transfer is the most common dominant transaction type.
+
+Insight: This suggests that later analysis should not treat all segments as equally sized. A few customer groups are much more common, so differences between segments need to be interpreted together with their sample size.
+
+### Top cities by customer count
+
+```{r}
+top_cities <- df %>%
+  count(city, sort = TRUE) %>%
+  slice_head(n = 10)
+
+ggplot(top_cities, aes(x = reorder(city, n), y = n, fill = n)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_fill_gradient(low = "#C7E9C0", high = "#238B45") +
+  labs(
+    title = "Top 10 cities by number of customers",
+    x = NULL,
+    y = "Number of customers"
+  )
+```
+
+Observation: Bogotá dominates the customer base by a large margin, followed by Medellín and Cali.
+
+Insight: The customer distribution is geographically concentrated rather than evenly spread across cities. This means any location-based comparison later should recognise that Bogotá carries a much larger weight in the data.
+
+### Monthly transaction activity pattern
+
+```{r}
+monthly_tx <- transactions_data %>%
+  mutate(month = floor_date(date, unit = "month")) %>%
+  group_by(month) %>%
+  summarise(
+    transaction_count = n(),
+    total_amount = sum(amount, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+p_month_count <- ggplot(monthly_tx, aes(x = month, y = transaction_count)) +
+  geom_line(linewidth = 0.9, color = "#1B9E77") +
+  geom_point(size = 2, color = "#1B9E77") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Monthly transaction count",
+    x = NULL,
+    y = "Transactions"
+  )
+
+p_month_amt <- ggplot(monthly_tx, aes(x = month, y = total_amount)) +
+  geom_line(linewidth = 0.9, color = "#377EB8") +
+  geom_point(size = 2, color = "#377EB8") +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  labs(
+    title = "Monthly transaction amount",
+    x = NULL,
+    y = "Amount (COP)"
+  )
+
+p_month_count / p_month_amt
+```
+
+Observation: Transaction counts and transaction amounts are fairly stable across the twelve months, with only moderate fluctuations instead of sharp spikes.
+
+Insight: This suggests the dataset reflects normal business activity over the year rather than a strong seasonal shock. That makes the dataset suitable for later behavioural analysis because the observed patterns are less likely to be driven only by one special month.
+
+### Relationship between transaction count and transaction amount
+
+```{r}
+plotly::ggplotly(
+  ggplot(
+    df %>% sample_n(min(8000, nrow(df))),
+    aes(x = log1p(tx_total_count), y = log1p(tx_total_amount), color = customer_segment)
+  ) +
+    geom_point(alpha = 0.35, size = 1.2) +
+    geom_smooth(method = "lm", se = FALSE, linewidth = 0.8) +
+    scale_color_brewer(palette = "Dark2") +
+    labs(
+      title = "Relationship between customer activity and total transaction amount",
+      x = "log(1 + total transaction count)",
+      y = "log(1 + total transaction amount)",
+      color = "Customer segment"
+    )
+)
+```
+
+Observation: There is a clear positive relationship between total transaction count and total transaction amount across all customer segments.
+
+Insight: This is one of the most important exploratory findings in the page. Customers who transact more often also tend to generate higher total volume. This pattern supports the idea that transaction intensity can be a strong behavioural signal for later segmentation and predictive analysis.
+
+### Weekend behaviour and app engagement
+
+```{r}
+engagement_tbl <- df %>%
+  mutate(login_band = ntile(app_logins_frequency, 5)) %>%
+  group_by(login_band) %>%
+  summarise(
+    avg_weekend_ratio = mean(weekend_transaction_ratio, na.rm = TRUE),
+    avg_churn = mean(churn_probability, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+p_weekend <- ggplot(engagement_tbl, aes(x = factor(login_band), y = avg_weekend_ratio, fill = factor(login_band))) +
+  geom_col(show.legend = FALSE) +
+  scale_fill_brewer(palette = "Blues") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Average weekend transaction ratio by login band",
+    x = "Login frequency band (low to high)",
+    y = "Average weekend ratio"
+  )
+
+p_churn <- ggplot(engagement_tbl, aes(x = factor(login_band), y = avg_churn, group = 1)) +
+  geom_line(linewidth = 1, color = "#D95F02") +
+  geom_point(size = 2.5, color = "#D95F02") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title = "Average churn probability by login band",
+    x = "Login frequency band (low to high)",
+    y = "Average churn probability"
+  )
+
+p_weekend + p_churn
+```
+
+Observation: Weekend ratio does not vary dramatically across login bands, but average churn probability tends to be lower among customers with stronger app engagement.
+
+Insight: This result is useful for the next page. It suggests that digital engagement may be more closely related to retention than to simple weekend usage behaviour.
+
+## Conclusion
+
+This page prepared a customer-level analytical dataset by merging customer profile data with transaction-level summaries, and then used EDA to understand the broad structure of the Colombian fintech dataset. The analysis shows that the dataset is geographically concentrated, behaviourally skewed, and segment-driven. Transaction amount and transaction count are strongly connected, and app engagement seems related to lower churn probability.
+
+These findings give a clear starting point for the next page, which focuses on more targeted confirmatory comparisons and the UI design of the proposed Shiny module.

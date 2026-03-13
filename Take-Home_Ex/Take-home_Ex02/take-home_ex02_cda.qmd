@@ -1,0 +1,383 @@
+---
+title: "Take-Home Exercise 2: Confirmatory Data Analysis and UI Design"
+author: "Bao Sihan"
+date: last-modified
+format:
+  html:
+    theme: flatly
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    code-tools: true
+    df-print: paged
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+## Introduction
+
+This page continues the earlier exploratory work and focuses on **confirmatory data analysis (CDA)** for the Colombian fintech dataset. Instead of scanning the full dataset again, this module tests a smaller set of targeted questions derived from the EDA findings. The goal is to check whether the key behavioural patterns remain visible when the analysis is narrowed to specific group comparisons and selected business indicators.
+
+The second part of this page presents the **UI design** for the proposed EDA+CDA Shiny module. This section shows how the visualisations in this report can be translated into an interactive dashboard layout for users to explore customer profile, transaction behaviour, and comparison results more efficiently.
+
+## Installing and loading the required packages
+
+```{r}
+required_packages <- c(
+  "tidyverse", "plotly", "DT", "janitor", "lubridate",
+  "scales", "RColorBrewer", "patchwork", "knitr"
+)
+
+for (pkg in required_packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cloud.r-project.org")
+    library(pkg, character.only = TRUE)
+  }
+}
+
+Sys.setlocale("LC_TIME", "English")
+theme_set(theme_minimal(base_size = 12))
+options(scipen = 999)
+set.seed(6082)
+```
+
+## Loading and preparing the analytical dataset
+
+```{r}
+customer_data <- readr::read_csv("../data/customer_data.csv", show_col_types = FALSE) %>%
+  janitor::clean_names()
+
+transactions_data <- readr::read_csv("../data/transactions_data.csv", show_col_types = FALSE) %>%
+  janitor::clean_names() %>%
+  mutate(date = as.Date(date))
+
+mode_value <- function(x) {
+  x <- x[!is.na(x)]
+  if (length(x) == 0) return(NA_character_)
+  names(sort(table(x), decreasing = TRUE))[1]
+}
+
+tx_summary <- transactions_data %>%
+  group_by(customer_id) %>%
+  summarise(
+    tx_total_count = n(),
+    tx_avg_amount = mean(amount, na.rm = TRUE),
+    tx_total_amount = sum(amount, na.rm = TRUE),
+    tx_type_diversity = n_distinct(type),
+    dominant_tx_type = mode_value(type),
+    .groups = "drop"
+  )
+
+df <- customer_data %>%
+  left_join(tx_summary, by = "customer_id") %>%
+  mutate(
+    city = stringr::str_trim(stringr::str_extract(location, "^[^,]+")),
+    log_tx_total_amount = log1p(tx_total_amount),
+    log_tx_total_count = log1p(tx_total_count),
+    log_clv = log1p(customer_lifetime_value)
+  )
+```
+
+## Confirmatory Data Analysis
+
+### Analytical focus
+
+Based on the earlier EDA results, I focus on four targeted questions:
+
+1.  Do higher-income customers generate larger total transaction amounts?
+2.  Are customer segments behaviourally different in activity intensity and transaction diversity?
+3.  Is stronger app engagement associated with lower churn probability?
+4.  Do customers with more active products have higher lifetime value?
+
+These are not meant to be final causal claims. Instead, they are focused checks that help narrow the story of the dataset before the team moves into clustering and predictive modelling.
+
+### 1. Income bracket and total transaction amount
+
+```{r}
+kw_income <- kruskal.test(tx_total_amount ~ income_bracket, data = df)
+
+ggplot(df, aes(x = income_bracket, y = log1p(tx_total_amount), fill = income_bracket)) +
+  geom_boxplot(outlier.alpha = 0.15, show.legend = FALSE) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Total transaction amount by income bracket",
+    subtitle = paste0("Kruskal-Wallis p-value: ", signif(kw_income$p.value, 4)),
+    x = NULL,
+    y = "log(1 + total transaction amount)"
+  )
+```
+
+Observation: Higher income groups generally show higher transaction amount distributions, while the low and medium income groups are concentrated at lower levels.
+
+Insight: The difference is not only visible in raw spending level but also still visible after log transformation. This supports the idea that income bracket is an important explanatory factor for transaction volume in this dataset.
+
+### 2. Customer segment and behavioural intensity
+
+```{r}
+segment_summary <- df %>%
+  group_by(customer_segment) %>%
+  summarise(
+    median_tx_count = median(tx_total_count, na.rm = TRUE),
+    median_type_diversity = median(tx_type_diversity, na.rm = TRUE),
+    median_tx_amount = median(tx_total_amount, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+p_seg_count <- ggplot(segment_summary, aes(x = reorder(customer_segment, median_tx_count), y = median_tx_count, fill = customer_segment)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(
+    title = "Median transaction count by segment",
+    x = NULL,
+    y = "Median count"
+  )
+
+p_seg_div <- ggplot(segment_summary, aes(x = reorder(customer_segment, median_type_diversity), y = median_type_diversity, fill = customer_segment)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(
+    title = "Median transaction type diversity by segment",
+    x = NULL,
+    y = "Median number of types"
+  )
+
+p_seg_count + p_seg_div
+```
+
+Observation: Power and regular customers clearly outperform inactive and occasional customers in both transaction frequency and behavioural breadth.
+
+Insight: This result gives a strong business interpretation to the predefined customer segments. They are not only labels in the data table; they also represent meaningful differences in how customers use the platform.
+
+### 3. App engagement and churn probability
+
+```{r}
+engagement_cda <- df %>%
+  mutate(login_decile = ntile(app_logins_frequency, 10)) %>%
+  group_by(login_decile) %>%
+  summarise(
+    avg_login_frequency = mean(app_logins_frequency, na.rm = TRUE),
+    avg_churn_probability = mean(churn_probability, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+cor_test <- cor.test(
+  ~ app_logins_frequency + churn_probability,
+  data = df,
+  method = "spearman",
+  use = "complete.obs"
+)
+
+ggplot(engagement_cda, aes(x = avg_login_frequency, y = avg_churn_probability)) +
+  geom_line(linewidth = 1, color = "#1F78B4") +
+  geom_point(size = 2.5, color = "#1F78B4") +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "#E31A1C") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title = "Average churn probability across app engagement deciles",
+    subtitle = paste0("Spearman rho = ", round(cor_test$estimate, 3), 
+                      ", p-value = ", signif(cor_test$p.value, 4)),
+    x = "Average app login frequency",
+    y = "Average churn probability"
+  )
+```
+
+Observation: Customers with stronger app engagement tend to have lower average churn probability, and the decline is fairly consistent across the engagement deciles.
+
+Insight: This is one of the clearest confirmatory patterns in the module. It suggests that digital engagement is closely related to retention, which is likely to be useful for the team’s later predictive work.
+
+### 4. Active products and customer lifetime value
+
+```{r}
+ggplot(df, aes(x = factor(active_products), y = log1p(customer_lifetime_value), fill = factor(active_products))) +
+  geom_boxplot(outlier.alpha = 0.15, show.legend = FALSE) +
+  scale_fill_brewer(palette = "Blues") +
+  labs(
+    title = "Customer lifetime value by number of active products",
+    x = "Number of active products",
+    y = "log(1 + customer lifetime value)"
+  )
+```
+
+Observation: Customers with more active products tend to have a higher lifetime value distribution, especially when moving from one or two products to four or five products.
+
+Insight: This pattern supports a cross-sell interpretation. Multi-product customers appear more valuable for the business, so product adoption depth is an important behaviour dimension rather than a minor profile variable.
+
+### 5. Top-city comparison on transaction amount and churn
+
+```{r}
+top_city_cda <- df %>%
+  count(city, sort = TRUE) %>%
+  slice_head(n = 8) %>%
+  select(city) %>%
+  left_join(
+    df %>%
+      group_by(city) %>%
+      summarise(
+        median_tx_total_amount = median(tx_total_amount, na.rm = TRUE),
+        avg_churn_probability = mean(churn_probability, na.rm = TRUE),
+        .groups = "drop"
+      ),
+    by = "city"
+  )
+
+p_city_amount <- ggplot(top_city_cda, aes(x = reorder(city, median_tx_total_amount), y = median_tx_total_amount, fill = median_tx_total_amount)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_fill_gradient(low = "#C7E9C0", high = "#238B45") +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  labs(
+    title = "Median transaction amount in top cities",
+    x = NULL,
+    y = "Median amount (COP)"
+  )
+
+p_city_churn <- ggplot(top_city_cda, aes(x = reorder(city, avg_churn_probability), y = avg_churn_probability, fill = avg_churn_probability)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_fill_gradient(low = "#DEEBF7", high = "#2171B5") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title = "Average churn probability in top cities",
+    x = NULL,
+    y = "Average churn probability"
+  )
+
+p_city_amount + p_city_churn
+```
+
+Observation: The top cities do not look identical. Some cities show stronger spending while others show slightly higher churn risk.
+
+Insight: Location still matters even after narrowing the analysis to the largest cities. This means that geography can remain a meaningful filter in the future dashboard design.
+
+### 6. Behavioural correlation heatmap
+
+```{r}
+corr_vars <- df %>%
+  select(
+    app_logins_frequency, feature_usage_diversity, active_products,
+    tx_total_count, tx_total_amount, weekend_transaction_ratio,
+    churn_probability, customer_lifetime_value
+  )
+
+corr_mat <- cor(corr_vars, use = "pairwise.complete.obs", method = "spearman")
+
+corr_long <- as.data.frame(as.table(corr_mat)) %>%
+  rename(var1 = Var1, var2 = Var2, corr = Freq)
+
+ggplot(corr_long, aes(x = var1, y = var2, fill = corr)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(corr, 2)), size = 3) +
+  scale_fill_gradient2(low = "#B2182B", mid = "white", high = "#2166AC", midpoint = 0) +
+  labs(
+    title = "Spearman correlation heatmap of selected behavioural variables",
+    x = NULL,
+    y = NULL,
+    fill = "Correlation"
+  ) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))
+```
+
+Observation: Transaction count, transaction amount, active products, and lifetime value tend to move together, while churn probability is negatively related to engagement and value-oriented variables.
+
+Insight: The heatmap gives a compact summary of the confirmatory story in this module. The main signals are internally consistent and support the use of behavioural variables in the later clustering and decision tree modules.
+
+## UI Design
+
+### UI design overview
+
+The proposed Shiny interface for this module is designed specifically for the **EDA + CDA workflow** rather than for the full team project. The aim is to let a user move from broad exploration to focused comparison in one dashboard, without forcing them to manually edit code.
+
+The design follows a standard **sidebar + main panel** dashboard layout. The sidebar is used for filtering and variable selection, while the main panel is used for KPI cards, charts, and the detailed comparison tabs.
+
+::::: columns
+::: {.column width="50%"}
+#### Input components
+
+-   City selector
+-   Gender selector
+-   Income bracket selector
+-   Customer segment selector
+-   Transaction metric selector
+-   Date range selector
+-   Toggle for log scale
+-   Button to reset filters
+:::
+
+::: {.column width="50%"}
+#### Output components
+
+-   KPI cards
+-   Distribution charts
+-   Group comparison charts
+-   Correlation heatmap
+-   Interactive customer table
+-   Short analytical notes
+-   Downloadable filtered table
+:::
+:::::
+
+### Storyboard
+
+```{mermaid}
+flowchart LR
+    A[Sidebar Filters<br/>City / Gender / Income / Segment / Metric / Date] --> B[Overview Tab<br/>KPI cards + key distributions]
+    A --> C[EDA Tab<br/>distribution charts + monthly activity]
+    A --> D[CDA Tab<br/>group comparisons + behavioural heatmap]
+    A --> E[Data Table Tab<br/>filtered customer-level table]
+```
+
+A more detailed page-level storyboard is shown below.
+
+```{=html}
+<div style="font-family: monospace; border: 1px solid #d9d9d9; padding: 14px; border-radius: 8px; background: #fafafa;">
++----------------------------------------------------------------------------------------+<br>
+| Sidebar Filters |                         Main Dashboard Panel                          |<br>
+|-----------------|-----------------------------------------------------------------------|<br>
+| City            | KPI Cards: Customers | Median Tx Count | Median Tx Amount | Avg Churn |<br>
+| Gender          |-----------------------------------------------------------------------|<br>
+| Income          | Tab 1: Overview -> distributions and monthly activity                 |<br>
+| Segment         | Tab 2: CDA -> group comparison charts and correlation heatmap         |<br>
+| Metric          | Tab 3: Data Table -> filtered customer-level records                  |<br>
+| Date Range      |-----------------------------------------------------------------------|<br>
+| Log Scale       | Dynamic explanation box with short observations and insights           |<br>
+| Reset Button    |                                                                       |<br>
++----------------------------------------------------------------------------------------+
+</div>
+```
+
+Observation: The storyboard keeps the control panel simple and puts most of the screen space into the analytical outputs.
+
+Insight: This layout is practical because users usually spend less time choosing filters and more time reading charts. A wide main panel makes the comparison plots easier to interpret, especially when the page contains boxplots, bar charts, and heatmaps.
+
+### Description of UI components
+
+| Component | Purpose | Why it is useful |
+|----|----|----|
+| Sidebar filters | Allow users to select city, customer segment, income bracket, gender, and date range | These filters support both broad exploration and focused comparison |
+| KPI cards | Show quick summary values after filtering | They help users understand the filtered subset before reading the charts |
+| Overview tab | Display distributions and activity patterns | This preserves the exploratory nature of the first stage |
+| CDA tab | Display confirmatory comparison charts and correlation heatmap | It helps users move from broad patterns to more targeted checks |
+| Data table tab | Show the filtered customer-level table | It supports transparency and makes the visual results easier to verify |
+| Log scale toggle | Switch between raw and log-transformed financial views | Financial variables are highly skewed, so this improves readability |
+
+### Design principles used
+
+The proposed interface follows several simple visual analytics principles.
+
+-   **Clarity first**: only a small number of filters are placed in the sidebar, so the layout does not feel crowded.
+-   **Progressive analysis**: users can move from overview charts to focused comparison charts in separate tabs.
+-   **Consistent colour usage**: segment and group colours stay stable across charts to reduce confusion.
+-   **Readable scales**: financial charts should allow a log-scale option because of right-skewed amount variables.
+-   **Interpretability**: short text notes should be displayed beside important outputs so the dashboard remains understandable for non-technical users.
+
+## Conclusion
+
+This page narrowed the analysis into a set of focused confirmatory questions and showed that several important behavioural patterns remain strong: higher-income customers tend to transact more in total value, stronger customer segments show greater activity intensity, higher app engagement is associated with lower churn probability, and multi-product users tend to have higher lifetime value.
+
+The page also proposed a Shiny dashboard design for the EDA+CDA module. The design is intentionally simple and filter-driven so that users can move from broad exploration to focused comparison in a single interface. This prototype can later be combined with the clustering and decision tree modules in the final team project.
