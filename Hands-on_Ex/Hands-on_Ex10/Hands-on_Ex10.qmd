@@ -1,0 +1,531 @@
+---
+title: "Hands-on Exercise 10: Information Dashboard Design"
+author: "Bao Sihan"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    code-tools: true
+    df-print: paged
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Overview
+
+This hands-on exercise is based on Chapter 31, which focuses on information dashboard design in R. In this page, I work on three main ideas: bullet charts, sparklines, and dashboard-style tables.
+
+To make the file easier to render in my local environment, I use the prepared `CoffeeChain.rds` file saved in `../data/` instead of importing the original Access database.
+
+The goals of this exercise are:
+
+-   to build a bullet chart for product sales comparison,
+-   to create sparkline views for monthly sales trends,
+-   to combine charts and tables into compact dashboard-style outputs,
+-   to create an interactive table with hover values in a stable way.
+
+## Getting started
+
+### Packages used
+
+```{r}
+required_pkgs <- c(
+  "tidyverse", "lubridate", "ggthemes", "gt",
+  "reactable", "htmltools", "scales"
+)
+
+optional_pkgs <- c("gtExtras")
+
+missing_required <- required_pkgs[
+  !vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)
+]
+
+missing_optional <- optional_pkgs[
+  !vapply(optional_pkgs, requireNamespace, logical(1), quietly = TRUE)
+]
+
+if (length(missing_required) > 0) {
+  install.packages(missing_required, repos = "https://cloud.r-project.org")
+}
+
+if (length(missing_optional) > 0) {
+  try(
+    install.packages(missing_optional, repos = "https://cloud.r-project.org"),
+    silent = TRUE
+  )
+}
+
+invisible(lapply(required_pkgs, library, character.only = TRUE))
+
+has_gtextras <- requireNamespace("gtExtras", quietly = TRUE)
+if (has_gtextras) {
+  library(gtExtras)
+}
+```
+
+### Importing the prepared data
+
+```{r}
+coffeechain <- readr::read_rds("../data/CoffeeChain.rds") %>%
+  mutate(Date = as.Date(Date))
+```
+
+### Preparing product-level totals
+
+```{r}
+product <- coffeechain %>%
+  group_by(Product) %>%
+  summarise(
+    target = sum(`Budget Sales`, na.rm = TRUE),
+    current = sum(Sales, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(Product = forcats::fct_reorder(Product, current))
+```
+
+### Preparing the 2013 monthly report
+
+```{r}
+report_base <- coffeechain %>%
+  mutate(Year = year(Date), Month = month(Date)) %>%
+  filter(Year == 2013) %>%
+  group_by(Product, Month) %>%
+  summarise(
+    Sales = sum(Sales, na.rm = TRUE),
+    `Budget Sales` = sum(`Budget Sales`, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  tidyr::complete(
+    Product,
+    Month = 1:12,
+    fill = list(Sales = 0, `Budget Sales` = 0)
+  ) %>%
+  arrange(Product, Month)
+```
+
+## Bullet chart in ggplot2
+
+The chart below recreates the product-level bullet chart idea from the chapter. The grey bars provide reference ranges, the black bar shows actual sales, and the red marker shows the target value.
+
+```{r}
+bullet_data <- product %>%
+  mutate(
+    range3 = pmax(target, current) * 1.05,
+    range2 = target * 0.80,
+    range1 = target * 0.50
+  )
+
+ggplot(bullet_data, aes(x = Product)) +
+  geom_col(aes(y = range3), fill = "grey85", width = 0.82) +
+  geom_col(aes(y = range2), fill = "grey70", width = 0.82) +
+  geom_col(aes(y = range1), fill = "grey55", width = 0.82) +
+  geom_col(aes(y = current), fill = "black", width = 0.32) +
+  geom_errorbar(
+    aes(y = target, ymin = target, ymax = target),
+    colour = "red",
+    width = 0.38,
+    linewidth = 1
+  ) +
+  coord_flip() +
+  labs(
+    title = "Bullet Chart of Product Sales",
+    x = NULL,
+    y = "Sales"
+  ) +
+  theme_minimal()
+```
+
+Observation: The black bars and red target markers make the performance comparison very direct.
+
+Insight: A bullet chart is a good dashboard choice because it is compact and allows many products to be compared in one panel.
+
+## Plotting sparklines using ggplot2
+
+### Preparing sparkline support data
+
+```{r}
+sales_report <- report_base %>%
+  select(Month, Product, Sales)
+
+mins <- sales_report %>%
+  group_by(Product) %>%
+  slice_min(order_by = Sales, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
+maxs <- sales_report %>%
+  group_by(Product) %>%
+  slice_max(order_by = Sales, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
+ends <- sales_report %>%
+  group_by(Product) %>%
+  filter(Month == max(Month)) %>%
+  ungroup()
+
+quarts <- sales_report %>%
+  group_by(Product) %>%
+  summarise(
+    quart1 = quantile(Sales, 0.25, na.rm = TRUE),
+    quart2 = quantile(Sales, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  right_join(sales_report, by = "Product")
+```
+
+### Building the ggplot sparkline panel
+
+```{r}
+ggplot(sales_report, aes(x = Month, y = Sales)) +
+  facet_grid(Product ~ ., scales = "free_y") +
+  geom_ribbon(
+    data = quarts,
+    aes(ymin = quart1, ymax = quart2),
+    fill = "grey92"
+  ) +
+  geom_line(linewidth = 0.35, colour = "grey35") +
+  geom_point(data = mins, colour = "red", size = 0.9) +
+  geom_point(data = maxs, colour = "blue", size = 0.9) +
+  geom_text(data = mins, aes(label = Sales), vjust = -1, size = 2) +
+  geom_text(data = maxs, aes(label = Sales), vjust = 2.5, size = 2) +
+  geom_text(data = ends, aes(label = Sales), hjust = 0, nudge_x = 0.45, size = 2) +
+  geom_text(data = ends, aes(label = Product), hjust = 0, nudge_x = 1.0, size = 2.2) +
+  expand_limits(x = max(sales_report$Month) + 3) +
+  scale_x_continuous(breaks = 1:12) +
+  scale_y_continuous(expand = c(0.1, 0)) +
+  ggthemes::theme_tufte(base_size = 7, base_family = "sans") +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    strip.text = element_blank()
+  )
+```
+
+Observation: The sparkline panel shows each product's monthly movement in a very small space.
+
+Insight: This design is useful when the dashboard needs to emphasise trend instead of only one final total.
+
+## Static information dashboard design: gt and gtExtras methods
+
+### Creating the list-column for monthly sales
+
+```{r}
+report <- report_base %>%
+  group_by(Product) %>%
+  summarise(
+    `Monthly Sales` = list(Sales),
+    .groups = "drop"
+  )
+```
+
+### A simple bullet chart table
+
+```{r}
+if (has_gtextras) {
+  product %>%
+    gt() %>%
+    gt_plt_bullet(
+      column = current,
+      target = target,
+      width = 60,
+      palette = c("lightblue", "black")
+    ) %>%
+    gt_theme_538()
+} else {
+  product %>%
+    gt() %>%
+    fmt_number(columns = c(current, target), decimals = 0)
+}
+```
+
+Observation: Embedding the bullet chart inside a table makes the output look more like a real dashboard.
+
+Insight: This format is useful for management reporting because the chart and labels stay together in one place.
+
+### Basic sparkline table
+
+```{r}
+if (has_gtextras) {
+  report %>%
+    gt() %>%
+    gt_plt_sparkline(`Monthly Sales`, same_limit = FALSE)
+} else {
+  report %>%
+    mutate(`Monthly Sales` = purrr::map_chr(`Monthly Sales`, ~ paste(.x, collapse = ", "))) %>%
+    gt()
+}
+```
+
+### Adding summary statistics
+
+```{r}
+sales <- report_base %>%
+  group_by(Product) %>%
+  summarise(
+    Min = min(Sales, na.rm = TRUE),
+    Max = max(Sales, na.rm = TRUE),
+    Average = mean(Sales, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+sales %>%
+  gt() %>%
+  fmt_number(columns = Average, decimals = 2)
+```
+
+### Combining statistics and sparklines
+
+```{r}
+sales_data <- left_join(sales, report, by = "Product")
+
+if (has_gtextras) {
+  sales_data %>%
+    gt() %>%
+    gt_plt_sparkline(`Monthly Sales`, same_limit = FALSE) %>%
+    fmt_number(columns = Average, decimals = 2)
+} else {
+  sales_data %>%
+    mutate(`Monthly Sales` = purrr::map_chr(`Monthly Sales`, ~ paste(.x, collapse = ", "))) %>%
+    gt() %>%
+    fmt_number(columns = Average, decimals = 2)
+}
+```
+
+### Combining sparklines and bullet charts
+
+```{r}
+bullet <- report_base %>%
+  group_by(Product) %>%
+  summarise(
+    Target = sum(`Budget Sales`, na.rm = TRUE),
+    Actual = sum(Sales, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+sales_data2 <- left_join(sales_data, bullet, by = "Product")
+
+if (has_gtextras) {
+  sales_data2 %>%
+    gt() %>%
+    gt_plt_sparkline(`Monthly Sales`) %>%
+    gt_plt_bullet(
+      column = Actual,
+      target = Target,
+      width = 28,
+      palette = c("lightblue", "black")
+    ) %>%
+    fmt_number(columns = Average, decimals = 2) %>%
+    gt_theme_538()
+} else {
+  sales_data2 %>%
+    mutate(`Monthly Sales` = purrr::map_chr(`Monthly Sales`, ~ paste(.x, collapse = ", "))) %>%
+    gt() %>%
+    fmt_number(columns = Average, decimals = 2)
+}
+```
+
+Observation: This combined table is much closer to a practical dashboard because it brings trend, level, and target information together.
+
+Insight: A compact dashboard often works best when multiple small views are placed in one aligned table.
+
+## Interactive information dashboard design: reactable methods
+
+The original chapter uses `reactablefmtr`, but that package is not always easy to install on every R version. To keep this file stable and still preserve hover values, I create the interactive section with `reactable` and custom HTML mini charts.
+
+### Helper functions for custom hover charts
+
+```{r}
+make_sparkbar <- function(values, labels = month.abb[seq_along(values)]) {
+  values <- as.numeric(values)
+  vmax <- max(values, na.rm = TRUE)
+  vmean <- mean(values, na.rm = TRUE)
+  min_id <- which.min(values)[1]
+  max_id <- which.max(values)[1]
+
+  mean_y <- if (vmax == 0) 0 else round(vmean / vmax * 26, 1)
+
+  bars <- lapply(seq_along(values), function(i) {
+    fill_col <- if (i == min_id) {
+      "#d62728"
+    } else if (i == max_id) {
+      "#1f77b4"
+    } else {
+      "#9aa5b1"
+    }
+
+    bar_height <- if (vmax == 0) 2 else max(2, round(values[i] / vmax * 26))
+
+    htmltools::tags$div(
+      title = paste0(labels[i], ": ", scales::comma(values[i])),
+      style = paste0(
+        "flex:1; height:", bar_height,
+        "px; background:", fill_col,
+        "; border-radius:1px;"
+      )
+    )
+  })
+
+  htmltools::tags$div(
+    style = "position:relative; width:230px; height:34px; padding-top:4px;",
+    htmltools::tags$div(
+      style = paste0(
+        "position:absolute; left:0; right:0; bottom:",
+        3 + mean_y,
+        "px; border-top:1px dashed #d62728; opacity:0.9;"
+      )
+    ),
+    htmltools::tags$div(
+      style = "position:absolute; left:0; right:0; bottom:3px; display:flex; align-items:flex-end; gap:2px; height:26px;",
+      htmltools::tagList(bars)
+    ),
+    htmltools::tags$div(
+      style = "position:absolute; left:0; right:0; bottom:0; border-top:1px solid #d8d8d8;"
+    )
+  )
+}
+
+make_sparkline <- function(values, labels = month.abb[seq_along(values)]) {
+  values <- as.numeric(values)
+  n <- length(values)
+  width <- 230
+  height <- 42
+  pad <- 7
+
+  minv <- min(values, na.rm = TRUE)
+  maxv <- max(values, na.rm = TRUE)
+  rng <- maxv - minv
+  if (rng == 0) rng <- 1
+
+  xs <- seq(pad, width - pad, length.out = n)
+  ys <- height - pad - ((values - minv) / rng) * (height - 2 * pad)
+  mean_y <- height - pad - ((mean(values, na.rm = TRUE) - minv) / rng) * (height - 2 * pad)
+
+  point_string <- paste(sprintf("%.1f,%.1f", xs, ys), collapse = " ")
+
+  circle_string <- paste(
+    vapply(seq_len(n), function(i) {
+      fill_col <- if (i == which.min(values)[1]) {
+        "#d62728"
+      } else if (i == which.max(values)[1] || i == n) {
+        "#1f77b4"
+      } else {
+        "#000000"
+      }
+
+      opacity_val <- if (i %in% c(which.min(values)[1], which.max(values)[1], n)) {
+        "0.95"
+      } else {
+        "0.001"
+      }
+
+      paste0(
+        '<circle cx="', round(xs[i], 1),
+        '" cy="', round(ys[i], 1),
+        '" r="3.2" fill="', fill_col,
+        '" fill-opacity="', opacity_val,
+        '"><title>', labels[i], ': ', scales::comma(values[i]), '</title></circle>'
+      )
+    }, character(1)),
+    collapse = ""
+  )
+
+  svg_txt <- paste0(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="', width,
+    '" height="', height,
+    '" viewBox="0 0 ', width, ' ', height, '">',
+    '<line x1="', pad, '" x2="', width - pad,
+    '" y1="', round(mean_y, 1), '" y2="', round(mean_y, 1),
+    '" stroke="#d62728" stroke-width="1" stroke-dasharray="3 2"/>',
+    '<polyline fill="none" stroke="#6b7f99" stroke-width="1.3" points="', point_string, '"/>',
+    circle_string,
+    '<text x="0" y="13" font-size="10" fill="#444">', scales::comma(values[1]), '</text>',
+    '<text x="', width - 30, '" y="13" font-size="10" fill="#444">', scales::comma(values[n]), '</text>',
+    '</svg>'
+  )
+
+  htmltools::HTML(svg_txt)
+}
+```
+
+### Preparing the interactive report table
+
+```{r}
+report_interactive <- report_base %>%
+  group_by(Product) %>%
+  summarise(
+    `Monthly Sales` = list(Sales),
+    Average = mean(Sales, na.rm = TRUE),
+    Total = sum(Sales, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+### Interactive sparkbar table with hover values
+
+```{r}
+reactable(
+  report_interactive,
+  defaultPageSize = 13,
+  compact = TRUE,
+  striped = TRUE,
+  highlight = TRUE,
+  searchable = FALSE,
+  columns = list(
+    Product = colDef(minWidth = 170),
+    `Monthly Sales` = colDef(
+      html = TRUE,
+      minWidth = 250,
+      cell = function(value) make_sparkbar(unlist(value))
+    ),
+    Average = colDef(format = colFormat(separators = TRUE, digits = 1)),
+    Total = colDef(format = colFormat(separators = TRUE, digits = 0))
+  )
+)
+```
+
+Observation: This view is close to a dashboard strip chart, and the monthly values can be seen by moving the mouse over each small bar.
+
+Insight: This approach is more stable than depending on extra GitHub-only packages, so it is practical for assignment rendering.
+
+### Interactive sparkline table with hover values
+
+```{r}
+reactable(
+  report_interactive,
+  defaultPageSize = 13,
+  compact = TRUE,
+  striped = TRUE,
+  highlight = TRUE,
+  searchable = FALSE,
+  columns = list(
+    Product = colDef(minWidth = 170),
+    `Monthly Sales` = colDef(
+      name = "Sales Trend",
+      html = TRUE,
+      minWidth = 250,
+      cell = function(value) make_sparkline(unlist(value))
+    ),
+    Average = colDef(format = colFormat(separators = TRUE, digits = 1)),
+    Total = colDef(format = colFormat(separators = TRUE, digits = 0))
+  )
+)
+```
+
+Observation: The sparkline version is better for reading the shape of the trend, while the red dashed line adds a useful reference for the mean level.
+
+Insight: Compared with the sparkbar view, this design is more suitable when the user wants to focus on fluctuations over time.
+
+## Conclusion
+
+This exercise shows that dashboard design is not only about producing one attractive chart. A better dashboard usually combines compact comparisons, trend summaries, and table layout in the same page.
+
+From this practice, I found that `ggplot2` is useful for building chart logic clearly, `gt` and `gtExtras` are useful for static dashboard tables, and `reactable` is helpful for creating lightweight interactive dashboard views. In my final version, I used a stable custom `reactable` solution so the file can render more smoothly while still keeping hover values.
+
+## Reference
+
+-   R for Visual Analytics, Chapter 31: Information Dashboard Design: R methods.
