@@ -1,57 +1,20 @@
 project:
   type: website
+  output-dir: _site
 
 website:
-  title: "ISSS608-VAA | Bao Sihan"
+  title: "ISSS626-GAA | Bao Sihan"
 
   navbar:
     left:
       - text: "Hands-on Exercise"
         menu:
-          - text: "Hands-on Ex01"
-            href: Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html
-          - text: "Hands-on Ex02"
-            href: Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html
-          - text: "Hands-on Ex03A"
-            href: Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03_1.html
-          - text: "Hands-on Ex03B"
-            href: Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03_2.html
-          - text: "Hands-on Ex04A"
-            href: Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04a.html
-          - text: "Hands-on Ex04B"
-            href: Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04b.html
-          - text: "Hands-on Ex04C"
-            href: Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04c.html
-          - text: "Hands-on Ex04D"
-            href: Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04d.html
-          - text: "Hands-on Ex05A"
-            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05a.html
-          - text: "Hands-on Ex05B"
-            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05b.html
-          - text: "Hands-on Ex05C"
-            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05c.html
-          - text: "Hands-on Ex05D"
-            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05d.html
-          - text: "Hands-on Ex05E"
-            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05e.html
-          - text: "Hands-on Ex07"
-            href: Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html
-          - text: "Hands-on Ex08A"
-            href: Hands-on_Ex/Hands-on_Ex08/Hands-on_Ex08a.html
-          - text: "Hands-on Ex08B"
-            href: Hands-on_Ex/Hands-on_Ex08/Hands-on_Ex08b.html
-          - text: "Hands-on Ex08C"
-            href: Hands-on_Ex/Hands-on_Ex08/Hands-on_Ex08c.html
-          - text: "Hands-on Ex09"
-            href: Hands-on_Ex/Hands-on_Ex09/Hands-on_Ex09.html
+          - text: "Overview"
+            href: hands-on.html
       - text: "Take-Home Exercise"
-        menu: 
-          - text: "Take-home_Ex01"
-            href: Take-Home_Ex/Take-home_Ex01/take-home_ex01.html
-          - text: "Take-home_Ex02_EDA"
-            href: Take-Home_Ex/Take-home_Ex02/take-home_ex02_eda.html
-          - text: "Take-home_Ex02_CDA"
-            href: Take-Home_Ex/Take-home_Ex02/take-home_ex02_cda.html
+        menu:
+          - text: "Overview"
+            href: take-home.html
 
     right:
       - href: index.html

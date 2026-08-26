@@ -2,8 +2,5 @@
 title: "About"
 ---
 
-About this site
+This site contains coursework prepared by Bao Sihan for **ISSS626 Geospatial Analytics and Applications**.
 
-```{r}
-1 + 1
-```

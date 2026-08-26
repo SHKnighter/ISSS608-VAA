@@ -1,0 +1,5 @@
+---
+title: "Take-Home Exercise"
+---
+
+ISSS626 take-home exercises will be published here.
