@@ -1,0 +1,402 @@
+---
+title: "Hands-on Exercise 1A: Geospatial Data Science with R"
+author: "Bao Sihan"
+date: "August 27, 2026"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    number-sections: true
+    code-fold: false
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Learning Outcome
+
+In this hands-on exercise, I learn how to use the **sf** and **tidyverse** packages to import, inspect, transform, process, and visualise geospatial data in R. I also practise converting an aspatial data frame into a simple feature data frame and applying basic geoprocessing methods.
+
+The main tasks covered are:
+
+- importing polygon, line, and point geospatial data;
+- examining the geometry and attributes of simple feature data frames;
+- assigning and transforming coordinate reference systems;
+- converting longitude and latitude values into point features;
+- performing buffer, intersection, and area calculations; and
+- using simple exploratory plots to examine the results.
+
+## Data Acquisition
+
+I used the four data sets specified in the exercise:
+
+- **Master Plan 2014 Subzone Boundary (Web)** from [data.gov.sg](https://data.gov.sg/datasets?agencies=Urban+Redevelopment+Authority+(URA)&resultId=1708);
+- **Pre-Schools Location** from [data.gov.sg](https://data.gov.sg/datasets/d_61eefab99958fd70e6aab17320a71f1c/view);
+- **Cycling Path** from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en/static-data.html); and
+- the latest Singapore **listings.csv** from [Inside Airbnb](https://insideairbnb.com/get-the-data/).
+
+The geospatial files are stored in `data/geospatial`, while the Airbnb CSV file is stored in `data/aspatial`.
+
+## Getting Started
+
+The **sf** package is used for handling geospatial data. The **tidyverse** collection provides functions for importing, wrangling, and visualising data.
+
+```{r}
+#| label: load-packages
+pacman::p_load(sf, tidyverse)
+```
+
+## Importing Geospatial Data
+
+### Importing polygon feature data in shapefile format
+
+I first import the Master Plan 2014 Subzone Boundary shapefile. The `dsn` argument gives the folder containing the shapefile, while `layer` gives the shapefile name without its extension.
+
+```{r}
+#| label: import-subzones
+mpsz <- st_read(
+  dsn = "data/geospatial",
+  layer = "MP14_SUBZONE_WEB_PL"
+)
+```
+
+The output shows that `mpsz` contains `r nrow(mpsz)` multipolygon features and `r ncol(mpsz) - 1` attribute fields. The layer is stored in the SVY21 projected coordinate system.
+
+### Importing polyline feature data in shapefile format
+
+Next, I import the Cycling Path shapefile as a line feature data frame.
+
+```{r}
+#| label: import-cycling-path
+cyclingpath <- st_read(
+  dsn = "data/geospatial",
+  layer = "CyclingPathGazette"
+)
+```
+
+The current Cycling Path data contains `r nrow(cyclingpath)` multiline features and is also stored in SVY21.
+
+### Importing point feature data in KML format
+
+For a KML file, I provide the complete file path and extension.
+
+```{r}
+#| label: import-preschools
+preschool <- st_read(
+  "data/geospatial/PreSchoolsLocation.kml"
+)
+```
+
+The imported `preschool` object contains `r nrow(preschool)` point features. Unlike the first two layers, it is initially stored in the WGS 84 geographic coordinate system.
+
+## Checking the Content of a Simple Feature Data Frame
+
+Before carrying out any geospatial operations, I examine the geometry and attribute information in `mpsz`.
+
+### Working with `st_geometry()`
+
+```{r}
+#| label: inspect-geometry
+st_geometry(mpsz)
+```
+
+This output summarises the geometry type, bounding box, and coordinate reference system of the layer.
+
+### Working with `glimpse()`
+
+```{r}
+#| label: inspect-attributes
+glimpse(mpsz)
+```
+
+`glimpse()` allows me to see the data type and sample values for every attribute. The geometry column stores the multipolygon features.
+
+### Working with `head()`
+
+```{r}
+#| label: inspect-first-records
+head(mpsz, n = 5)
+```
+
+The `n` argument lets me control how many complete records are displayed.
+
+## Plotting the Geospatial Data
+
+I first use the base R `plot()` function to obtain a quick view of the subzone data.
+
+```{r}
+#| label: plot-all-subzone-attributes
+#| fig-width: 10
+#| fig-height: 8
+plot(mpsz)
+```
+
+The default plot displays multiple maps for the attributes in the simple feature data frame.
+
+To display only the subzone boundaries, I plot the geometry column.
+
+```{r}
+#| label: plot-subzone-geometry
+#| fig-width: 8
+#| fig-height: 6
+plot(st_geometry(mpsz))
+```
+
+I can also plot the layer using one selected attribute.
+
+```{r}
+#| label: plot-planning-areas
+#| fig-width: 9
+#| fig-height: 7
+plot(mpsz["PLN_AREA_N"])
+```
+
+Before transforming the pre-school layer, I try plotting it on top of the subzone layer.
+
+```{r}
+#| label: plot-before-transform
+#| fig-width: 8
+#| fig-height: 6
+plot(st_geometry(mpsz))
+plot(st_geometry(preschool), add = TRUE, col = "red", pch = 20)
+```
+
+The pre-school points do not appear in the correct position because `mpsz` uses projected SVY21 coordinates while `preschool` still uses geographic WGS 84 coordinates.
+
+## Working with Projection
+
+### Assigning the EPSG code to a simple feature data frame
+
+I check the coordinate reference system of `mpsz`.
+
+```{r}
+#| label: check-subzone-crs
+st_crs(mpsz)
+```
+
+Although the layers are labelled SVY21, the appropriate EPSG code for Singapore SVY21 is 3414. I assign this EPSG code to both projected layers using `st_set_crs()`.
+
+```{r}
+#| label: assign-subzone-crs
+mpsz <- st_set_crs(mpsz, 3414)
+cyclingpath <- st_set_crs(cyclingpath, 3414)
+st_crs(mpsz)
+```
+
+### Transforming the pre-school layer from WGS 84 to SVY21
+
+The pre-school coordinates must be mathematically transformed rather than simply relabelled. I therefore use `st_transform()`.
+
+```{r}
+#| label: transform-preschools
+preschool <- st_transform(
+  preschool,
+  crs = 3414
+)
+
+st_geometry(preschool)
+```
+
+After the transformation, both layers use EPSG:3414. The pre-school points can now be plotted in the correct locations.
+
+```{r}
+#| label: plot-after-transform
+#| fig-width: 8
+#| fig-height: 6
+plot(st_geometry(mpsz), col = "grey95", border = "grey60")
+plot(st_geometry(preschool), add = TRUE, col = "red", pch = 20, cex = 0.25)
+```
+
+## Importing and Converting Aspatial Data
+
+### Importing the aspatial data
+
+The Airbnb data is stored as a CSV file. I import it as a tibble using `read_csv()`.
+
+```{r}
+#| label: import-airbnb
+listings <- read_csv("data/aspatial/listings.csv")
+list(listings)
+```
+
+The current file contains `r nrow(listings)` listings and `r ncol(listings)` columns. The `longitude` and `latitude` fields provide the coordinates required to create point features.
+
+### Creating a simple feature data frame
+
+I use `st_as_sf()` to convert the longitude and latitude columns into point geometry. The source coordinates use EPSG:4326, and I then transform them to EPSG:3414.
+
+```{r}
+#| label: convert-airbnb-to-sf
+listings_sf <- st_as_sf(
+  listings,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+) %>%
+  st_transform(crs = 3414)
+
+glimpse(listings_sf)
+```
+
+The new `geometry` column contains the point features, while the original longitude and latitude columns have been used to form those geometries.
+
+I then plot the Airbnb listings on top of the planning subzones.
+
+```{r}
+#| label: plot-airbnb
+#| fig-width: 8
+#| fig-height: 6
+plot(st_geometry(mpsz), col = "grey95", border = "grey60")
+plot(st_geometry(listings_sf), add = TRUE, col = "steelblue", pch = 20, cex = 0.3)
+```
+
+## Geoprocessing with the `sf` Package
+
+### Use case 1: Land acquisition analysis
+
+#### The scenario
+
+The cycling path is to be upgraded, and a five-metre strip on both sides of the path is required. I calculate the buffer area and then examine the part located within Tampines West.
+
+#### The solution
+
+I use `st_buffer()` to create a five-metre buffer around every cycling path feature.
+
+```{r}
+#| label: buffer-cycling-path
+buffer_cycling <- st_buffer(
+  cyclingpath,
+  dist = 5,
+  nQuadSegs = 30
+)
+```
+
+Next, I calculate the area of each buffered feature.
+
+```{r}
+#| label: calculate-buffer-area
+buffer_cycling <- buffer_cycling %>%
+  mutate(AREA = st_area(geometry))
+
+total_buffer_area <- sum(buffer_cycling$AREA)
+total_buffer_area
+```
+
+The summed buffer area is approximately `r round(as.numeric(total_buffer_area) / 1000000, 2)` square kilometres. As in the exercise, this is the sum of the individual feature buffers.
+
+I select Tampines West from the subzone layer and use `st_intersection()` to retain only the cycling path buffers inside it.
+
+```{r}
+#| label: select-tampines-west
+mpsz_selected <- mpsz %>%
+  filter(SUBZONE_N == "TAMPINES WEST")
+
+buffer_cycling_selected <- st_intersection(
+  buffer_cycling,
+  mpsz_selected
+)
+```
+
+```{r}
+#| label: plot-tampines-west-buffer
+#| fig-width: 8
+#| fig-height: 6
+plot(st_geometry(mpsz_selected), col = "grey95", border = "grey40")
+plot(st_geometry(buffer_cycling_selected), add = TRUE, col = "lightblue", border = "steelblue")
+```
+
+The map shows the sections of the five-metre cycling path buffer that fall within Tampines West.
+
+### Use case 2: Number of pre-schools by planning subzone
+
+#### The scenario
+
+The number of pre-schools in each planning subzone is required for planning. I use a spatial relationship to count the points inside every subzone and then calculate pre-school density.
+
+#### The solution
+
+`st_intersects()` identifies the pre-schools located inside each subzone. `lengths()` converts the resulting list into a count for every row of `mpsz`.
+
+```{r}
+#| label: count-preschools
+mpsz$`PreSch Count` <- lengths(
+  st_intersects(mpsz, preschool)
+)
+
+summary(mpsz$`PreSch Count`)
+```
+
+I use `top_n()` to identify the subzone with the largest number of pre-schools.
+
+```{r}
+#| label: top-preschool-subzone
+top_n(mpsz, 1, `PreSch Count`)
+```
+
+Next, I calculate the area of every subzone and derive pre-school density per square kilometre.
+
+```{r}
+#| label: calculate-preschool-density
+mpsz$Area <- mpsz %>%
+  st_area()
+
+mpsz <- mpsz %>%
+  mutate(
+    `PreSch Density` = `PreSch Count` / Area * 1000000
+  )
+```
+
+I first use a base R histogram to examine the distribution.
+
+```{r}
+#| label: base-density-histogram
+#| fig-width: 8
+#| fig-height: 6
+hist(mpsz$`PreSch Density`)
+```
+
+I then create a more clearly labelled histogram using **ggplot2**.
+
+```{r}
+#| label: ggplot-density-histogram
+#| fig-width: 9
+#| fig-height: 6
+ggplot(
+  data = mpsz,
+  aes(x = as.numeric(`PreSch Density`))
+) +
+  geom_histogram(
+    bins = 20,
+    colour = "black",
+    fill = "lightblue"
+  ) +
+  labs(
+    title = "Distribution of Pre-school Density in Singapore",
+    x = "Pre-school density (per square kilometre)",
+    y = "Frequency"
+  )
+```
+
+Finally, I use a scatterplot to compare pre-school count with pre-school density.
+
+```{r}
+#| label: preschool-scatterplot
+#| fig-width: 8
+#| fig-height: 6
+ggplot(
+  data = mpsz,
+  aes(
+    y = `PreSch Count`,
+    x = as.numeric(`PreSch Density`)
+  )
+) +
+  geom_point(colour = "black", fill = "lightblue") +
+  xlim(0, 40) +
+  ylim(0, 40) +
+  labs(
+    x = "Pre-school density (per square kilometre)",
+    y = "Pre-school count"
+  )
+```
+
+The two plots show that the distribution of pre-schools varies across planning subzones. Subzones with higher counts do not always have the highest density because their land areas are different.

@@ -2,5 +2,4 @@
 title: "ISSS626-GAA"
 ---
 
-Welcome to **ISSS626 Geospatial Analytics and Applications**. This website contains my coursework prepared for the course.
-
+Welcome to **ISSS626 Geospatial Analytics and Applications**. In this website, you will find my coursework prepared for this course.

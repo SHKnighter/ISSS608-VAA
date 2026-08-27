@@ -1,6 +1,5 @@
 ---
-title: "Hands-on Exercise"
+title: "Hands-on Exercises"
 ---
 
-ISSS626 hands-on exercises will be published here.
-
+ISSS626 hands-on exercises are available from the navigation menu.
