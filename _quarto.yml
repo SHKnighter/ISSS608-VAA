@@ -13,6 +13,10 @@ website:
             href: Hands-on_Ex/Hands-on_Ex01A/Hands-on_Ex01A.qmd
           - text: "Hands-on Exercise 1B"
             href: Hands-on_Ex/Hands-on_Ex01B/Hands-on_Ex01B.qmd
+          - text: "Hands-on Exercise 2A"
+            href: Hands-on_Ex/Hands-on_Ex02A/Hands-on_Ex02A.qmd
+          - text: "Hands-on Exercise 2B"
+            href: Hands-on_Ex/Hands-on_Ex02B/Hands-on_Ex02B.qmd
       - text: "Take-Home Exercise"
         menu:
           - text: "Overview"

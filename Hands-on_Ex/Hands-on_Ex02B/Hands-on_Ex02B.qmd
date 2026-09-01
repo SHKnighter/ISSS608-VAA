@@ -1,0 +1,483 @@
+---
+title: "Hands-on Exercise 2B: Second-order Spatial Point Patterns Analysis"
+author: "Bao Sihan"
+date: "September 1, 2026"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    number-sections: true
+    code-fold: false
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Overview
+
+In this hands-on exercise, I use second-order spatial point pattern analysis to examine how childcare centre locations are related to one another at different distances. Unlike first-order analysis, which focuses on changes in point intensity, second-order analysis evaluates whether the observed points show clustering, dispersion, or randomness across a range of spatial scales.
+
+I apply the G-, F-, K-, and L-functions to childcare centres in Choa Chu Kang and Tampines. Monte Carlo simulation envelopes are used to compare each observed pattern with complete spatial randomness (CSR).
+
+## The Data
+
+I use the two data sets specified in the exercise:
+
+- **Child Care Services** from [data.gov.sg](https://data.gov.sg/datasets/d_5d668e3f544335f8028f546827b773b4/view); and
+- **Master Plan 2019 Subzone Boundary (No Sea)** from [data.gov.sg](https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view).
+
+The GeoJSON files are stored in this exercise's `data/geospatial` folder so that the page can be rendered independently with relative paths.
+
+## Installing and Loading the R Packages
+
+I use **sf** for geospatial data, **spatstat** for the second-order analysis, **tmap** as listed in the exercise, and **tidyverse** for data preparation.
+
+```{r}
+#| label: load-packages
+pacman::p_load(sf, spatstat, tmap, tidyverse)
+```
+
+## Data Import and Preparation
+
+The preparation follows the same process used in Hands-on Exercise 2A. I import both layers, transform them to Singapore SVY21 (EPSG:3414), remove the specified offshore planning areas, and convert the childcare locations into a planar point pattern.
+
+```{r}
+#| label: import-and-prepare-data
+mpsz_cl <- st_read(
+  "data/geospatial/MasterPlan2019SubzoneBoundaryNoSea.geojson"
+) %>%
+  st_transform(crs = 3414) %>%
+  st_make_valid() %>%
+  filter(
+    SUBZONE_N != "SOUTHERN GROUP",
+    PLN_AREA_N != "WESTERN ISLANDS",
+    PLN_AREA_N != "NORTH-EASTERN ISLANDS"
+  ) %>%
+  select(
+    REGION_N,
+    PLN_AREA_N,
+    SUBZONE_N,
+    SUBZONE_C,
+    geometry
+  )
+
+childcare_sf <- st_read(
+  "data/geospatial/ChildCareServices.geojson"
+) %>%
+  st_transform(crs = 3414)
+
+childcare_ppp <- as.ppp(childcare_sf)
+```
+
+I extract Choa Chu Kang and Tampines, convert their boundaries into observation windows, and clip the childcare point pattern to each window.
+
+```{r}
+#| label: prepare-study-areas
+ck <- mpsz_cl %>%
+  filter(PLN_AREA_N == "CHOA CHU KANG")
+
+tm <- mpsz_cl %>%
+  filter(PLN_AREA_N == "TAMPINES")
+
+ck_owin <- as.owin(ck)
+tm_owin <- as.owin(tm)
+
+childcare_ck_ppp <- childcare_ppp[ck_owin]
+childcare_tm_ppp <- childcare_ppp[tm_owin]
+
+childcare_ck_ppp
+childcare_tm_ppp
+```
+
+There are `r npoints(childcare_ck_ppp)` childcare centre points in the Choa Chu Kang observation window and `r npoints(childcare_tm_ppp)` in the Tampines observation window.
+
+I set a random seed so that the simulation envelopes can be reproduced.
+
+```{r}
+#| label: set-random-seed
+set.seed(1234)
+```
+
+## Second-order Spatial Point Patterns Analysis
+
+For each function, I use the following hypotheses:
+
+- $H_0$: Childcare centres are randomly distributed in the planning area.
+- $H_1$: Childcare centres are not randomly distributed in the planning area.
+
+The observed function is compared with the CSR simulation envelope. An observed curve outside the envelope indicates a departure from spatial randomness over the corresponding distance range.
+
+## Analysing the Spatial Point Process Using the G-function
+
+The G-function measures the distribution of nearest-neighbour distances from each observed childcare centre to the next closest centre. A curve above the CSR expectation at short distances indicates that nearest neighbours occur more quickly than expected, which is consistent with clustering.
+
+### Choa Chu Kang
+
+#### Computing the G-function estimate
+
+```{r}
+#| label: g-function-ck
+#| fig-width: 8
+#| fig-height: 6
+G_CK <- Gest(
+  childcare_ck_ppp,
+  correction = "border"
+)
+
+plot(
+  G_CK,
+  xlim = c(0, 500),
+  main = "G-function for Choa Chu Kang"
+)
+```
+
+#### Performing the CSR test
+
+I generate a Monte Carlo envelope using 999 CSR simulations.
+
+```{r}
+#| label: g-envelope-ck
+#| fig-width: 8
+#| fig-height: 6
+G_CK_csr <- envelope(
+  childcare_ck_ppp,
+  Gest,
+  nsim = 999,
+  verbose = FALSE
+)
+
+plot(
+  G_CK_csr,
+  main = "CSR envelope for the Choa Chu Kang G-function"
+)
+```
+
+The observed G-function rises outside the CSR envelope over part of the short-distance range. I therefore reject the null hypothesis over those distances. Childcare centres in Choa Chu Kang have shorter nearest-neighbour distances than expected under CSR, indicating local clustering.
+
+### Tampines
+
+#### Computing the G-function estimate
+
+```{r}
+#| label: g-function-tampines
+#| fig-width: 8
+#| fig-height: 6
+G_tm <- Gest(
+  childcare_tm_ppp,
+  correction = "best"
+)
+
+plot(
+  G_tm,
+  main = "G-function for Tampines"
+)
+```
+
+#### Performing the CSR test
+
+```{r}
+#| label: g-envelope-tampines
+#| fig-width: 8
+#| fig-height: 6
+G_tm_csr <- envelope(
+  childcare_tm_ppp,
+  Gest,
+  correction = "all",
+  nsim = 999,
+  verbose = FALSE
+)
+
+plot(
+  G_tm_csr,
+  main = "CSR envelope for the Tampines G-function"
+)
+```
+
+The observed Tampines G-function also leaves the CSR envelope at short distances. I reject the null hypothesis over this range and conclude that the childcare centre pattern has a clustered nearest-neighbour structure.
+
+## Analysing the Spatial Point Process Using the F-function
+
+The F-function measures distances from arbitrary locations in the observation window to the nearest childcare centre. For a clustered pattern, larger empty spaces remain between groups of points, so the observed F-function is expected to be lower than CSR over part of the distance range.
+
+### Choa Chu Kang
+
+#### Computing the F-function estimate
+
+```{r}
+#| label: f-function-ck
+#| fig-width: 8
+#| fig-height: 6
+F_CK <- Fest(childcare_ck_ppp)
+
+plot(
+  F_CK,
+  main = "F-function for Choa Chu Kang"
+)
+```
+
+#### Performing the CSR test
+
+```{r}
+#| label: f-envelope-ck
+#| fig-width: 8
+#| fig-height: 6
+F_CK_csr <- envelope(
+  childcare_ck_ppp,
+  Fest,
+  nsim = 999,
+  verbose = FALSE
+)
+
+plot(
+  F_CK_csr,
+  main = "CSR envelope for the Choa Chu Kang F-function"
+)
+```
+
+The observed F-function remains within the CSR envelope across the plotted distance range. I therefore fail to reject the null hypothesis for this test. Based on empty-space distances alone, the Choa Chu Kang F-function does not provide sufficient evidence of a departure from CSR.
+
+### Tampines
+
+#### Computing the F-function estimate
+
+```{r}
+#| label: f-function-tampines
+#| fig-width: 8
+#| fig-height: 6
+F_tm <- Fest(
+  childcare_tm_ppp,
+  correction = "best"
+)
+
+plot(
+  F_tm,
+  main = "F-function for Tampines"
+)
+```
+
+#### Performing the CSR test
+
+```{r}
+#| label: f-envelope-tampines
+#| fig-width: 8
+#| fig-height: 6
+F_tm_csr <- envelope(
+  childcare_tm_ppp,
+  Fest,
+  correction = "all",
+  nsim = 999,
+  verbose = FALSE
+)
+
+plot(
+  F_tm_csr,
+  main = "CSR envelope for the Tampines F-function"
+)
+```
+
+The observed F-function for Tampines departs from the CSR envelope. I reject the null hypothesis over the affected distances. The lower observed F-values indicate empty spaces between groups of childcare centres and support a clustered pattern.
+
+## Analysing the Spatial Point Process Using the K-function
+
+The K-function evaluates the expected number of further events found within a given distance of an event. Following the professor's workflow, I plot $K(d)-d$ against distance. Values above the CSR envelope indicate more neighbouring centres within that distance than expected under randomness.
+
+### Choa Chu Kang
+
+#### Computing the K-function estimate
+
+```{r}
+#| label: k-function-ck
+#| fig-width: 8
+#| fig-height: 6
+K_ck <- Kest(
+  childcare_ck_ppp,
+  correction = "Ripley"
+)
+
+plot(
+  K_ck,
+  . - r ~ r,
+  ylab = "K(d)-r",
+  xlab = "d (m)",
+  main = "K-function for Choa Chu Kang"
+)
+```
+
+#### Performing the CSR test
+
+```{r}
+#| label: k-envelope-ck
+#| fig-width: 8
+#| fig-height: 6
+K_ck_csr <- envelope(
+  childcare_ck_ppp,
+  Kest,
+  nsim = 99,
+  rank = 1,
+  glocal = TRUE,
+  verbose = FALSE
+)
+
+plot(
+  K_ck_csr,
+  . - r ~ r,
+  xlab = "d (m)",
+  ylab = "K(d)-r",
+  main = "CSR envelope for the Choa Chu Kang K-function"
+)
+```
+
+The observed K-function lies above the CSR envelope over part of the distance range. I reject the null hypothesis over those distances because there are more neighbouring childcare centres than expected under CSR. This indicates clustering in Choa Chu Kang.
+
+### Tampines
+
+#### Computing the K-function estimate
+
+```{r}
+#| label: k-function-tampines
+#| fig-width: 8
+#| fig-height: 6
+K_tm <- Kest(
+  childcare_tm_ppp,
+  correction = "Ripley"
+)
+
+plot(
+  K_tm,
+  . - r ~ r,
+  ylab = "K(d)-r",
+  xlab = "d (m)",
+  xlim = c(0, 1000),
+  main = "K-function for Tampines"
+)
+```
+
+#### Performing the CSR test
+
+```{r}
+#| label: k-envelope-tampines
+#| fig-width: 8
+#| fig-height: 6
+K_tm_csr <- envelope(
+  childcare_tm_ppp,
+  Kest,
+  nsim = 99,
+  rank = 1,
+  glocal = TRUE,
+  verbose = FALSE
+)
+
+plot(
+  K_tm_csr,
+  . - r ~ r,
+  xlab = "d (m)",
+  ylab = "K(d)-r",
+  xlim = c(0, 500),
+  main = "CSR envelope for the Tampines K-function"
+)
+```
+
+The Tampines K-function exceeds the CSR envelope over part of the plotted distance range. I reject the null hypothesis over those distances and conclude that childcare centres are clustered at those spatial scales.
+
+## Analysing the Spatial Point Process Using the L-function
+
+The L-function is a transformed version of the K-function. Following the exercise, I plot $L(d)-d$ so that the CSR reference is easier to compare with the observed pattern. Positive departures above the CSR envelope indicate clustering.
+
+### Choa Chu Kang
+
+#### Computing the L-function estimate
+
+```{r}
+#| label: l-function-ck
+#| fig-width: 8
+#| fig-height: 6
+L_ck <- Lest(
+  childcare_ck_ppp,
+  correction = "Ripley"
+)
+
+plot(
+  L_ck,
+  . - r ~ r,
+  ylab = "L(d)-r",
+  xlab = "d (m)",
+  main = "L-function for Choa Chu Kang"
+)
+```
+
+#### Performing the CSR test
+
+```{r}
+#| label: l-envelope-ck
+#| fig-width: 8
+#| fig-height: 6
+L_ck_csr <- envelope(
+  childcare_ck_ppp,
+  Lest,
+  nsim = 99,
+  rank = 1,
+  glocal = TRUE,
+  verbose = FALSE
+)
+
+plot(
+  L_ck_csr,
+  . - r ~ r,
+  xlab = "d (m)",
+  ylab = "L(d)-r",
+  main = "CSR envelope for the Choa Chu Kang L-function"
+)
+```
+
+The observed L-function is above the CSR envelope over part of the distance range. I reject the null hypothesis over those distances and interpret the positive departure as evidence of clustering in Choa Chu Kang.
+
+### Tampines
+
+#### Computing the L-function estimate
+
+```{r}
+#| label: l-function-tampines
+#| fig-width: 8
+#| fig-height: 6
+L_tm <- Lest(
+  childcare_tm_ppp,
+  correction = "Ripley"
+)
+
+plot(
+  L_tm,
+  . - r ~ r,
+  ylab = "L(d)-r",
+  xlab = "d (m)",
+  xlim = c(0, 1000),
+  main = "L-function for Tampines"
+)
+```
+
+#### Performing the CSR test
+
+```{r}
+#| label: l-envelope-tampines
+#| fig-width: 8
+#| fig-height: 6
+L_tm_csr <- envelope(
+  childcare_tm_ppp,
+  Lest,
+  nsim = 99,
+  rank = 1,
+  glocal = TRUE,
+  verbose = FALSE
+)
+
+plot(
+  L_tm_csr,
+  . - r ~ r,
+  xlab = "d (m)",
+  ylab = "L(d)-r",
+  xlim = c(0, 500),
+  main = "CSR envelope for the Tampines L-function"
+)
+```
+
+The observed Tampines L-function rises above the CSR envelope over part of the plotted distance range. I reject the null hypothesis over those distances and conclude that the point pattern shows clustering at those spatial scales.
