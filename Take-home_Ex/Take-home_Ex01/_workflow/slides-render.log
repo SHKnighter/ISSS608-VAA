@@ -1,0 +1,53 @@
+
+
+processing file: executive-summary.qmd
+1/3                  
+2/3 [unnamed-chunk-1]
+3/3                  
+output file: executive-summary.knit.md
+
+pandoc 
+  to: revealjs
+  output-file: executive-summary.html
+  standalone: true
+  title-prefix: ISSS626-GAA | Bao Sihan
+  wrap: none
+  default-image-extension: png
+  html-math-method:
+    method: mathjax
+    url: >-
+      https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS_HTML-full
+  slide-level: 2
+  toc: false
+  css:
+    - slides.css
+  
+metadata
+  link-citations: true
+  width: 1280
+  height: 720
+  margin: 0.1
+  center: false
+  navigationMode: linear
+  controlsLayout: edges
+  controlsTutorial: false
+  hash: true
+  history: true
+  hashOneBasedIndex: false
+  fragmentInURL: false
+  transition: none
+  backgroundTransition: none
+  pdfSeparateFragments: false
+  lang: en
+  auto-stretch: true
+  editor: visual
+  title: Exploring Thermal Detections in Kapuas
+  subtitle: ISSS626 · January to August 2026
+  author: Bao Sihan
+  theme: simple
+  slideNumber: true
+  controls: true
+  progress: true
+  
+Output created: ..\..\_site\Take-home_Ex\Take-home_Ex01\executive-summary.html
+

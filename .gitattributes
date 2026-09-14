@@ -1,0 +1,6 @@
+# Preserve the exact bytes used by the Take-home Exercise 1 checksum guard.
+Take-home_Ex/Take-home_Ex01/data/** -text
+Take-home_Ex/Take-home_Ex01/R/cleaning.R -text
+Take-home_Ex/Take-home_Ex01/R/01-prepare.R -text
+Take-home_Ex/Take-home_Ex01/R/02-analyse.R -text
+Take-home_Ex/Take-home_Ex01/output/tables/** -text

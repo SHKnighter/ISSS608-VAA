@@ -1,6 +1,10 @@
 project:
   type: website
   output-dir: _site
+  render:
+    - "*.qmd"
+    - "Hands-on_Ex/**/*.qmd"
+    - "Take-home_Ex/**/*.qmd"
 
 website:
   title: "ISSS626-GAA | Bao Sihan"
@@ -21,6 +25,8 @@ website:
         menu:
           - text: "Overview"
             href: take-home.html
+          - text: "Take-Home Exercise 1"
+            href: Take-home_Ex/Take-home_Ex01/Take-home_Ex01.qmd
 
     right:
       - href: index.html

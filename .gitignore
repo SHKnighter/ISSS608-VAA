@@ -12,3 +12,16 @@
 
 /.quarto/
 **/*.quarto_ipynb
+
+# Published Quarto figures must be included even though source caches are ignored.
+!/_site/**/*_files/
+
+# Local review notes and redundant presentation exports
+/Take-home_Ex/Take-home_Ex01/_workflow/checkpoint.json
+/Take-home_Ex/Take-home_Ex01/_workflow/REVIEW.md
+/Take-home_Ex/Take-home_Ex01/_workflow/PROF_REQUIREMENTS_CHECKLIST.md
+/Take-home_Ex/Take-home_Ex01/_workflow/environment.txt
+/Take-home_Ex/Take-home_Ex01/_workflow/profile_*.rds
+/Take-home_Ex/Take-home_Ex01/_workflow/report-render.log
+/Take-home_Ex/Take-home_Ex01/presentation/figures/*.svg
+/_site/Take-home_Ex/Take-home_Ex01/presentation/figures/*.svg

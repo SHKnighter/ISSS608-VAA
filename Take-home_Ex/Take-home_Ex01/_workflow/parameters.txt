@@ -1,0 +1,7 @@
+List of 6
+ $ seed          : int 6262026
+ $ nsim          : int 199
+ $ kde_sigma_km  : num [1:2] 5 10
+ $ pixel_km      : num 0.5
+ $ r_km          : num [1:101] 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 ...
+ $ inhom_sigma_km: num 10

@@ -1,0 +1,30 @@
+CP4A saved
+$n
+[1] 6515
+
+$area_km2
+[1] 17058.19
+
+$august_share
+[1] 0.9654643
+
+$kde_spearman
+[1] 0.9123938
+
+$kde_peak
+             x        y    value
+16683 181.3796 9773.776 9.829103
+
+$known_static
+[1] 1
+
+$unknown_type
+[1] 6431
+
+CSR simulations saved
+Error in Kinhom(Y, lambda = lambda, r = r, correction = "translate") : 
+  object 'renorm.factor' not found
+Calls: envelope ... envelopeEngine -> do.call -> <Anonymous> -> Kinhom -> adjust.ratfv
+In addition: Warning message:
+Window containing simulated patterns is not a subset of data window 
+Execution halted

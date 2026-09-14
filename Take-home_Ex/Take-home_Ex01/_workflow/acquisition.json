@@ -1,0 +1,58 @@
+{
+  "study": "Kapuas Regency, Central Kalimantan, Indonesia",
+  "target_start_date": "2026-01-01",
+  "target_end_date": "2026-08-31",
+  "firms": {
+    "request_id": "804686",
+    "source_label": "SUOMI VIIRS C2",
+    "region": "Indonesia",
+    "format": "CSV",
+    "request_page": "https://firms.modaps.eosdis.nasa.gov/download/list.php",
+    "status": "Downloaded and validated; analysis complete",
+    "downloaded": true,
+    "acquired_at_utc": "2026-09-13T16:27:25.0543953Z",
+    "local_files": [
+      {
+        "name": "DL_FIRE_SV-C2_804686.zip",
+        "bytes": 3580949,
+        "sha256": "8A084FEF59E4D609BE2C1F10EA975FFE85254A3325EB162B7FCE38BAC0BE1669"
+      },
+      {
+        "name": "fire_archive_SV-C2_804686.csv",
+        "bytes": 1672583,
+        "sha256": "EEFD2E9334176D48E9FB923F34228CB128AA9225221C1D07B34673F76145277E"
+      },
+      {
+        "name": "fire_nrt_SV-C2_804686.csv",
+        "bytes": 15067352,
+        "sha256": "EF19E2F8C40EBEF87CDE6AF84AEDE09C4BEBD2602C302B7AECFBDBBF24441611"
+      },
+      {
+        "name": "kapuas_big_20240905.geojson",
+        "bytes": 232713,
+        "sha256": "44F58EAACF93AF19244D3152CE2FB095AFF8E95DDE273123D9AC08E30D116005"
+      },
+      {
+        "name": "Readme.txt",
+        "bytes": 89,
+        "sha256": "850E5EB42FA71907F2B0C8049F1017B7CEA7704119438386902E2FF803E7BFBA"
+      }
+    ]
+  },
+  "boundary": {
+    "assignment_source": "https://www.indonesia-geospasial.com/2023/05/download-shapefile-batas-administrasi.html",
+    "provider": "Badan Informasi Geospasial (BIG)",
+    "application_item": "49bda2cefd3f4b92aa726300bcdb40f7",
+    "webmap_item": "eeb011638b754398a0a159d1ebade476",
+    "status": "Downloaded and geometry validated",
+    "downloaded": true,
+    "sha256": "44F58EAACF93AF19244D3152CE2FB095AFF8E95DDE273123D9AC08E30D116005",
+    "local_file": "data/raw/kapuas_big_20240905.geojson",
+    "administrative_code": "62.03",
+    "provider_metadata": "TASWIL5000020240905KABKOTA",
+    "acquired_at_utc": "2026-09-12T18:44:33.1852726Z",
+    "copyright": "Badan Informasi Geospasial",
+    "redistribution_license": "Not stated in layer metadata; verify before public redistribution",
+    "query_url": "https://geoservices.big.go.id/rbi/rest/services/BATASWILAYAH/BATAS_WILAYAH/MapServer/13/query?f=geojson&objectIds=526&outFields=*&returnGeometry=true&outSR=4326"
+  }
+}

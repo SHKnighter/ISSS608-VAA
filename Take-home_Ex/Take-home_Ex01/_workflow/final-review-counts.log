@@ -1,0 +1,6 @@
+     raw   county      low retained   august 
+  199798     6716      201     6515     6290 
+                reference I(observed > upper)
+1                     CSR                  96
+2 Inhomogeneous reference                  96
+PASS: independent raw CSV count and polygon selection; selected curve claims.

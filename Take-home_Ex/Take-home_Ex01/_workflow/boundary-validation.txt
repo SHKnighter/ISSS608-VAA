@@ -1,0 +1,11 @@
+Linking to GEOS 3.14.1, GDAL 3.12.1, PROJ 9.7.1; sf_use_s2() is TRUE
+st_as_s2(): dropping Z and/or M coordinate
+Validated: 2026-09-13 02:46:57.830932 
+Features: 1 
+       xmin        ymin        xmax        ymax 
+113.6780000  -3.4636274 114.7973014  -0.3815778 
+Raw CRS EPSG: 4979 
+Analysis CRS candidate: EPSG 32750; Z/M removed
+Area km2: 17058.19 
+[1] "C:/Users/Lenovo/AppData/Local/R/win-library/4.6"
+[2] "C:/Program Files/R/R-4.6.1/library"             

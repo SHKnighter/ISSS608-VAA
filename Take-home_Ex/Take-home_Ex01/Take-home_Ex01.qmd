@@ -1,0 +1,16 @@
+---
+title: "Take-Home Exercise 1"
+subtitle: "Geospatial Analytics for Public Safety"
+author: "Bao Sihan"
+toc: false
+---
+
+## Thermal anomaly patterns in Kapuas, Indonesia
+
+This exercise examines **6,515 nominal- and high-confidence VIIRS S-NPP detections** in Kapuas Regency, Central Kalimantan, between **1 January and 31 August 2026**. It combines monthly descriptions, kernel density estimation and L-function comparisons to investigate spatial concentration and its implications for public-safety planning.
+
+- [Read the technical report](technical-report.qmd) — data quality, reproducible R code, maps, statistical comparisons and interpretation.
+- [View the executive summary](executive-summary.qmd) — eight slides of findings, limitations and planning implications.
+- [Project repository](https://github.com/SHKnighter/ISSS608-VAA).
+
+Satellite thermal detections are observations, not independent confirmed forest-fire incidents. The analysis distinguishes detection intensity from fire risk and identifies the additional evidence needed for management decisions.

@@ -1,0 +1,35 @@
+suppressPackageStartupMessages({library(sf);library(dplyr);library(spatstat.geom)})
+source('R/cleaning.R')
+sources <- lapply(c('archive','nrt'),function(s) {
+ d <- read.csv(paste0('data/raw/fire_',s,'_SV-C2_804686.csv'),colClasses=c(acq_time='character',version='character'))
+ d$source <- s; d$raw_row <- seq_len(nrow(d)); d
+})
+raw <- bind_rows(sources)
+profile <- bind_rows(lapply(sources,function(d) data.frame(source=d$source[1],rows=nrow(d),first=min(d$acq_date),last=max(d$acq_date),missing_type=if('type'%in%names(d))sum(is.na(d$type)) else nrow(d))))
+write.csv(profile,'output/tables/source-profile.csv',row.names=FALSE)
+missingness <- data.frame(field=names(raw),missing=vapply(raw,function(x)sum(is.na(x)),integer(1)))
+write.csv(missingness,'output/tables/missingness.csv',row.names=FALSE)
+z <- clean_records(raw)
+b <- st_transform(st_zm(st_read('data/raw/kapuas_big_20240905.geojson',quiet=TRUE)),4326)
+stopifnot(nrow(b)==1,all(st_is_valid(b)),!any(st_is_empty(b)))
+p <- st_as_sf(z$data,coords=c('longitude','latitude'),crs=4326,remove=FALSE)
+inside <- lengths(st_intersects(p,b))>0
+audit <- rbind(z$audit,data.frame(step='Kapuas polygon (boundary included)',before=nrow(p),excluded=sum(!inside),retained=sum(inside)))
+p <- p[inside,]
+# Apply type-neutral selection consistently to archive and NRT; retain known type flags for disclosure.
+p <- st_transform(p,32750); b <- st_transform(b,32750)
+xy <- st_coordinates(p)
+p$easting_m <- xy[,1]; p$northing_m <- xy[,2]
+p$month <- format(p$acq_date,'%Y-%m')
+stopifnot(nrow(p)>30,all(st_is_valid(p)),all(lengths(st_intersects(p,b))>0))
+write.csv(audit,'output/tables/cleaning-audit.csv',row.names=FALSE)
+write.csv(st_drop_geometry(p),'data/processed/kapuas-detections.csv',row.names=FALSE)
+saveRDS(list(points=p,boundary=b,audit=audit,profile=profile),'data/processed/prepared.rds')
+st_write(p,'data/processed/kapuas.gpkg',layer='detections',delete_layer=TRUE,quiet=TRUE)
+st_write(b,'data/processed/kapuas.gpkg',layer='boundary',delete_layer=TRUE,quiet=TRUE)
+days <- seq(as.Date('2026-01-01'),as.Date('2026-08-31'),by='day')
+coverage <- data.frame(date=days,indonesia_records=as.integer(table(factor(as.Date(raw$acq_date),levels=days))))
+write.csv(coverage,'output/tables/date-coverage.csv',row.names=FALSE)
+cat('Prepared',nrow(p),'detections; area',as.numeric(st_area(b))/1e6,'km2\n')
+print(audit); print(table(p$month)); cat('No Indonesia records on:',as.character(coverage$date[coverage$indonesia_records==0]),'\n')
+cat('Duplicate spatial coordinates:',sum(duplicated(st_coordinates(p))),'\n');print(table(p$type,useNA='always'))

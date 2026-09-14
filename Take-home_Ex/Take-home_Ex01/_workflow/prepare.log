@@ -1,0 +1,17 @@
+Prepared 6515 detections; area 17058.19 km2
+                                       step before excluded retained
+1                         Valid coordinates 199798        0   199798
+2                   Valid UTC date and time 199798        0   199798
+3                               Study dates 199798        0   199798
+4                           S-NPP satellite 199798        0   199798
+5 Duplicate observation key (archive first) 199798        0   199798
+6                Nominal or high confidence 199798     8910   190888
+7        Kapuas polygon (boundary included) 190888   184373     6515
+
+2026-01 2026-03 2026-04 2026-05 2026-06 2026-07 2026-08 
+     62       7      15       7      15     119    6290 
+No Indonesia records on: 2026-03-10 2026-03-11 2026-03-12 2026-04-28 2026-04-29 2026-06-01 2026-07-11 2026-07-12 2026-07-13 2026-07-14 2026-07-15 2026-07-16 2026-08-03 
+Duplicate spatial coordinates: 0 
+
+   0    2 <NA> 
+  83    1 6431 

@@ -1,0 +1,11 @@
+.reveal { font-size: 27px; color: #263b4a; font-family: Arial, sans-serif; }
+.reveal h1 { font-size: 2.1em; }
+.reveal h2 { font-size: 1.35em; color: #25465c; margin-bottom: 24px; }
+.reveal p, .reveal li { line-height: 1.35; }
+.reveal table { font-size: .8em; }
+.reveal .small { font-size: .74em; line-height: 1.4; }
+.reveal .takeaway { background: #edf3f6; border-left: 5px solid #d55129; padding: 12px 20px; margin-top: 22px; }
+.reveal .slide-number { font-size: 16px; }
+.reveal img { object-fit: contain; }
+.reveal .slide > p:has(img) { text-align: center; }
+.reveal .columns { gap: 24px; }
