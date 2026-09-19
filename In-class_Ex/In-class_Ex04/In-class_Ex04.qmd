@@ -1,0 +1,201 @@
+---
+title: "In Class Exercise 4: Geographically Weighted Summary Statistics"
+author: "Bao Sihan"
+date: "September 19, 2026"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: false
+execute:
+  echo: true
+  warning: false
+  message: false
+  fig-width: 10
+  fig-height: 6
+---
+
+## Overview
+
+In this exercise, I use the Hunan data from Hands-on Exercise 4 to calculate geographically weighted summary statistics for GDP per capita (GDPPC). Following the in-class steps, I compare two ways of selecting an adaptive bandwidth and use the AIC-selected bandwidth to map the local mean of GDPPC.
+
+## Getting started
+
+I load the packages used in the exercise. The Hunan shapefile is stored in `data/geospatial`, and the 2012 data table is in `data/aspatial`. Both paths are relative to this exercise folder.
+
+```{r}
+#| label: setup
+pacman::p_load(sf, ggstatsplot, tmap, tidyverse, knitr, GWmodel)
+tmap_mode("plot")
+```
+
+## Importing and preparing the data
+
+### Importing the Hunan shapefile
+
+I read the county boundaries as an `sf` polygon object.
+
+```{r}
+#| label: import-boundaries
+hunan_sf <- st_read(dsn = "data/geospatial", layer = "Hunan")
+```
+
+### Importing the Hunan 2012 table
+
+I import the development indicators as a tibble.
+
+```{r}
+#| label: import-indicators
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+### Joining the two data sets
+
+I join the indicators to the boundaries using `County`. I select the same fields as in the class example by name, so that the selection does not depend on their column positions. The geometry is retained by `sf`.
+
+```{r}
+#| label: join-data
+hunan_sf <- left_join(hunan_sf, hunan2012, by = "County") %>%
+  select(NAME_2, ID_3, NAME_3, County, GDPPC, GIO, RORP, ROREmp)
+```
+
+```{r}
+#| label: check-data
+#| include: false
+stopifnot(
+  nrow(hunan_sf) == nrow(hunan2012),
+  !anyDuplicated(hunan_sf$County),
+  !anyNA(hunan_sf$GDPPC),
+  st_is_longlat(hunan_sf)
+)
+```
+
+## Mapping GDPPC
+
+I display a labelled county map beside a GDPPC choropleth. This helps me locate the counties before calculating the local statistics.
+
+```{r}
+#| label: map-gdppc
+#| fig-cap: "Hunan county names and GDP per capita in 2012."
+basemap <- tm_shape(hunan_sf) +
+  tm_polygons() +
+  tm_text("NAME_3", size = 0.5)
+
+gdppc <- qtm(hunan_sf, fill = "GDPPC")
+tmap_arrange(basemap, gdppc, asp = 1, ncol = 2)
+```
+
+## Converting to a SpatialPolygonsDataFrame
+
+The following `GWmodel` functions use a spatial object from the `sp` package, so I convert the joined `sf` object with `as_Spatial()`.
+
+```{r}
+#| label: convert-spatial
+hunan_sp <- hunan_sf %>%
+  as_Spatial()
+```
+
+## Selecting an adaptive bandwidth
+
+I use an intercept-only model, `GDPPC ~ 1`, with a bisquare kernel. With an adaptive bandwidth, the neighbourhood size is expressed as a number of nearest neighbours rather than a fixed distance. Since the boundaries use longitude and latitude, I set `longlat = TRUE`.
+
+### Cross-validation bandwidth
+
+First, I select the bandwidth using cross-validation (CV).
+
+```{r}
+#| label: bandwidth-cv
+bw_CV <- bw.gwr(
+  GDPPC ~ 1,
+  data = hunan_sp,
+  approach = "CV",
+  adaptive = TRUE,
+  kernel = "bisquare",
+  longlat = TRUE
+)
+bw_CV
+```
+
+### AIC bandwidth
+
+Next, I select a bandwidth using the AIC approach. As in the class example, I use this bandwidth in the summary-statistics calculation below.
+
+```{r}
+#| label: bandwidth-aic
+bw_AIC <- bw.gwr(
+  GDPPC ~ 1,
+  data = hunan_sp,
+  approach = "AIC",
+  adaptive = TRUE,
+  kernel = "bisquare",
+  longlat = TRUE
+)
+bw_AIC
+```
+
+The selected bandwidths are `r bw_CV` neighbours for CV and `r bw_AIC` neighbours for AIC.
+
+## Computing geographically weighted summary statistics
+
+I calculate the local summary statistics for GDPPC with `gwss()`. I keep the adaptive bisquare kernel and enable the quantile-based statistics, following the class example.
+
+```{r}
+#| label: calculate-gwss
+gwstat <- gwss(
+  data = hunan_sp,
+  vars = "GDPPC",
+  bw = bw_AIC,
+  kernel = "bisquare",
+  quantile = TRUE,
+  adaptive = TRUE,
+  longlat = TRUE
+)
+```
+
+## Preparing the output data
+
+I convert the result to a data frame and attach it to the original county polygons. The output follows the input county order. `GDPPC_LM` contains the geographically weighted local mean used in the final map.
+
+```{r}
+#| label: prepare-output
+gwstat_df <- as.data.frame(gwstat$SDF)
+hunan_gstat <- cbind(hunan_sf, gwstat_df)
+```
+
+```{r}
+#| label: check-output
+#| include: false
+stopifnot(
+  nrow(gwstat_df) == nrow(hunan_sf),
+  all(is.finite(hunan_gstat$GDPPC_LM))
+)
+```
+
+## Visualising geographically weighted summary statistics
+
+I map the local mean using five quantile classes and a blue colour scale. Darker areas represent higher locally weighted GDPPC values. Unlike the earlier GDPPC map, each value here summarises the surrounding neighbourhood using the selected spatial weights.
+
+```{r}
+#| label: map-local-mean
+#| fig-height: 9
+#| echo: false
+#| fig-cap: "Geographically weighted mean of GDPPC, using the AIC-selected adaptive bandwidth."
+tm_shape(hunan_gstat) +
+  tm_polygons(
+    fill = "GDPPC_LM",
+    fill.scale = tm_scale_intervals(
+      style = "quantile",
+      n = 5,
+      values = "brewer.blues"
+    ),
+    fill.legend = tm_legend(title = "Local mean")
+  ) +
+  tm_borders(col_alpha = 0.5) +
+  tm_title(
+    "Distribution of geographically weighted mean",
+    position = tm_pos_out("center", "top"),
+    size = 1.2
+  ) +
+  tm_layout(frame = TRUE)
+```
