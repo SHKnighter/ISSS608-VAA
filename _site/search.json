@@ -537,5 +537,12 @@
     "title": "ISSS626-GAA",
     "section": "",
     "text": "Welcome to ISSS626 Geospatial Analytics and Applications. In this website, you will find my coursework prepared for this course."
+  },
+  {
+    "objectID": "InclassEx/InClassEx4.html",
+    "href": "InclassEx/InClassEx4.html",
+    "title": "InclassEx4",
+    "section": "",
+    "text": "{r} pacman::p_load(sf, ggstatsplot, tmap, tidyverse, knitr, GWmodel)\nUsing the steps you learned from previous hands-on, complete the following tasks:\nimport Hunan shapefile and parse it into a sf polygon feature object.\nimport Hunan_2012.csv file parse it into a tibble data.frame.\njoin Hunan and Hunan_2012 data.frames.\nImporting Hunan shapefile\n{r} hunan_sf &lt;- st_read(dsn = “data/geospatial”, layer = “Hunan”)\nImporting Hunan_2012 table\n{r} hunan2012 &lt;- read_csv(“data/aspatial/Hunan_2012.csv”)\nJoining Hunan and Hunan_2012\n{r} hunan_sf &lt;- left_join(hunan_sf, hunan2012) %&gt;% select(1:3, 7, 15, 16, 31, 32)\nMapping GDPPC\n{r} basemap &lt;- tm_shape(hunan_sf) + tm_polygons() + tm_text(“NAME_3”, size=0.5)\n{r} gdppc &lt;- qtm(hunan_sf, “GDPPC”) tmap_arrange(basemap, gdppc, asp=1, ncol=2)\nConverting to SpatialPolygonDataFrame\n{r} hunan_sp &lt;- hunan_sf %&gt;% as_Spatial()\nGeographically Weighted Summary Statistics (GSWW) with adaptive bandwidth\n{r} bw_CV &lt;- bw.gwr(GDPPC ~ 1, data = hunan_sp, approach = “CV”, adaptive = TRUE, kernel = “bisquare”, longlat = T) bw_CV\nComputing geographically wieghted summary statistics\n{r} bw_AIC &lt;- bw.gwr(GDPPC ~ 1, data = hunan_sp, approach =“AIC”, adaptive = TRUE, kernel = “bisquare”, longlat = T) bw_AIC\n{r} gwstat &lt;- gwss(data = hunan_sp, vars = “GDPPC”, bw = bw_AIC, kernel = “bisquare”, quantile = TRUE, adaptive = TRUE, longlat = T)\nPreparing the output data\n{r} gwstat_df &lt;- as.data.frame(gwstat$SDF)\n{r} hunan_gstat &lt;- cbind(hunan_sf, gwstat_df)\nVisualising geographically weighted summary statistics\n{r} #| fig-height: 9 #| echo: false tm_shape(hunan_gstat) + tm_polygons(fill = “GDPPC_LM”, fill.scale = tm_scale_intervals( style = “quantile”, n = 5, values = “brewer.blues”), fill.legend = tm_legend( title = “local Mean”)) + tm_borders(fill_alpha = 0.5) + tm_layout(main.title = “Distribution of geographically wieghted mean”, main.title.position = “center”, main.title.size = 2.0, frame = TRUE)"
   }
 ]
