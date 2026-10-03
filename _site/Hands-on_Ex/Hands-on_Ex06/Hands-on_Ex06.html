@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Bao Sihan">
+<meta name="dcterms.date" content="2026-10-03">
+
+<title>Hands-on Exercise 6: Geographical Segmentation with Spatially Constrained Clustering – ISSS626-GAA | Bao Sihan</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-92404dd89b1444827012a9e3a58cda88.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="../../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+
+<script src="../../site_libs/plotly-binding-4.12.1/plotly.js"></script>
+
+<script src="../../site_libs/typedarray-0.1/typedarray.min.js"></script>
+
+<script src="../../site_libs/jquery-3.5.1/jquery.min.js"></script>
+
+<link href="../../site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+
+<script src="../../site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+
+<link href="../../site_libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+
+<script src="../../site_libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">ISSS626-GAA | Bao Sihan</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-exercise" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Hands-on Exercise</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercise">    
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex01A/Hands-on_Ex01A.html">
+ <span class="dropdown-text">Hands-on Exercise 1A</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex01B/Hands-on_Ex01B.html">
+ <span class="dropdown-text">Hands-on Exercise 1B</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex02A/Hands-on_Ex02A.html">
+ <span class="dropdown-text">Hands-on Exercise 2A</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex02B/Hands-on_Ex02B.html">
+ <span class="dropdown-text">Hands-on Exercise 2B</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html">
+ <span class="dropdown-text">Hands-on Exercise 4</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05A/Hands-on_Ex05A.html">
+ <span class="dropdown-text">Hands-on Exercise 5A</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05B/Hands-on_Ex05B.html">
+ <span class="dropdown-text">Hands-on Exercise 5B</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html">
+ <span class="dropdown-text">Hands-on Exercise 6</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex04/In-class_Ex04.html">
+ <span class="dropdown-text">In Class Exercise 4</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-take-home-exercise" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Take-Home Exercise</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercise">    
+        <li>
+    <a class="dropdown-item" href="../../take-home.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html">
+ <span class="dropdown-text">Take-Home Exercise 1</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started"><span class="header-section-number">2</span> Getting Started</a>
+  <ul class="collapse">
+  <li><a href="#data-and-tools" id="toc-data-and-tools" class="nav-link" data-scroll-target="#data-and-tools"><span class="header-section-number">2.1</span> Data and tools</a></li>
+  </ul></li>
+  <li><a href="#data-import-and-preparation" id="toc-data-import-and-preparation" class="nav-link" data-scroll-target="#data-import-and-preparation"><span class="header-section-number">3</span> Data Import and Preparation</a>
+  <ul class="collapse">
+  <li><a href="#importing-the-data" id="toc-importing-the-data" class="nav-link" data-scroll-target="#importing-the-data"><span class="header-section-number">3.1</span> Importing the data</a></li>
+  <li><a href="#deriving-penetration-rates" id="toc-deriving-penetration-rates" class="nav-link" data-scroll-target="#deriving-penetration-rates"><span class="header-section-number">3.2</span> Deriving penetration rates</a></li>
+  </ul></li>
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis"><span class="header-section-number">4</span> Exploratory Data Analysis</a>
+  <ul class="collapse">
+  <li><a href="#counts-and-rates" id="toc-counts-and-rates" class="nav-link" data-scroll-target="#counts-and-rates"><span class="header-section-number">4.1</span> Counts and rates</a></li>
+  <li><a href="#comparing-all-six-indicators" id="toc-comparing-all-six-indicators" class="nav-link" data-scroll-target="#comparing-all-six-indicators"><span class="header-section-number">4.2</span> Comparing all six indicators</a></li>
+  <li><a href="#joining-the-spatial-and-census-data" id="toc-joining-the-spatial-and-census-data" class="nav-link" data-scroll-target="#joining-the-spatial-and-census-data"><span class="header-section-number">4.3</span> Joining the spatial and census data</a></li>
+  <li><a href="#mapping-the-indicators" id="toc-mapping-the-indicators" class="nav-link" data-scroll-target="#mapping-the-indicators"><span class="header-section-number">4.4</span> Mapping the indicators</a></li>
+  </ul></li>
+  <li><a href="#correlation-analysis" id="toc-correlation-analysis" class="nav-link" data-scroll-target="#correlation-analysis"><span class="header-section-number">5</span> Correlation Analysis</a></li>
+  <li><a href="#hierarchical-cluster-analysis" id="toc-hierarchical-cluster-analysis" class="nav-link" data-scroll-target="#hierarchical-cluster-analysis"><span class="header-section-number">6</span> Hierarchical Cluster Analysis</a>
+  <ul class="collapse">
+  <li><a href="#selecting-the-clustering-variables" id="toc-selecting-the-clustering-variables" class="nav-link" data-scroll-target="#selecting-the-clustering-variables"><span class="header-section-number">6.1</span> Selecting the clustering variables</a></li>
+  <li><a href="#comparing-standardisation-methods" id="toc-comparing-standardisation-methods" class="nav-link" data-scroll-target="#comparing-standardisation-methods"><span class="header-section-number">6.2</span> Comparing standardisation methods</a></li>
+  <li><a href="#distances-and-the-ward-hierarchy" id="toc-distances-and-the-ward-hierarchy" class="nav-link" data-scroll-target="#distances-and-the-ward-hierarchy"><span class="header-section-number">6.3</span> Distances and the Ward hierarchy</a></li>
+  <li><a href="#comparing-linkage-methods" id="toc-comparing-linkage-methods" class="nav-link" data-scroll-target="#comparing-linkage-methods"><span class="header-section-number">6.4</span> Comparing linkage methods</a></li>
+  <li><a href="#gap-statistic-and-the-six-group-comparison" id="toc-gap-statistic-and-the-six-group-comparison" class="nav-link" data-scroll-target="#gap-statistic-and-the-six-group-comparison"><span class="header-section-number">6.5</span> Gap statistic and the six-group comparison</a></li>
+  <li><a href="#interactive-cluster-heatmap" id="toc-interactive-cluster-heatmap" class="nav-link" data-scroll-target="#interactive-cluster-heatmap"><span class="header-section-number">6.6</span> Interactive cluster heatmap</a></li>
+  <li><a href="#mapping-the-hierarchy" id="toc-mapping-the-hierarchy" class="nav-link" data-scroll-target="#mapping-the-hierarchy"><span class="header-section-number">6.7</span> Mapping the hierarchy</a></li>
+  </ul></li>
+  <li><a href="#spatially-constrained-clustering-with-skater" id="toc-spatially-constrained-clustering-with-skater" class="nav-link" data-scroll-target="#spatially-constrained-clustering-with-skater"><span class="header-section-number">7</span> Spatially Constrained Clustering with SKATER</a>
+  <ul class="collapse">
+  <li><a href="#building-the-neighbour-graph" id="toc-building-the-neighbour-graph" class="nav-link" data-scroll-target="#building-the-neighbour-graph"><span class="header-section-number">7.1</span> Building the neighbour graph</a></li>
+  <li><a href="#edge-costs-and-the-minimum-spanning-tree" id="toc-edge-costs-and-the-minimum-spanning-tree" class="nav-link" data-scroll-target="#edge-costs-and-the-minimum-spanning-tree"><span class="header-section-number">7.2</span> Edge costs and the minimum spanning tree</a></li>
+  <li><a href="#cutting-the-tree-into-six-regions" id="toc-cutting-the-tree-into-six-regions" class="nav-link" data-scroll-target="#cutting-the-tree-into-six-regions"><span class="header-section-number">7.3</span> Cutting the tree into six regions</a></li>
+  </ul></li>
+  <li><a href="#spatially-constrained-clustering-with-clustgeo" id="toc-spatially-constrained-clustering-with-clustgeo" class="nav-link" data-scroll-target="#spatially-constrained-clustering-with-clustgeo"><span class="header-section-number">8</span> Spatially Constrained Clustering with ClustGeo</a>
+  <ul class="collapse">
+  <li><a href="#ward-like-clustering-without-geography" id="toc-ward-like-clustering-without-geography" class="nav-link" data-scroll-target="#ward-like-clustering-without-geography"><span class="header-section-number">8.1</span> Ward-like clustering without geography</a></li>
+  <li><a href="#balancing-ict-and-geographical-similarity" id="toc-balancing-ict-and-geographical-similarity" class="nav-link" data-scroll-target="#balancing-ict-and-geographical-similarity"><span class="header-section-number">8.2</span> Balancing ICT and geographical similarity</a></li>
+  </ul></li>
+  <li><a href="#visual-interpretation-of-clusters" id="toc-visual-interpretation-of-clusters" class="nav-link" data-scroll-target="#visual-interpretation-of-clusters"><span class="header-section-number">9</span> Visual Interpretation of Clusters</a>
+  <ul class="collapse">
+  <li><a href="#radio-ownership-within-groups" id="toc-radio-ownership-within-groups" class="nav-link" data-scroll-target="#radio-ownership-within-groups"><span class="header-section-number">9.1</span> Radio ownership within groups</a></li>
+  <li><a href="#multivariate-profiles" id="toc-multivariate-profiles" class="nav-link" data-scroll-target="#multivariate-profiles"><span class="header-section-number">9.2</span> Multivariate profiles</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">10</span> References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Hands-on Exercise 6: Geographical Segmentation with Spatially Constrained Clustering</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Bao Sihan </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 3, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
+<p>In this exercise, I group the townships of Shan State, Myanmar, using household access to information and communication technology (ICT). I first explore the 2014 census indicators, then compare hierarchical clustering, SKATER and ClustGeo. The main question is whether townships with similar ICT profiles also form useful geographical regions.</p>
+<p>The analysis follows <a href="https://r4gdsa.netlify.app/chap12.html">Chapter 12</a>. Each section presents the main idea and its figures; the R code is available in the expandable blocks.</p>
+</section>
+<section id="getting-started" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="getting-started"><span class="header-section-number">2</span> Getting Started</h2>
+<section id="data-and-tools" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="data-and-tools"><span class="header-section-number">2.1</span> Data and tools</h3>
+<p>The supplied data contain Myanmar township boundaries and six household ICT indicators for Shan State. I use the 55 townships in Shan (East), Shan (North) and Shan (South). The boundary layer and census table are joined using the township code, rather than the township name.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, spdep, tmap, ClustGeo, ggpubr, cluster,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               factoextra, heatmaply, corrplot, tidyverse, GGally)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">11</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="data-import-and-preparation" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="data-import-and-preparation"><span class="header-section-number">3</span> Data Import and Preparation</h2>
+<section id="importing-the-data" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="importing-the-data"><span class="header-section-number">3.1</span> Importing the data</h3>
+<p>All paths are relative to this exercise folder. I keep the boundary order throughout the analysis so that each cluster label returns to the correct township.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>shan_sf <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/geospatial/myanmar_township_boundaries.shp"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">quiet =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ST <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Shan (East)"</span>, <span class="st">"Shan (North)"</span>, <span class="st">"Shan (South)"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ST, ST_PCODE, DT, DT_PCODE, TS, TS_PCODE)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>ict <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/Shan-ICT.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="deriving-penetration-rates" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="deriving-penetration-rates"><span class="header-section-number">3.2</span> Deriving penetration rates</h3>
+<p>Raw ownership counts are affected by the number of households in a township. To compare access, I calculate the number of households owning each item per 1,000 households:</p>
+<p><span class="math display">\[
+\text{Penetration rate} =
+\frac{\text{Households with the ICT item}}{\text{Total households}}\times 1{,}000.
+\]</span></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ict_derived <span class="ot">&lt;-</span> ict <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">DT_PCODE =</span> <span class="st">`</span><span class="at">District Pcode</span><span class="st">`</span>, <span class="at">DT =</span> <span class="st">`</span><span class="at">District Name</span><span class="st">`</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">TS_PCODE =</span> <span class="st">`</span><span class="at">Township Pcode</span><span class="st">`</span>, <span class="at">TS =</span> <span class="st">`</span><span class="at">Township Name</span><span class="st">`</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">TT_HOUSEHOLDS =</span> <span class="st">`</span><span class="at">Total households</span><span class="st">`</span>, <span class="at">RADIO =</span> Radio,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">TV =</span> Television, <span class="at">LLPHONE =</span> <span class="st">`</span><span class="at">Land line phone</span><span class="st">`</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">MPHONE =</span> <span class="st">`</span><span class="at">Mobile phone</span><span class="st">`</span>, <span class="at">COMPUTER =</span> Computer,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">INTERNET =</span> <span class="st">`</span><span class="at">Internet at home</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">RADIO_PR =</span> RADIO <span class="sc">/</span> TT_HOUSEHOLDS <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">TV_PR =</span> TV <span class="sc">/</span> TT_HOUSEHOLDS <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">LLPHONE_PR =</span> LLPHONE <span class="sc">/</span> TT_HOUSEHOLDS <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">MPHONE_PR =</span> MPHONE <span class="sc">/</span> TT_HOUSEHOLDS <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">COMPUTER_PR =</span> COMPUTER <span class="sc">/</span> TT_HOUSEHOLDS <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">INTERNET_PR =</span> INTERNET <span class="sc">/</span> TT_HOUSEHOLDS <span class="sc">*</span> <span class="dv">1000</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>rate_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"RADIO_PR"</span>, <span class="st">"TV_PR"</span>, <span class="st">"LLPHONE_PR"</span>, <span class="st">"MPHONE_PR"</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>               <span class="st">"COMPUTER_PR"</span>, <span class="st">"INTERNET_PR"</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>rate_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">RADIO_PR =</span> <span class="st">"Radio"</span>, <span class="at">TV_PR =</span> <span class="st">"Television"</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">LLPHONE_PR =</span> <span class="st">"Landline phone"</span>, <span class="at">MPHONE_PR =</span> <span class="st">"Mobile phone"</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">COMPUTER_PR =</span> <span class="st">"Computer"</span>, <span class="at">INTERNET_PR =</span> <span class="st">"Internet at home"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>The data contain 55 townships with complete ICT indicators. Every township code matches a boundary polygon.</p>
+</section>
+</section>
+<section id="exploratory-data-analysis" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="exploratory-data-analysis"><span class="header-section-number">4</span> Exploratory Data Analysis</h2>
+<section id="counts-and-rates" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="counts-and-rates"><span class="header-section-number">4.1</span> Counts and rates</h3>
+<p>The first comparison uses radio ownership. The count describes how many households own a radio, while the rate describes how common radio ownership is within a township. The boxplots show the median, interquartile range and unusually high or low observations.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>radio_count_hist <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ict_derived, <span class="fu">aes</span>(RADIO)) <span class="sc">+</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">20</span>, <span class="at">fill =</span> <span class="st">"lightblue"</span>, <span class="at">colour =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Households owning a radio"</span>, <span class="at">y =</span> <span class="st">"Townships"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>radio_count_box <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ict_derived, <span class="fu">aes</span>(<span class="at">x =</span> RADIO, <span class="at">y =</span> <span class="st">""</span>)) <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"lightblue"</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Households owning a radio"</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>radio_rate_hist <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ict_derived, <span class="fu">aes</span>(RADIO_PR)) <span class="sc">+</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">20</span>, <span class="at">fill =</span> <span class="st">"lightblue"</span>, <span class="at">colour =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Radio ownership per 1,000 households"</span>, <span class="at">y =</span> <span class="st">"Townships"</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>radio_rate_box <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ict_derived, <span class="fu">aes</span>(<span class="at">x =</span> RADIO_PR, <span class="at">y =</span> <span class="st">""</span>)) <span class="sc">+</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"lightblue"</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Radio ownership per 1,000 households"</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggarrange</span>(radio_count_hist, radio_rate_hist, radio_count_box, radio_rate_box,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>          <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/radio-distributions-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Radio ownership: household counts and rates per 1,000 households.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="comparing-all-six-indicators" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="comparing-all-six-indicators"><span class="header-section-number">4.2</span> Comparing all six indicators</h3>
+<p>These histograms put the indicators on the same unit: households per 1,000. The horizontal ranges vary between panels so that the shape of each distribution remains visible.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ict_long <span class="ot">&lt;-</span> ict_derived <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TS_PCODE, <span class="fu">all_of</span>(rate_vars)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">all_of</span>(rate_vars), <span class="at">names_to =</span> <span class="st">"Indicator"</span>, <span class="at">values_to =</span> <span class="st">"Rate"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ict_long, <span class="fu">aes</span>(Rate)) <span class="sc">+</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">20</span>, <span class="at">fill =</span> <span class="st">"lightblue"</span>, <span class="at">colour =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> <span class="fu">factor</span>(Indicator, <span class="at">levels =</span> rate_vars), <span class="at">scales =</span> <span class="st">"free_x"</span>, <span class="at">ncol =</span> <span class="dv">3</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">labeller =</span> <span class="fu">as_labeller</span>(rate_labels)) <span class="sc">+</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Households per 1,000"</span>, <span class="at">y =</span> <span class="st">"Townships"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/ict-histograms-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Distribution of the six ICT penetration rates across Shan townships.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="joining-the-spatial-and-census-data" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="joining-the-spatial-and-census-data"><span class="header-section-number">4.3</span> Joining the spatial and census data</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>shan_sf <span class="ot">&lt;-</span> <span class="fu">left_join</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  shan_sf,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  ict_derived <span class="sc">%&gt;%</span> <span class="fu">select</span>(TS_PCODE, TT_HOUSEHOLDS, RADIO, TV, LLPHONE,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                        MPHONE, COMPUTER, INTERNET, <span class="fu">all_of</span>(rate_vars)),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">by =</span> <span class="st">"TS_PCODE"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"data/rds"</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(shan_sf, <span class="st">"data/rds/shan_sf.rds"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>shan_sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/shan_sf.rds"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="mapping-the-indicators" class="level3" data-number="4.4">
+<h3 data-number="4.4" class="anchored" data-anchor-id="mapping-the-indicators"><span class="header-section-number">4.4</span> Mapping the indicators</h3>
+<p>I use five Jenks classes to show variation within each variable. Each map has its own legend, so matching colours across different variables do not represent the same quantity.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>indicator_map <span class="ot">&lt;-</span> <span class="cf">function</span>(variable, title) {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(shan_sf) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_polygons</span>(<span class="at">fill =</span> variable,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(<span class="at">style =</span> <span class="st">"jenks"</span>, <span class="at">n =</span> <span class="dv">5</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                                                <span class="at">values =</span> <span class="st">"brewer.blues"</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> title)) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_borders</span>() <span class="sc">+</span> <span class="fu">tm_title</span>(title)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>radio_map <span class="ot">&lt;-</span> <span class="fu">indicator_map</span>(<span class="st">"RADIO_PR"</span>, <span class="st">"Radio per 1,000 households"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>radio_map</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/radio-rate-map-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Radio ownership per 1,000 households, using five Jenks classes.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>household_map <span class="ot">&lt;-</span> <span class="fu">indicator_map</span>(<span class="st">"TT_HOUSEHOLDS"</span>, <span class="st">"Total households"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>radio_count_map <span class="ot">&lt;-</span> <span class="fu">indicator_map</span>(<span class="st">"RADIO"</span>, <span class="st">"Households owning a radio"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(household_map, radio_count_map, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/count-maps-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Total households and households owning a radio.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(household_map, radio_map, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/count-rate-maps-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Township size compared with the prevalence of radio ownership.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The rate map answers a different question from the count map. A large number of radio-owning households can reflect township size, while a high penetration rate means radio ownership is common among its households.</p>
+</section>
+</section>
+<section id="correlation-analysis" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="correlation-analysis"><span class="header-section-number">5</span> Correlation Analysis</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cluster_vars_cor <span class="ot">&lt;-</span> <span class="fu">cor</span>(ict_derived[rate_vars])</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot.mixed</span>(cluster_vars_cor, <span class="at">lower =</span> <span class="st">"ellipse"</span>, <span class="at">upper =</span> <span class="st">"number"</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.pos =</span> <span class="st">"lt"</span>, <span class="at">diag =</span> <span class="st">"l"</span>, <span class="at">tl.col =</span> <span class="st">"black"</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.cex =</span> <span class="fl">0.85</span>, <span class="at">number.cex =</span> <span class="fl">0.85</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/correlation-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Pairwise correlations among the six ICT penetration rates.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Computer ownership and home internet access have a correlation of 0.87. Following the chapter, I retain computer ownership and omit internet access from the clustering inputs to reduce the repeated influence of closely related indicators.</p>
+</section>
+<section id="hierarchical-cluster-analysis" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="hierarchical-cluster-analysis"><span class="header-section-number">6</span> Hierarchical Cluster Analysis</h2>
+<section id="selecting-the-clustering-variables" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="selecting-the-clustering-variables"><span class="header-section-number">6.1</span> Selecting the clustering variables</h3>
+<p>The five inputs are radio, television, landline phone, mobile phone and computer penetration rates. Township names label the rows, and township codes retain the link to the polygons.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>features <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"RADIO_PR"</span>, <span class="st">"TV_PR"</span>, <span class="st">"LLPHONE_PR"</span>, <span class="st">"MPHONE_PR"</span>, <span class="st">"COMPUTER_PR"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>shan_ict <span class="ot">&lt;-</span> shan_sf <span class="sc">%&gt;%</span> <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">all_of</span>(features)) <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(shan_ict) <span class="ot">&lt;-</span> shan_sf<span class="sc">$</span>TS</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(shan_ict, <span class="st">"data/rds/shan_ict.rds"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="comparing-standardisation-methods" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="comparing-standardisation-methods"><span class="header-section-number">6.2</span> Comparing standardisation methods</h3>
+<p>Min-max standardisation puts each variable between zero and one. Z-score standardisation expresses a value relative to its variable’s mean and standard deviation; it does not require the original observations to be normally distributed. Neither transformation removes skewness.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>shan_ict_std <span class="ot">&lt;-</span> heatmaply<span class="sc">::</span><span class="fu">normalize</span>(shan_ict)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>shan_ict_z <span class="ot">&lt;-</span> <span class="fu">scale</span>(shan_ict)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>standardisation <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Raw rate</span><span class="st">`</span> <span class="ot">=</span> shan_ict<span class="sc">$</span>RADIO_PR,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Min-max</span><span class="st">`</span> <span class="ot">=</span> shan_ict_std<span class="sc">$</span>RADIO_PR,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Z-score</span><span class="st">`</span> <span class="ot">=</span> shan_ict_z[, <span class="st">"RADIO_PR"</span>]) <span class="sc">%&gt;%</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">"Scale"</span>, <span class="at">values_to =</span> <span class="st">"Value"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Scale =</span> <span class="fu">factor</span>(Scale, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Raw rate"</span>, <span class="st">"Min-max"</span>, <span class="st">"Z-score"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(standardisation, <span class="fu">aes</span>(Value)) <span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">20</span>, <span class="at">fill =</span> <span class="st">"lightblue"</span>, <span class="at">colour =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> Scale, <span class="at">scales =</span> <span class="st">"free_x"</span>, <span class="at">nrow =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Townships"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/standardisation-histograms-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Radio penetration under raw, min-max and z-score scales.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(standardisation, <span class="fu">aes</span>(Value)) <span class="sc">+</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">fill =</span> <span class="st">"lightblue"</span>, <span class="at">colour =</span> <span class="st">"#324a5f"</span>) <span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> Scale, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">nrow =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Density"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/standardisation-density-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>The same radio distribution on three scales; density heights change with the measurement scale.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The chapter demonstrates both transformations but uses the <strong>unscaled penetration rates</strong> for its main clustering models. I keep that choice here. The variables share a unit, although those with larger variation can have more influence on Euclidean distances.</p>
+</section>
+<section id="distances-and-the-ward-hierarchy" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="distances-and-the-ward-hierarchy"><span class="header-section-number">6.3</span> Distances and the Ward hierarchy</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>proxmat <span class="ot">&lt;-</span> <span class="fu">dist</span>(shan_ict, <span class="at">method =</span> <span class="st">"euclidean"</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>hclust_ward <span class="ot">&lt;-</span> <span class="fu">hclust</span>(proxmat, <span class="at">method =</span> <span class="st">"ward.D"</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hclust_ward, <span class="at">cex =</span> <span class="fl">0.55</span>, <span class="at">hang =</span> <span class="sc">-</span><span class="dv">1</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Shan township ICT profiles: ward.D"</span>, <span class="at">xlab =</span> <span class="st">""</span>, <span class="at">sub =</span> <span class="st">""</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/ward-dendrogram-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Hierarchical clustering of the five raw penetration rates using Euclidean distance and ward.D.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="comparing-linkage-methods" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="comparing-linkage-methods"><span class="header-section-number">6.4</span> Comparing linkage methods</h3>
+<p>I compare the agglomerative coefficients from <code>agnes()</code>. A larger coefficient indicates a stronger clustering structure under that linkage rule; it does not by itself establish the best geographical partition.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>linkage_methods <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"average"</span>, <span class="st">"single"</span>, <span class="st">"complete"</span>, <span class="st">"ward"</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>linkage_scores <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Method =</span> linkage_methods,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Coefficient =</span> <span class="fu">map_dbl</span>(linkage_methods, <span class="sc">~</span> <span class="fu">agnes</span>(shan_ict, <span class="at">method =</span> .x)<span class="sc">$</span>ac))</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(linkage_scores, <span class="fu">aes</span>(<span class="fu">reorder</span>(Method, Coefficient), Coefficient)) <span class="sc">+</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#4c8da8"</span>, <span class="at">width =</span> <span class="fl">0.65</span>) <span class="sc">+</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"%.3f"</span>, Coefficient)), <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.15</span>) <span class="sc">+</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span> <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">1.04</span>)) <span class="sc">+</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Agglomerative coefficient"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/linkage-comparison-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Agglomerative coefficients for four linkage methods.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The largest coefficient is 0.943 for ward linkage.</p>
+</section>
+<section id="gap-statistic-and-the-six-group-comparison" class="level3" data-number="6.5">
+<h3 data-number="6.5" class="anchored" data-anchor-id="gap-statistic-and-the-six-group-comparison"><span class="header-section-number">6.5</span> Gap statistic and the six-group comparison</h3>
+<p>I compute the gap statistic for up to ten groups using 50 reference simulations and seed 12345. As in the chapter, this diagnostic uses <code>hcut()</code> with its <code>ward.D2</code> default, while the earlier example uses <code>ward.D</code>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>gap_stat <span class="ot">&lt;-</span> <span class="fu">clusGap</span>(shan_ict, <span class="at">FUN =</span> hcut, <span class="at">hc_method =</span> <span class="st">"ward.D2"</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">nstart =</span> <span class="dv">25</span>, <span class="at">K.max =</span> <span class="dv">10</span>, <span class="at">B =</span> <span class="dv">50</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>gap_firstmax <span class="ot">&lt;-</span> <span class="fu">maxSE</span>(gap_stat<span class="sc">$</span>Tab[, <span class="st">"gap"</span>], gap_stat<span class="sc">$</span>Tab[, <span class="st">"SE.sim"</span>],</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method =</span> <span class="st">"firstmax"</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_gap_stat</span>(gap_stat, <span class="at">maxSE =</span> <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"firstmax"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/gap-statistic-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Gap statistic across candidate numbers of clusters, with simulation standard errors.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The first-local-maximum rule selects a cluster count of <strong>1</strong>. I retain <strong>six groups</strong> for the following maps, as the chapter does, to compare the clustering approaches. Six is therefore a comparison setting, rather than the formal optimum from this rule.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>cluster_colours <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#1b9e77"</span>, <span class="st">"#d95f02"</span>, <span class="st">"#7570b3"</span>, <span class="st">"#e7298a"</span>, <span class="st">"#66a61e"</span>, <span class="st">"#e6ab02"</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hclust_ward, <span class="at">cex =</span> <span class="fl">0.55</span>, <span class="at">hang =</span> <span class="sc">-</span><span class="dv">1</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Six groups from the ward.D hierarchy"</span>, <span class="at">xlab =</span> <span class="st">""</span>, <span class="at">sub =</span> <span class="st">""</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rect.hclust</span>(hclust_ward, <span class="at">k =</span> <span class="dv">6</span>, <span class="at">border =</span> cluster_colours)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/ward-six-groups-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>The ward.D hierarchy cut into six groups for comparison.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="interactive-cluster-heatmap" class="level3" data-number="6.6">
+<h3 data-number="6.6" class="anchored" data-anchor-id="interactive-cluster-heatmap"><span class="header-section-number">6.6</span> Interactive cluster heatmap</h3>
+<p>The heatmap uses min-max scaled rates so that differences within each indicator are easier to see. Its row hierarchy is fitted to these scaled values, so its six row groups need not match the raw-rate hierarchy shown above. Hover over a cell to inspect it. On a narrow screen, scroll horizontally to see the full chart.</p>
+<div style="overflow-x: auto;">
+<div style="min-width: 750px;">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">heatmaply</span>(<span class="fu">as.matrix</span>(shan_ict_std), <span class="at">Colv =</span> <span class="cn">NA</span>,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">height =</span> <span class="dv">950</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">dist_method =</span> <span class="st">"euclidean"</span>, <span class="at">hclust_method =</span> <span class="st">"ward.D"</span>,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">seriate =</span> <span class="st">"OLO"</span>, <span class="at">k_row =</span> <span class="dv">6</span>,</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">colors =</span> <span class="fu">colorRampPalette</span>(<span class="fu">c</span>(<span class="st">"#f7fbff"</span>, <span class="st">"#08306b"</span>)),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">65</span>, <span class="dv">150</span>, <span class="dv">55</span>, <span class="dv">15</span>), <span class="at">fontsize_row =</span> <span class="dv">9</span>, <span class="at">fontsize_col =</span> <span class="dv">11</span>,</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">main =</span> <span class="st">"Shan ICT profiles: min-max scaled rates"</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>          <span class="at">xlab =</span> <span class="st">"ICT indicators"</span>, <span class="at">ylab =</span> <span class="st">"Townships"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="htmlwidget-f547fdd7f7cb17180a7c" style="width:100%;height:584px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f547fdd7f7cb17180a7c">{"x":{"data":[{"x":[1,2,3,4,5],"y":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55],"z":[[0.11697828280235656,0.12946800291670141,0.22051676674466952,0.3846139992017637,0],[0.1190714713575737,0.34509307535574651,0.14668071862261856,0.6891560112923748,0.030692309450180394],[0.44811294912657396,0.55225992411450087,0.10521568760008111,0.57412901426752871,0.48480739277474305],[0.39472652438726058,0.64647733866993595,0.19477119473094032,0.39801608135750716,0.30703392330347096],[0.40973860994388683,0.66778546258182536,0.20593962805229063,0.48078425480385861,0.3104572004100466],[0.56035905060769442,0.68216005320191508,0.21982898000630299,0.53271772917722882,0.29569694938338714],[0.50978351840105807,0.70584966248141379,0.23527761552998847,0.5657288162191596,0.18421714232785746],[0.44536782610845499,0.64847518658958281,0.4007253744967556,0.52572958435168671,0.32572766162209832],[0.30300632404660205,0.49147219082742094,0.39341363429136933,0.4349886836765729,0.25539117902522024],[0.28546056562312339,0.65316773418946461,0.3511299776298073,0.32190336940009312,0.2746837227301171],[0.18689649559375604,0.47362168694479917,0.17754710976751636,0.21901799211937109,0.21923803903390374],[0.2629488857600436,0.60093442055127599,0.10558868166123289,0.30984472139571101,0.32244406175045998],[0.34838456904687842,0.55041330721869519,0.013213311777657203,0.33060051526022322,0.28050502634682223],[0.37211615170496537,0.37496862114224933,0.12506080462855637,0.36350286192371328,0.20828663725058608],[0.38204908464317522,0.49529324375134881,0.16528121425607512,0.33285202942113173,0.12691106039033156],[0.3980907579303854,0.46773404772860855,0.16525192608338107,0.24827221676312536,0.12566331521633783],[0.46367507181173728,0.48027348971210537,0.049517603601854712,0.27845401411719362,0.10224025627189308],[0.45439139601376666,0.58594353490077877,0.14417252910969927,0.30481757278969496,0.11764114434607099],[0.57205942216261241,0.60302857970223533,0.18200927177224016,0.32084610041574091,0.099653220995087832],[0.64202483918062014,0.57786439014823898,0.20733874544122771,0.2552581189664615,0.17607405769543419],[0.46963701986480177,0.49275331606036005,0.33640390671869069,0.32646328563512589,0.19964300270472207],[0.47243757577103734,0.70830658131680169,0.18152892689938518,0.098196451325406497,0.18683697450666384],[0.48702182505931929,0.53618454590948406,0.16236928492310002,0.15547460469197441,0.074496310341376867],[0.53416314399345055,0.45576055674496141,0.10954853696695577,0.076155538926932026,0.10692577185093441],[0.43759029682306855,0.46420446143708183,0.11087478745786902,0.09844037585740166,0.0985978869506665],[0.45263667579662742,0.37779761401029388,0.11365549681498791,0.087769700588719066,0.064068575228978811],[0.31801152018301909,0.34169331569611694,0.098223180852338707,0.14121340016110578,0.068453570303467604],[0.3039056264611843,0.29573466001141135,0.12216142202890717,0.22079722888776726,0.09335763735596643],[0.12583937793228897,0.27166586954277672,0.14691293402953898,0.11190443691659302,0.040120375229698704],[0.16481813869170034,0.16307059912065375,0,0,0.050562923174397992],[0.29277803105512323,0,0.018020667308862742,0.020514689816836292,0.057341960293267435],[0.37385748377862454,0.099529007645666662,0.029599900644770458,0.026290069687093631,0.0041124401409408148],[0.48130384213362665,0.14229750653679712,0.031665051478322846,0.01257306399846167,0.030854020566575963],[1,0.19895816942596367,0.051234029774627314,0.11997847269980252,0.012754780873524383],[0.8553147780718825,0.53558029529267848,0.09544043782343907,0.18021510896887397,0.107759971325446],[0.78980219430668397,0.70746355636330893,0.16078708461582927,0.40650165146089307,0.20745103892822123],[0.65302227298916715,0.60351827743629827,0.090757204809061548,0.45032057879694432,0.13928686759144926],[0.70831666585604436,0.59451431070864036,0.19959920412341628,0.41000871240744075,0.14010534490572477],[0.82848163458094792,0.53309615033103497,0.22225304485480443,0.49414581896158,0.24532142669874679],[0.92441487443451942,0.81570663014131473,0.39155140729005755,0.50956182689641516,0.14779989677341526],[0.55458208226657446,0.85789929032177503,0.66700796483691616,0.41150185475720735,0.13518667681882074],[0.2176339803587421,0.65209843040106041,1,0.28778828469233325,0.19643775155383097],[0,0.23543567048956013,0.9321013544580421,0.40101556902451291,0.084421792656946576],[0.10937492963625832,0.6239421797955409,0.6220506320938376,0.6188729942182486,0.10736975492138895],[0.21361370528846507,0.54598018129684645,0.46285806565679205,0.55588313631466169,0.089979971244948997],[0.22989746208303394,0.60680342034724111,0.44188018109426463,0.64558140267074604,0.23838778070406411],[0.2458248117567654,0.73986922857984383,0.49811595358599009,0.80123060000032609,0.30165891030396325],[0.069496745754494604,0.91187904567993305,0.73626364575085579,0.97326830696953925,0.3621726080619882],[0.13189010662422904,0.76691504545610334,0.47117405530992845,0.74203095277732434,0.66556801662669474],[0.1648296584979817,0.51521670119868113,0.33457025472725271,0.57855734181793805,0.5290330349458493],[0.53176358126123557,0.71817785309851512,0.33811911213704343,0.64506885812542725,0.49665992351864235],[0.46321400984145478,0.77736794201940895,0.35759948327266128,0.61146312565581429,0.63887304429100666],[0.7427814502261707,0.87988241582281557,0.44075599890374501,0.78717895265256577,0.87397863437784384],[0.73856184642802991,0.88560203867754661,0.31880165558342549,1,1],[0.33405948053815493,1,0.76534529857384681,0.96780866955997513,0.98756611073781364]],"text":[["row: Narphan<br>column: RADIO_PR<br>value: 0.116978","row: Narphan<br>column: TV_PR<br>value: 0.129468","row: Narphan<br>column: LLPHONE_PR<br>value: 0.220517","row: Narphan<br>column: MPHONE_PR<br>value: 0.384614","row: Narphan<br>column: COMPUTER_PR<br>value: 0.000000"],["row: Pangwaun<br>column: RADIO_PR<br>value: 0.119071","row: Pangwaun<br>column: TV_PR<br>value: 0.345093","row: Pangwaun<br>column: LLPHONE_PR<br>value: 0.146681","row: Pangwaun<br>column: MPHONE_PR<br>value: 0.689156","row: Pangwaun<br>column: COMPUTER_PR<br>value: 0.030692"],["row: Mongpan<br>column: RADIO_PR<br>value: 0.448113","row: Mongpan<br>column: TV_PR<br>value: 0.552260","row: Mongpan<br>column: LLPHONE_PR<br>value: 0.105216","row: Mongpan<br>column: MPHONE_PR<br>value: 0.574129","row: Mongpan<br>column: COMPUTER_PR<br>value: 0.484807"],["row: Nansang<br>column: RADIO_PR<br>value: 0.394727","row: Nansang<br>column: TV_PR<br>value: 0.646477","row: Nansang<br>column: LLPHONE_PR<br>value: 0.194771","row: Nansang<br>column: MPHONE_PR<br>value: 0.398016","row: Nansang<br>column: COMPUTER_PR<br>value: 0.307034"],["row: Kyaukme<br>column: RADIO_PR<br>value: 0.409739","row: Kyaukme<br>column: TV_PR<br>value: 0.667785","row: Kyaukme<br>column: LLPHONE_PR<br>value: 0.205940","row: Kyaukme<br>column: MPHONE_PR<br>value: 0.480784","row: Kyaukme<br>column: COMPUTER_PR<br>value: 0.310457"],["row: Kalaw<br>column: RADIO_PR<br>value: 0.560359","row: Kalaw<br>column: TV_PR<br>value: 0.682160","row: Kalaw<br>column: LLPHONE_PR<br>value: 0.219829","row: Kalaw<br>column: MPHONE_PR<br>value: 0.532718","row: Kalaw<br>column: COMPUTER_PR<br>value: 0.295697"],["row: Hseni<br>column: RADIO_PR<br>value: 0.509784","row: Hseni<br>column: TV_PR<br>value: 0.705850","row: Hseni<br>column: LLPHONE_PR<br>value: 0.235278","row: Hseni<br>column: MPHONE_PR<br>value: 0.565729","row: Hseni<br>column: COMPUTER_PR<br>value: 0.184217"],["row: Langkho<br>column: RADIO_PR<br>value: 0.445368","row: Langkho<br>column: TV_PR<br>value: 0.648475","row: Langkho<br>column: LLPHONE_PR<br>value: 0.400725","row: Langkho<br>column: MPHONE_PR<br>value: 0.525730","row: Langkho<br>column: COMPUTER_PR<br>value: 0.325728"],["row: Kunhing<br>column: RADIO_PR<br>value: 0.303006","row: Kunhing<br>column: TV_PR<br>value: 0.491472","row: Kunhing<br>column: LLPHONE_PR<br>value: 0.393414","row: Kunhing<br>column: MPHONE_PR<br>value: 0.434989","row: Kunhing<br>column: COMPUTER_PR<br>value: 0.255391"],["row: Laihka<br>column: RADIO_PR<br>value: 0.285461","row: Laihka<br>column: TV_PR<br>value: 0.653168","row: Laihka<br>column: LLPHONE_PR<br>value: 0.351130","row: Laihka<br>column: MPHONE_PR<br>value: 0.321903","row: Laihka<br>column: COMPUTER_PR<br>value: 0.274684"],["row: Monghsat<br>column: RADIO_PR<br>value: 0.186896","row: Monghsat<br>column: TV_PR<br>value: 0.473622","row: Monghsat<br>column: LLPHONE_PR<br>value: 0.177547","row: Monghsat<br>column: MPHONE_PR<br>value: 0.219018","row: Monghsat<br>column: COMPUTER_PR<br>value: 0.219238"],["row: Loilen<br>column: RADIO_PR<br>value: 0.262949","row: Loilen<br>column: TV_PR<br>value: 0.600934","row: Loilen<br>column: LLPHONE_PR<br>value: 0.105589","row: Loilen<br>column: MPHONE_PR<br>value: 0.309845","row: Loilen<br>column: COMPUTER_PR<br>value: 0.322444"],["row: Mongnai<br>column: RADIO_PR<br>value: 0.348385","row: Mongnai<br>column: TV_PR<br>value: 0.550413","row: Mongnai<br>column: LLPHONE_PR<br>value: 0.013213","row: Mongnai<br>column: MPHONE_PR<br>value: 0.330601","row: Mongnai<br>column: COMPUTER_PR<br>value: 0.280505"],["row: Mongton<br>column: RADIO_PR<br>value: 0.372116","row: Mongton<br>column: TV_PR<br>value: 0.374969","row: Mongton<br>column: LLPHONE_PR<br>value: 0.125061","row: Mongton<br>column: MPHONE_PR<br>value: 0.363503","row: Mongton<br>column: COMPUTER_PR<br>value: 0.208287"],["row: Hsipaw<br>column: RADIO_PR<br>value: 0.382049","row: Hsipaw<br>column: TV_PR<br>value: 0.495293","row: Hsipaw<br>column: LLPHONE_PR<br>value: 0.165281","row: Hsipaw<br>column: MPHONE_PR<br>value: 0.332852","row: Hsipaw<br>column: COMPUTER_PR<br>value: 0.126911"],["row: Hopong<br>column: RADIO_PR<br>value: 0.398091","row: Hopong<br>column: TV_PR<br>value: 0.467734","row: Hopong<br>column: LLPHONE_PR<br>value: 0.165252","row: Hopong<br>column: MPHONE_PR<br>value: 0.248272","row: Hopong<br>column: COMPUTER_PR<br>value: 0.125663"],["row: Monghsu<br>column: RADIO_PR<br>value: 0.463675","row: Monghsu<br>column: TV_PR<br>value: 0.480273","row: Monghsu<br>column: LLPHONE_PR<br>value: 0.049518","row: Monghsu<br>column: MPHONE_PR<br>value: 0.278454","row: Monghsu<br>column: COMPUTER_PR<br>value: 0.102240"],["row: Pinlaung<br>column: RADIO_PR<br>value: 0.454391","row: Pinlaung<br>column: TV_PR<br>value: 0.585944","row: Pinlaung<br>column: LLPHONE_PR<br>value: 0.144173","row: Pinlaung<br>column: MPHONE_PR<br>value: 0.304818","row: Pinlaung<br>column: COMPUTER_PR<br>value: 0.117641"],["row: Mongmit<br>column: RADIO_PR<br>value: 0.572059","row: Mongmit<br>column: TV_PR<br>value: 0.603029","row: Mongmit<br>column: LLPHONE_PR<br>value: 0.182009","row: Mongmit<br>column: MPHONE_PR<br>value: 0.320846","row: Mongmit<br>column: COMPUTER_PR<br>value: 0.099653"],["row: Pekon<br>column: RADIO_PR<br>value: 0.642025","row: Pekon<br>column: TV_PR<br>value: 0.577864","row: Pekon<br>column: LLPHONE_PR<br>value: 0.207339","row: Pekon<br>column: MPHONE_PR<br>value: 0.255258","row: Pekon<br>column: COMPUTER_PR<br>value: 0.176074"],["row: Kutkai<br>column: RADIO_PR<br>value: 0.469637","row: Kutkai<br>column: TV_PR<br>value: 0.492753","row: Kutkai<br>column: LLPHONE_PR<br>value: 0.336404","row: Kutkai<br>column: MPHONE_PR<br>value: 0.326463","row: Kutkai<br>column: COMPUTER_PR<br>value: 0.199643"],["row: Namtu<br>column: RADIO_PR<br>value: 0.472438","row: Namtu<br>column: TV_PR<br>value: 0.708307","row: Namtu<br>column: LLPHONE_PR<br>value: 0.181529","row: Namtu<br>column: MPHONE_PR<br>value: 0.098196","row: Namtu<br>column: COMPUTER_PR<br>value: 0.186837"],["row: Hsihseng<br>column: RADIO_PR<br>value: 0.487022","row: Hsihseng<br>column: TV_PR<br>value: 0.536185","row: Hsihseng<br>column: LLPHONE_PR<br>value: 0.162369","row: Hsihseng<br>column: MPHONE_PR<br>value: 0.155475","row: Hsihseng<br>column: COMPUTER_PR<br>value: 0.074496"],["row: Kyethi<br>column: RADIO_PR<br>value: 0.534163","row: Kyethi<br>column: TV_PR<br>value: 0.455761","row: Kyethi<br>column: LLPHONE_PR<br>value: 0.109549","row: Kyethi<br>column: MPHONE_PR<br>value: 0.076156","row: Kyethi<br>column: COMPUTER_PR<br>value: 0.106926"],["row: Tangyan<br>column: RADIO_PR<br>value: 0.437590","row: Tangyan<br>column: TV_PR<br>value: 0.464204","row: Tangyan<br>column: LLPHONE_PR<br>value: 0.110875","row: Tangyan<br>column: MPHONE_PR<br>value: 0.098440","row: Tangyan<br>column: COMPUTER_PR<br>value: 0.098598"],["row: Namhsan<br>column: RADIO_PR<br>value: 0.452637","row: Namhsan<br>column: TV_PR<br>value: 0.377798","row: Namhsan<br>column: LLPHONE_PR<br>value: 0.113655","row: Namhsan<br>column: MPHONE_PR<br>value: 0.087770","row: Namhsan<br>column: COMPUTER_PR<br>value: 0.064069"],["row: Mongyai<br>column: RADIO_PR<br>value: 0.318012","row: Mongyai<br>column: TV_PR<br>value: 0.341693","row: Mongyai<br>column: LLPHONE_PR<br>value: 0.098223","row: Mongyai<br>column: MPHONE_PR<br>value: 0.141213","row: Mongyai<br>column: COMPUTER_PR<br>value: 0.068454"],["row: Mongping<br>column: RADIO_PR<br>value: 0.303906","row: Mongping<br>column: TV_PR<br>value: 0.295735","row: Mongping<br>column: LLPHONE_PR<br>value: 0.122161","row: Mongping<br>column: MPHONE_PR<br>value: 0.220797","row: Mongping<br>column: COMPUTER_PR<br>value: 0.093358"],["row: Mongkhet<br>column: RADIO_PR<br>value: 0.125839","row: Mongkhet<br>column: TV_PR<br>value: 0.271666","row: Mongkhet<br>column: LLPHONE_PR<br>value: 0.146913","row: Mongkhet<br>column: MPHONE_PR<br>value: 0.111904","row: Mongkhet<br>column: COMPUTER_PR<br>value: 0.040120"],["row: Mawkmai<br>column: RADIO_PR<br>value: 0.164818","row: Mawkmai<br>column: TV_PR<br>value: 0.163071","row: Mawkmai<br>column: LLPHONE_PR<br>value: 0.000000","row: Mawkmai<br>column: MPHONE_PR<br>value: 0.000000","row: Mawkmai<br>column: COMPUTER_PR<br>value: 0.050563"],["row: Mongkaing<br>column: RADIO_PR<br>value: 0.292778","row: Mongkaing<br>column: TV_PR<br>value: 0.000000","row: Mongkaing<br>column: LLPHONE_PR<br>value: 0.018021","row: Mongkaing<br>column: MPHONE_PR<br>value: 0.020515","row: Mongkaing<br>column: COMPUTER_PR<br>value: 0.057342"],["row: Manton<br>column: RADIO_PR<br>value: 0.373857","row: Manton<br>column: TV_PR<br>value: 0.099529","row: Manton<br>column: LLPHONE_PR<br>value: 0.029600","row: Manton<br>column: MPHONE_PR<br>value: 0.026290","row: Manton<br>column: COMPUTER_PR<br>value: 0.004112"],["row: Matman<br>column: RADIO_PR<br>value: 0.481304","row: Matman<br>column: TV_PR<br>value: 0.142298","row: Matman<br>column: LLPHONE_PR<br>value: 0.031665","row: Matman<br>column: MPHONE_PR<br>value: 0.012573","row: Matman<br>column: COMPUTER_PR<br>value: 0.030854"],["row: Ywangan<br>column: RADIO_PR<br>value: 1.000000","row: Ywangan<br>column: TV_PR<br>value: 0.198958","row: Ywangan<br>column: LLPHONE_PR<br>value: 0.051234","row: Ywangan<br>column: MPHONE_PR<br>value: 0.119978","row: Ywangan<br>column: COMPUTER_PR<br>value: 0.012755"],["row: Pindaya<br>column: RADIO_PR<br>value: 0.855315","row: Pindaya<br>column: TV_PR<br>value: 0.535580","row: Pindaya<br>column: LLPHONE_PR<br>value: 0.095440","row: Pindaya<br>column: MPHONE_PR<br>value: 0.180215","row: Pindaya<br>column: COMPUTER_PR<br>value: 0.107760"],["row: Lawksawk<br>column: RADIO_PR<br>value: 0.789802","row: Lawksawk<br>column: TV_PR<br>value: 0.707464","row: Lawksawk<br>column: LLPHONE_PR<br>value: 0.160787","row: Lawksawk<br>column: MPHONE_PR<br>value: 0.406502","row: Lawksawk<br>column: COMPUTER_PR<br>value: 0.207451"],["row: Nyaungshwe<br>column: RADIO_PR<br>value: 0.653022","row: Nyaungshwe<br>column: TV_PR<br>value: 0.603518","row: Nyaungshwe<br>column: LLPHONE_PR<br>value: 0.090757","row: Nyaungshwe<br>column: MPHONE_PR<br>value: 0.450321","row: Nyaungshwe<br>column: COMPUTER_PR<br>value: 0.139287"],["row: Nawnghkio<br>column: RADIO_PR<br>value: 0.708317","row: Nawnghkio<br>column: TV_PR<br>value: 0.594514","row: Nawnghkio<br>column: LLPHONE_PR<br>value: 0.199599","row: Nawnghkio<br>column: MPHONE_PR<br>value: 0.410009","row: Nawnghkio<br>column: COMPUTER_PR<br>value: 0.140105"],["row: Monghpyak<br>column: RADIO_PR<br>value: 0.828482","row: Monghpyak<br>column: TV_PR<br>value: 0.533096","row: Monghpyak<br>column: LLPHONE_PR<br>value: 0.222253","row: Monghpyak<br>column: MPHONE_PR<br>value: 0.494146","row: Monghpyak<br>column: COMPUTER_PR<br>value: 0.245321"],["row: Mabein<br>column: RADIO_PR<br>value: 0.924415","row: Mabein<br>column: TV_PR<br>value: 0.815707","row: Mabein<br>column: LLPHONE_PR<br>value: 0.391551","row: Mabein<br>column: MPHONE_PR<br>value: 0.509562","row: Mabein<br>column: COMPUTER_PR<br>value: 0.147800"],["row: Mongyawng<br>column: RADIO_PR<br>value: 0.554582","row: Mongyawng<br>column: TV_PR<br>value: 0.857899","row: Mongyawng<br>column: LLPHONE_PR<br>value: 0.667008","row: Mongyawng<br>column: MPHONE_PR<br>value: 0.411502","row: Mongyawng<br>column: COMPUTER_PR<br>value: 0.135187"],["row: Kunlong<br>column: RADIO_PR<br>value: 0.217634","row: Kunlong<br>column: TV_PR<br>value: 0.652098","row: Kunlong<br>column: LLPHONE_PR<br>value: 1.000000","row: Kunlong<br>column: MPHONE_PR<br>value: 0.287788","row: Kunlong<br>column: COMPUTER_PR<br>value: 0.196438"],["row: Konkyan<br>column: RADIO_PR<br>value: 0.000000","row: Konkyan<br>column: TV_PR<br>value: 0.235436","row: Konkyan<br>column: LLPHONE_PR<br>value: 0.932101","row: Konkyan<br>column: MPHONE_PR<br>value: 0.401016","row: Konkyan<br>column: COMPUTER_PR<br>value: 0.084422"],["row: Mongyang<br>column: RADIO_PR<br>value: 0.109375","row: Mongyang<br>column: TV_PR<br>value: 0.623942","row: Mongyang<br>column: LLPHONE_PR<br>value: 0.622051","row: Mongyang<br>column: MPHONE_PR<br>value: 0.618873","row: Mongyang<br>column: COMPUTER_PR<br>value: 0.107370"],["row: Mongmao<br>column: RADIO_PR<br>value: 0.213614","row: Mongmao<br>column: TV_PR<br>value: 0.545980","row: Mongmao<br>column: LLPHONE_PR<br>value: 0.462858","row: Mongmao<br>column: MPHONE_PR<br>value: 0.555883","row: Mongmao<br>column: COMPUTER_PR<br>value: 0.089980"],["row: Hopang<br>column: RADIO_PR<br>value: 0.229897","row: Hopang<br>column: TV_PR<br>value: 0.606803","row: Hopang<br>column: LLPHONE_PR<br>value: 0.441880","row: Hopang<br>column: MPHONE_PR<br>value: 0.645581","row: Hopang<br>column: COMPUTER_PR<br>value: 0.238388"],["row: Namhkan<br>column: RADIO_PR<br>value: 0.245825","row: Namhkan<br>column: TV_PR<br>value: 0.739869","row: Namhkan<br>column: LLPHONE_PR<br>value: 0.498116","row: Namhkan<br>column: MPHONE_PR<br>value: 0.801231","row: Namhkan<br>column: COMPUTER_PR<br>value: 0.301659"],["row: Laukkaing<br>column: RADIO_PR<br>value: 0.069497","row: Laukkaing<br>column: TV_PR<br>value: 0.911879","row: Laukkaing<br>column: LLPHONE_PR<br>value: 0.736264","row: Laukkaing<br>column: MPHONE_PR<br>value: 0.973268","row: Laukkaing<br>column: COMPUTER_PR<br>value: 0.362173"],["row: Mongla<br>column: RADIO_PR<br>value: 0.131890","row: Mongla<br>column: TV_PR<br>value: 0.766915","row: Mongla<br>column: LLPHONE_PR<br>value: 0.471174","row: Mongla<br>column: MPHONE_PR<br>value: 0.742031","row: Mongla<br>column: COMPUTER_PR<br>value: 0.665568"],["row: Pangsang<br>column: RADIO_PR<br>value: 0.164830","row: Pangsang<br>column: TV_PR<br>value: 0.515217","row: Pangsang<br>column: LLPHONE_PR<br>value: 0.334570","row: Pangsang<br>column: MPHONE_PR<br>value: 0.578557","row: Pangsang<br>column: COMPUTER_PR<br>value: 0.529033"],["row: Kengtung<br>column: RADIO_PR<br>value: 0.531764","row: Kengtung<br>column: TV_PR<br>value: 0.718178","row: Kengtung<br>column: LLPHONE_PR<br>value: 0.338119","row: Kengtung<br>column: MPHONE_PR<br>value: 0.645069","row: Kengtung<br>column: COMPUTER_PR<br>value: 0.496660"],["row: Lashio<br>column: RADIO_PR<br>value: 0.463214","row: Lashio<br>column: TV_PR<br>value: 0.777368","row: Lashio<br>column: LLPHONE_PR<br>value: 0.357599","row: Lashio<br>column: MPHONE_PR<br>value: 0.611463","row: Lashio<br>column: COMPUTER_PR<br>value: 0.638873"],["row: Taunggyi<br>column: RADIO_PR<br>value: 0.742781","row: Taunggyi<br>column: TV_PR<br>value: 0.879882","row: Taunggyi<br>column: LLPHONE_PR<br>value: 0.440756","row: Taunggyi<br>column: MPHONE_PR<br>value: 0.787179","row: Taunggyi<br>column: COMPUTER_PR<br>value: 0.873979"],["row: Tachileik<br>column: RADIO_PR<br>value: 0.738562","row: Tachileik<br>column: TV_PR<br>value: 0.885602","row: Tachileik<br>column: LLPHONE_PR<br>value: 0.318802","row: Tachileik<br>column: MPHONE_PR<br>value: 1.000000","row: Tachileik<br>column: COMPUTER_PR<br>value: 1.000000"],["row: Muse<br>column: RADIO_PR<br>value: 0.334059","row: Muse<br>column: TV_PR<br>value: 1.000000","row: Muse<br>column: LLPHONE_PR<br>value: 0.765345","row: Muse<br>column: MPHONE_PR<br>value: 0.967809","row: Muse<br>column: COMPUTER_PR<br>value: 0.987566"]],"colorscale":[[0,"#F7FBFF"],[0.0041124401409408148,"#F6FAFE"],[0.01257306399846167,"#F4F8FD"],[0.012754780873524383,"#F4F8FD"],[0.013213311777657203,"#F4F8FD"],[0.018020667308862742,"#F2F7FC"],[0.020514689816836292,"#F2F7FC"],[0.026290069687093631,"#F0F5FA"],[0.029599900644770458,"#EFF4FA"],[0.030692309450180394,"#EFF4FA"],[0.030854020566575963,"#EFF4FA"],[0.031665051478322846,"#EFF4FA"],[0.040120375229698704,"#EDF3F9"],[0.049517603601854712,"#EAF0F7"],[0.050562923174397992,"#EAF0F7"],[0.051234029774627314,"#EAF0F7"],[0.057341960293267435,"#E8EFF6"],[0.064068575228978811,"#E8EEF5"],[0.068453570303467604,"#E7EDF5"],[0.069496745754494604,"#E6ECF4"],[0.074496310341376867,"#E5EBF3"],[0.076155538926932026,"#E5EBF3"],[0.084421792656946576,"#E2E9F2"],[0.087769700588719066,"#E2E9F2"],[0.089979971244948997,"#E1E8F1"],[0.090757204809061548,"#E1E8F1"],[0.09335763735596643,"#E0E7F1"],[0.09544043782343907,"#E0E7F1"],[0.098196451325406497,"#DFE7F0"],[0.098223180852338707,"#DFE7F0"],[0.09844037585740166,"#DFE7F0"],[0.0985978869506665,"#DFE7F0"],[0.099529007645666662,"#DFE7F0"],[0.099653220995087832,"#DFE7F0"],[0.10224025627189308,"#DEE6EF"],[0.10521568760008111,"#DDE5EF"],[0.10558868166123289,"#DDE5EF"],[0.10692577185093441,"#DDE5EF"],[0.10736975492138895,"#DDE5EF"],[0.107759971325446,"#DDE5EF"],[0.10937492963625832,"#DCE4EE"],[0.10954853696695577,"#DCE4EE"],[0.11087478745786902,"#DCE4EE"],[0.11190443691659302,"#DBE3EE"],[0.11365549681498791,"#DBE3EE"],[0.11697828280235656,"#DAE3ED"],[0.11764114434607099,"#DAE3ED"],[0.1190714713575737,"#DAE3ED"],[0.11997847269980252,"#D9E2ED"],[0.12216142202890717,"#D9E2ED"],[0.12506080462855637,"#D9E1EC"],[0.12566331521633783,"#D9E1EC"],[0.12583937793228897,"#D9E1EC"],[0.12691106039033156,"#D9E1EC"],[0.12946800291670141,"#D8E0EB"],[0.13189010662422904,"#D7DFEB"],[0.13518667681882074,"#D7DFEB"],[0.13928686759144926,"#D5DEEA"],[0.14010534490572477,"#D5DEEA"],[0.14121340016110578,"#D5DEEA"],[0.14229750653679712,"#D5DEEA"],[0.14417252910969927,"#D4DDE9"],[0.14668071862261856,"#D4DDE9"],[0.14691293402953898,"#D4DDE9"],[0.14779989677341526,"#D3DCE8"],[0.15547460469197441,"#D1DBE7"],[0.16078708461582927,"#D0DAE7"],[0.16236928492310002,"#D0DAE7"],[0.16307059912065375,"#CFD9E6"],[0.16481813869170034,"#CFD9E6"],[0.1648296584979817,"#CFD9E6"],[0.16525192608338107,"#CFD9E6"],[0.16528121425607512,"#CFD9E6"],[0.17607405769543419,"#CCD7E4"],[0.17754710976751636,"#CCD7E4"],[0.18021510896887397,"#CBD6E4"],[0.18152892689938518,"#CBD6E4"],[0.18200927177224016,"#CBD6E4"],[0.18421714232785746,"#CAD5E3"],[0.18683697450666384,"#CAD4E3"],[0.18689649559375604,"#CAD4E3"],[0.19477119473094032,"#C8D3E1"],[0.19643775155383097,"#C8D3E1"],[0.19895816942596367,"#C7D2E1"],[0.19959920412341628,"#C7D2E1"],[0.19964300270472207,"#C7D2E1"],[0.20593962805229063,"#C5D0E0"],[0.20733874544122771,"#C5D0E0"],[0.20745103892822123,"#C5D0E0"],[0.20828663725058608,"#C5D0E0"],[0.21361370528846507,"#C4D0DF"],[0.2176339803587421,"#C3CFDF"],[0.21901799211937109,"#C2CEDE"],[0.21923803903390374,"#C2CEDE"],[0.21982898000630299,"#C2CEDE"],[0.22051676674466952,"#C2CEDE"],[0.22079722888776726,"#C2CEDE"],[0.22225304485480443,"#C1CDDD"],[0.22989746208303394,"#BFCCDC"],[0.23527761552998847,"#BECBDC"],[0.23543567048956013,"#BECBDC"],[0.23838778070406411,"#BDCADB"],[0.24532142669874679,"#BBC8DA"],[0.2458248117567654,"#BBC8DA"],[0.24827221676312536,"#BBC8DA"],[0.2552581189664615,"#BAC7D9"],[0.25539117902522024,"#BAC7D9"],[0.2629488857600436,"#B8C5D8"],[0.27166586954277672,"#B6C4D6"],[0.2746837227301171,"#B5C3D6"],[0.27845401411719362,"#B4C2D5"],[0.28050502634682223,"#B3C1D5"],[0.28546056562312339,"#B2C0D4"],[0.28778828469233325,"#B2C0D4"],[0.29277803105512323,"#B0BFD3"],[0.29569694938338714,"#B0BFD3"],[0.29573466001141135,"#B0BFD3"],[0.30165891030396325,"#AEBDD2"],[0.30300632404660205,"#AEBDD2"],[0.3039056264611843,"#AEBDD2"],[0.30481757278969496,"#ADBCD1"],[0.30703392330347096,"#ADBCD1"],[0.30984472139571101,"#ACBCD1"],[0.3104572004100466,"#ACBCD1"],[0.31801152018301909,"#ABBACF"],[0.31880165558342549,"#ABBACF"],[0.32084610041574091,"#AAB9CF"],[0.32190336940009312,"#AAB9CF"],[0.32244406175045998,"#AAB9CF"],[0.32572766162209832,"#A9B8CE"],[0.32646328563512589,"#A9B8CE"],[0.33060051526022322,"#A8B8CE"],[0.33285202942113173,"#A7B7CD"],[0.33405948053815493,"#A7B7CD"],[0.33457025472725271,"#A7B7CD"],[0.33640390671869069,"#A6B6CD"],[0.33811911213704343,"#A6B6CD"],[0.34169331569611694,"#A5B5CC"],[0.34509307535574651,"#A4B4CB"],[0.34838456904687842,"#A3B4CB"],[0.3511299776298073,"#A2B3CA"],[0.35759948327266128,"#A1B2CA"],[0.3621726080619882,"#A0B1C9"],[0.36350286192371328,"#9FB0C9"],[0.37211615170496537,"#9DAFC7"],[0.37385748377862454,"#9DAFC7"],[0.37496862114224933,"#9DAEC7"],[0.37779761401029388,"#9DAEC7"],[0.38204908464317522,"#9CADC6"],[0.3846139992017637,"#9BACC6"],[0.39155140729005755,"#99ABC4"],[0.39341363429136933,"#99ABC4"],[0.39472652438726058,"#98AAC4"],[0.39801608135750716,"#98AAC4"],[0.3980907579303854,"#97A9C3"],[0.4007253744967556,"#97A9C3"],[0.40101556902451291,"#97A9C3"],[0.40650165146089307,"#95A8C2"],[0.40973860994388683,"#95A8C2"],[0.41000871240744075,"#94A7C2"],[0.41150185475720735,"#94A7C2"],[0.4349886836765729,"#8EA2BE"],[0.43759029682306855,"#8EA1BD"],[0.44075599890374501,"#8EA1BD"],[0.44188018109426463,"#8DA1BD"],[0.44536782610845499,"#8CA0BC"],[0.44811294912657396,"#8CA0BC"],[0.45032057879694432,"#8B9FBC"],[0.45263667579662742,"#8B9FBC"],[0.45439139601376666,"#8A9EBB"],[0.45576055674496141,"#8A9EBB"],[0.46285806565679205,"#889DBA"],[0.46321400984145478,"#889DBA"],[0.46367507181173728,"#889DBA"],[0.46420446143708183,"#889DBA"],[0.46773404772860855,"#879CB9"],[0.46963701986480177,"#869BB9"],[0.47117405530992845,"#869BB9"],[0.47243757577103734,"#869BB9"],[0.47362168694479917,"#859AB8"],[0.48027348971210537,"#8499B8"],[0.48078425480385861,"#8399B7"],[0.48130384213362665,"#8399B7"],[0.48480739277474305,"#8298B7"],[0.48702182505931929,"#8298B7"],[0.49147219082742094,"#8197B6"],[0.49275331606036005,"#8096B5"],[0.49414581896158,"#8096B5"],[0.49529324375134881,"#8096B5"],[0.49665992351864235,"#7F95B5"],[0.49811595358599009,"#7F95B5"],[0.50956182689641516,"#7D93B3"],[0.50978351840105807,"#7D93B3"],[0.51521670119868113,"#7C92B2"],[0.52572958435168671,"#7990B1"],[0.5290330349458493,"#788FB0"],[0.53176358126123557,"#778EB0"],[0.53271772917722882,"#778EB0"],[0.53309615033103497,"#778EB0"],[0.53416314399345055,"#778EB0"],[0.53558029529267848,"#768DAF"],[0.53618454590948406,"#768DAF"],[0.54598018129684645,"#748CAE"],[0.55041330721869519,"#738BAD"],[0.55225992411450087,"#728AAD"],[0.55458208226657446,"#728AAD"],[0.55588313631466169,"#7189AC"],[0.56035905060769442,"#7089AC"],[0.5657288162191596,"#7088AB"],[0.57205942216261241,"#6E86AA"],[0.57412901426752871,"#6E86AA"],[0.57786439014823898,"#6D85A9"],[0.57855734181793805,"#6C85A9"],[0.58594353490077877,"#6B84A8"],[0.59451431070864036,"#6881A6"],[0.60093442055127599,"#6781A6"],[0.60302857970223533,"#6680A5"],[0.60351827743629827,"#6680A5"],[0.60680342034724111,"#657FA5"],[0.61146312565581429,"#647EA4"],[0.6188729942182486,"#627DA3"],[0.6220506320938376,"#617CA2"],[0.6239421797955409,"#617CA2"],[0.63887304429100666,"#5E79A0"],[0.64202483918062014,"#5D789F"],[0.64506885812542725,"#5D789F"],[0.64558140267074604,"#5C779F"],[0.64647733866993595,"#5C779F"],[0.64847518658958281,"#5C779F"],[0.65209843040106041,"#5B769E"],[0.65302227298916715,"#5A769E"],[0.65316773418946461,"#5A769E"],[0.66556801662669474,"#57739C"],[0.66700796483691616,"#57739C"],[0.66778546258182536,"#57739C"],[0.68216005320191508,"#53709A"],[0.6891560112923748,"#526E98"],[0.70584966248141379,"#4E6B96"],[0.70746355636330893,"#4E6B96"],[0.70830658131680169,"#4D6A95"],[0.70831666585604436,"#4D6A95"],[0.71817785309851512,"#4B6994"],[0.73626364575085579,"#466591"],[0.73856184642802991,"#466591"],[0.73986922857984383,"#456491"],[0.74203095277732434,"#456491"],[0.7427814502261707,"#456491"],[0.76534529857384681,"#405F8D"],[0.76691504545610334,"#3F5E8D"],[0.77736794201940895,"#3D5D8C"],[0.78717895265256577,"#3A5A8A"],[0.78980219430668397,"#3A5A8A"],[0.80123060000032609,"#375888"],[0.81570663014131473,"#345586"],[0.82848163458094792,"#315384"],[0.8553147780718825,"#2A4D80"],[0.85789929032177503,"#294C7F"],[0.87397863437784384,"#25497D"],[0.87988241582281557,"#25487C"],[0.88560203867754661,"#23477B"],[0.91187904567993305,"#1C4177"],[0.92441487443451942,"#193F76"],[0.9321013544580421,"#173D74"],[0.96780866955997513,"#0F366F"],[0.97326830696953925,"#0E356F"],[0.98756611073781364,"#0A326C"],[1,"#08306B"]],"type":"heatmap","showscale":false,"autocolorscale":false,"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1],"y":[1],"name":"1fc4abc588ffa46df09f39cfad9eebe0","type":"scatter","mode":"markers","opacity":0,"hoverinfo":"skip","showlegend":false,"marker":{"color":[0,1],"colorscale":[[0,"#F7FBFF"],[0.0033444816053511705,"#F6FAFE"],[0.006688963210702341,"#F5F9FD"],[0.010033444816053512,"#F4F8FD"],[0.013377926421404682,"#F4F8FD"],[0.016722408026755852,"#F3F7FC"],[0.020066889632107024,"#F2F7FC"],[0.023411371237458192,"#F1F6FB"],[0.026755852842809364,"#F0F5FA"],[0.030100334448160536,"#EFF4FA"],[0.033444816053511704,"#EEF3F9"],[0.036789297658862873,"#EEF3F9"],[0.040133779264214048,"#EDF3F9"],[0.043478260869565216,"#ECF2F8"],[0.046822742474916385,"#EBF1F8"],[0.05016722408026756,"#EAF0F7"],[0.053511705685618728,"#E9EFF6"],[0.056856187290969896,"#E9EFF6"],[0.060200668896321072,"#E8EFF6"],[0.06354515050167224,"#E8EEF5"],[0.066889632107023408,"#E7EDF5"],[0.070234113712374577,"#E6ECF4"],[0.073578595317725745,"#E5EBF3"],[0.076923076923076927,"#E4EBF3"],[0.080267558528428096,"#E4EBF3"],[0.083612040133779264,"#E3EAF2"],[0.086956521739130432,"#E2E9F2"],[0.090301003344481601,"#E1E8F1"],[0.093645484949832769,"#E0E7F1"],[0.096989966555183951,"#DFE7F0"],[0.10033444816053512,"#DEE6EF"],[0.10367892976588629,"#DEE6EF"],[0.10702341137123746,"#DDE5EF"],[0.11036789297658862,"#DCE4EE"],[0.11371237458193979,"#DBE3EE"],[0.11705685618729096,"#DAE3ED"],[0.12040133779264214,"#D9E2ED"],[0.12374581939799331,"#D9E1EC"],[0.12709030100334448,"#D9E1EC"],[0.13043478260869565,"#D8E0EB"],[0.13377926421404682,"#D7DFEB"],[0.13712374581939799,"#D6DFEA"],[0.14046822742474915,"#D5DEEA"],[0.14381270903010032,"#D4DDE9"],[0.14715719063545149,"#D3DCE8"],[0.15050167224080269,"#D3DCE8"],[0.15384615384615385,"#D2DBE8"],[0.15719063545150502,"#D1DBE7"],[0.16053511705685619,"#D0DAE7"],[0.16387959866220736,"#CFD9E6"],[0.16722408026755853,"#CED8E6"],[0.1705685618729097,"#CED8E6"],[0.17391304347826086,"#CDD7E5"],[0.17725752508361203,"#CCD7E4"],[0.1806020066889632,"#CBD6E4"],[0.18394648829431437,"#CAD5E3"],[0.18729096989966554,"#CAD4E3"],[0.19063545150501671,"#C9D3E2"],[0.1939799331103679,"#C9D3E2"],[0.19732441471571907,"#C8D3E1"],[0.20066889632107024,"#C7D2E1"],[0.20401337792642141,"#C6D1E0"],[0.20735785953177258,"#C5D0E0"],[0.21070234113712374,"#C4D0DF"],[0.21404682274247491,"#C3CFDF"],[0.21739130434782608,"#C3CFDF"],[0.22073578595317725,"#C2CEDE"],[0.22408026755852842,"#C1CDDD"],[0.22742474916387959,"#C0CCDD"],[0.23076923076923075,"#BFCCDC"],[0.23411371237458192,"#BECBDC"],[0.23745819397993312,"#BDCADB"],[0.24080267558528429,"#BDCADB"],[0.24414715719063546,"#BCC9DB"],[0.24749163879598662,"#BBC8DA"],[0.25083612040133779,"#BBC8D9"],[0.25418060200668896,"#BAC7D9"],[0.25752508361204013,"#B9C6D8"],[0.2608695652173913,"#B8C5D8"],[0.26421404682274247,"#B8C5D8"],[0.26755852842809363,"#B7C4D7"],[0.2709030100334448,"#B6C4D6"],[0.27424749163879597,"#B5C3D6"],[0.27759197324414714,"#B4C2D5"],[0.28093645484949831,"#B3C1D5"],[0.28428093645484948,"#B3C1D5"],[0.28762541806020064,"#B2C0D4"],[0.29096989966555181,"#B1C0D4"],[0.29431438127090298,"#B0BFD3"],[0.29765886287625415,"#AFBED2"],[0.30100334448160537,"#AEBDD2"],[0.30434782608695654,"#ADBCD1"],[0.30769230769230771,"#ADBCD1"],[0.31103678929765888,"#ACBCD1"],[0.31438127090301005,"#ACBBD0"],[0.31772575250836121,"#ABBACF"],[0.32107023411371238,"#AAB9CF"],[0.32441471571906355,"#A9B8CE"],[0.32775919732441472,"#A8B8CE"],[0.33110367892976589,"#A8B8CE"],[0.33444816053511706,"#A7B7CD"],[0.33779264214046822,"#A6B6CD"],[0.34113712374581939,"#A5B5CC"],[0.34448160535117056,"#A4B4CB"],[0.34782608695652173,"#A3B4CB"],[0.3511705685618729,"#A2B3CA"],[0.35451505016722407,"#A2B3CA"],[0.35785953177257523,"#A1B2CA"],[0.3612040133779264,"#A0B1C9"],[0.36454849498327757,"#9FB0C9"],[0.36789297658862874,"#9EB0C8"],[0.37123745819397991,"#9DAFC7"],[0.37458193979933108,"#9DAEC7"],[0.37792642140468224,"#9DAEC7"],[0.38127090301003341,"#9CADC6"],[0.38461538461538458,"#9BACC6"],[0.38795986622073581,"#9AACC5"],[0.39130434782608697,"#99ABC4"],[0.39464882943143814,"#98AAC4"],[0.39799331103678931,"#98AAC4"],[0.40133779264214048,"#97A9C3"],[0.40468227424749165,"#96A9C3"],[0.40802675585284282,"#95A8C2"],[0.41137123745819398,"#94A7C2"],[0.41471571906354515,"#93A6C1"],[0.41806020066889632,"#92A5C0"],[0.42140468227424749,"#92A5C0"],[0.42474916387959866,"#91A5C0"],[0.42809364548494983,"#90A4BF"],[0.43143812709030099,"#8FA3BF"],[0.43478260869565216,"#8EA2BE"],[0.43812709030100333,"#8EA1BD"],[0.4414715719063545,"#8DA1BD"],[0.44481605351170567,"#8DA1BD"],[0.44816053511705684,"#8CA0BC"],[0.451505016722408,"#8B9FBC"],[0.45484949832775917,"#8A9EBB"],[0.45819397993311034,"#899DBB"],[0.46153846153846151,"#889DBA"],[0.46488294314381268,"#879CB9"],[0.46822742474916385,"#879CB9"],[0.47157190635451507,"#869BB9"],[0.47491638795986624,"#859AB8"],[0.47826086956521741,"#8499B8"],[0.48160535117056857,"#8399B7"],[0.48494983277591974,"#8298B7"],[0.48829431438127091,"#8197B6"],[0.49163879598662208,"#8197B6"],[0.49498327759197325,"#8096B5"],[0.49832775919732442,"#7F95B5"],[0.50167224080267558,"#7F95B4"],[0.50501672240802675,"#7E94B4"],[0.50836120401337792,"#7D93B3"],[0.51170568561872909,"#7D93B3"],[0.51505016722408026,"#7C92B2"],[0.51839464882943143,"#7B91B2"],[0.52173913043478259,"#7A91B1"],[0.52508361204013376,"#7990B1"],[0.52842809364548493,"#788FB0"],[0.5317725752508361,"#778EB0"],[0.53511705685618727,"#778EB0"],[0.53846153846153844,"#768DAF"],[0.5418060200668896,"#758DAE"],[0.54515050167224077,"#748CAE"],[0.54849498327759194,"#738BAD"],[0.55183946488294311,"#728AAD"],[0.55518394648829428,"#7189AC"],[0.55852842809364545,"#7189AC"],[0.56187290969899661,"#7089AC"],[0.56521739130434778,"#7088AB"],[0.56856187290969895,"#6F87AA"],[0.57190635451505012,"#6E86AA"],[0.57525083612040129,"#6D85A9"],[0.57859531772575246,"#6C85A9"],[0.58193979933110362,"#6C85A9"],[0.58528428093645479,"#6B84A8"],[0.58862876254180596,"#6A83A7"],[0.59197324414715713,"#6982A7"],[0.5953177257525083,"#6881A6"],[0.59866220735785947,"#6781A6"],[0.60200668896321075,"#6680A5"],[0.60535117056856191,"#6680A5"],[0.60869565217391308,"#657FA5"],[0.61204013377926425,"#647EA4"],[0.61538461538461542,"#637EA3"],[0.61872909698996659,"#627DA3"],[0.62207357859531776,"#617CA2"],[0.62541806020066892,"#617CA2"],[0.62876254180602009,"#617BA2"],[0.63210702341137126,"#607AA1"],[0.63545150501672243,"#5F7AA0"],[0.6387959866220736,"#5E79A0"],[0.64214046822742477,"#5D789F"],[0.64548494983277593,"#5C779F"],[0.6488294314381271,"#5C779F"],[0.65217391304347827,"#5B769E"],[0.65551839464882944,"#5A769E"],[0.65886287625418061,"#59759D"],[0.66220735785953178,"#58749C"],[0.66555183946488294,"#57739C"],[0.66889632107023411,"#56729B"],[0.67224080267558528,"#56729B"],[0.67558528428093645,"#55729B"],[0.67892976588628762,"#54719A"],[0.68227424749163879,"#53709A"],[0.68561872909698995,"#526F99"],[0.68896321070234112,"#526E98"],[0.69230769230769229,"#516E98"],[0.69565217391304346,"#516E98"],[0.69899665551839463,"#506D97"],[0.7023411371237458,"#4F6C97"],[0.70568561872909696,"#4E6B96"],[0.70903010033444813,"#4D6A95"],[0.7123745819397993,"#4C6A95"],[0.71571906354515047,"#4B6994"],[0.71906354515050164,"#4B6994"],[0.72240802675585281,"#4A6894"],[0.72575250836120397,"#496793"],[0.72909698996655514,"#486693"],[0.73244147157190631,"#476692"],[0.73578595317725748,"#466591"],[0.73913043478260865,"#466591"],[0.74247491638795982,"#456491"],[0.74581939799331098,"#446390"],[0.74916387959866215,"#436290"],[0.75250836120401332,"#43628F"],[0.75585284280936449,"#42618E"],[0.75919732441471566,"#41608E"],[0.76254180602006683,"#41608E"],[0.76588628762541799,"#405F8D"],[0.76923076923076916,"#3F5E8D"],[0.77257525083612044,"#3E5E8C"],[0.77591973244147161,"#3D5D8C"],[0.77926421404682278,"#3C5C8B"],[0.78260869565217395,"#3B5B8A"],[0.78595317725752512,"#3B5B8A"],[0.78929765886287628,"#3A5A8A"],[0.79264214046822745,"#395A89"],[0.79598662207357862,"#385989"],[0.79933110367892979,"#375888"],[0.80267558528428096,"#365788"],[0.80602006688963213,"#355787"],[0.80936454849498329,"#355787"],[0.81270903010033446,"#345686"],[0.81605351170568563,"#345586"],[0.8193979933110368,"#335485"],[0.82274247491638797,"#325385"],[0.82608695652173914,"#315384"],[0.8294314381270903,"#305283"],[0.83277591973244147,"#305283"],[0.83612040133779264,"#2F5183"],[0.83946488294314381,"#2E5082"],[0.84280936454849498,"#2D4F82"],[0.84615384615384615,"#2C4F81"],[0.84949832775919731,"#2B4E81"],[0.85284280936454848,"#2B4E81"],[0.85618729096989965,"#2A4D80"],[0.85953177257525082,"#294C7F"],[0.86287625418060199,"#284B7F"],[0.86622073578595316,"#274B7E"],[0.86956521739130432,"#264A7E"],[0.87290969899665549,"#25497D"],[0.87625418060200666,"#25497D"],[0.87959866220735783,"#25487C"],[0.882943143812709,"#24477C"],[0.88628762541806017,"#23477B"],[0.88963210702341133,"#22467B"],[0.8929765886287625,"#21457A"],[0.89632107023411367,"#20447A"],[0.89966555183946484,"#20447A"],[0.90301003344481601,"#1F4379"],[0.90635451505016718,"#1E4378"],[0.90969899665551834,"#1D4278"],[0.91304347826086951,"#1C4177"],[0.91638795986622068,"#1B4077"],[0.91973244147157185,"#1A3F76"],[0.92307692307692302,"#1A3F76"],[0.92642140468227419,"#193F76"],[0.92976588628762535,"#183E75"],[0.93311036789297652,"#173D74"],[0.93645484949832769,"#163C74"],[0.93979933110367886,"#163B73"],[0.94314381270903014,"#163B73"],[0.94648829431438131,"#153B73"],[0.94983277591973247,"#143A72"],[0.95317725752508364,"#133971"],[0.95652173913043481,"#123871"],[0.95986622073578598,"#113770"],[0.96321070234113715,"#103770"],[0.96655518394648832,"#103770"],[0.96989966555183948,"#0F366F"],[0.97324414715719065,"#0E356F"],[0.97658862876254182,"#0D346E"],[0.97993311036789299,"#0C336D"],[0.98327759197324416,"#0B336D"],[0.98662207357859533,"#0A326C"],[0.98996655518394649,"#0A326C"],[0.99331103678929766,"#09316C"],[0.99665551839464883,"#08306B"],[1,"#08306B"]],"colorbar":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.8897637795275593,"thickness":23.039999999999996,"title":null,"titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"tickmode":"array","ticktext":["0.00","0.25","0.50","0.75","1.00"],"tickvals":[0.0016666666666666668,0.2508333333333333,0.49999999999999994,0.74916666666666665,0.99833333333333329],"tickfont":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"ticklen":2,"len":0.5}},"xaxis":"x","yaxis":"y","frame":null},{"x":[1.0908778897590077,1.0908778897590077,null,1.0908778897590077,0.50094972196331145,null,0.50094972196331145,0.50094972196331145,null,0.50094972196331145,0,null,0.50094972196331145,0.50094972196331145,null,0.50094972196331145,0],"y":[45.609375,42.5,null,42.5,42.5,null,42.5,42,null,42,42,null,42.5,43,null,43,43],"text":["y: 1.09087789","y: 1.09087789",null,"y: 1.09087789","y: 1.09087789",null,"y: 0.50094972","y: 0.50094972",null,"y: 0.50094972","y: 0.50094972",null,"y: 0.50094972","y: 0.50094972",null,"y: 0.50094972","y: 0.50094972"],"type":"scatter","mode":"lines","line":{"width":2.2677165354330708,"color":"rgba(57,190,177,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x2","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.0908778897590077,1.0908778897590077,null,1.0908778897590077,0.73180022212606388,null,0.73180022212606388,0.73180022212606388,null,0.73180022212606388,0.69115953326908108,null,0.69115953326908108,0.69115953326908108,null,0.69115953326908108,0.3806270981887479,null,0.3806270981887479,0.3806270981887479,null,0.3806270981887479,0.2552643168918356,null,0.2552643168918356,0.2552643168918356,null,0.2552643168918356,0,null,0.2552643168918356,0.2552643168918356,null,0.2552643168918356,0.185675404080306,null,0.185675404080306,0.185675404080306,null,0.185675404080306,0,null,0.185675404080306,0.185675404080306,null,0.185675404080306,0,null,0.3806270981887479,0.3806270981887479,null,0.3806270981887479,0,null,0.69115953326908108,0.69115953326908108,null,0.69115953326908108,0,null,0.73180022212606388,0.73180022212606388,null,0.73180022212606388,0.4668075826896933,null,0.4668075826896933,0.4668075826896933,null,0.4668075826896933,0.35841748229668219,null,0.35841748229668219,0.35841748229668219,null,0.35841748229668219,0,null,0.35841748229668219,0.35841748229668219,null,0.35841748229668219,0,null,0.4668075826896933,0.4668075826896933,null,0.4668075826896933,0.1730199763105828,null,0.1730199763105828,0.1730199763105828,null,0.1730199763105828,0,null,0.1730199763105828,0.1730199763105828,null,0.1730199763105828,0],"y":[45.609375,48.71875,null,48.71875,48.71875,null,48.71875,46.9375,null,46.9375,46.9375,null,46.9375,45.875,null,45.875,45.875,null,45.875,44.75,null,44.75,44.75,null,44.75,44,null,44,44,null,44.75,45.5,null,45.5,45.5,null,45.5,45,null,45,45,null,45.5,46,null,46,46,null,45.875,47,null,47,47,null,46.9375,48,null,48,48,null,48.71875,50.5,null,50.5,50.5,null,50.5,49.5,null,49.5,49.5,null,49.5,49,null,49,49,null,49.5,50,null,50,50,null,50.5,51.5,null,51.5,51.5,null,51.5,51,null,51,51,null,51.5,52,null,52,52],"text":["y: 1.09087789","y: 1.09087789",null,"y: 1.09087789","y: 1.09087789",null,"y: 0.73180022","y: 0.73180022",null,"y: 0.73180022","y: 0.73180022",null,"y: 0.69115953","y: 0.69115953",null,"y: 0.69115953","y: 0.69115953",null,"y: 0.38062710","y: 0.38062710",null,"y: 0.38062710","y: 0.38062710",null,"y: 0.25526432","y: 0.25526432",null,"y: 0.25526432","y: 0.25526432",null,"y: 0.25526432","y: 0.25526432",null,"y: 0.25526432","y: 0.25526432",null,"y: 0.18567540","y: 0.18567540",null,"y: 0.18567540","y: 0.18567540",null,"y: 0.18567540","y: 0.18567540",null,"y: 0.18567540","y: 0.18567540",null,"y: 0.38062710","y: 0.38062710",null,"y: 0.38062710","y: 0.38062710",null,"y: 0.69115953","y: 0.69115953",null,"y: 0.69115953","y: 0.69115953",null,"y: 0.73180022","y: 0.73180022",null,"y: 0.73180022","y: 0.73180022",null,"y: 0.46680758","y: 0.46680758",null,"y: 0.46680758","y: 0.46680758",null,"y: 0.35841748","y: 0.35841748",null,"y: 0.35841748","y: 0.35841748",null,"y: 0.35841748","y: 0.35841748",null,"y: 0.35841748","y: 0.35841748",null,"y: 0.46680758","y: 0.46680758",null,"y: 0.46680758","y: 0.46680758",null,"y: 0.17301998","y: 0.17301998",null,"y: 0.17301998","y: 0.17301998",null,"y: 0.17301998","y: 0.17301998",null,"y: 0.17301998","y: 0.17301998"],"type":"scatter","mode":"lines","line":{"width":2.2677165354330708,"color":"rgba(125,176,221,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x2","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.054397227224376,1.054397227224376,null,1.054397227224376,0.47350573521866995,null,0.47350573521866995,0.47350573521866995,null,0.47350573521866995,0,null,0.47350573521866995,0.47350573521866995,null,0.47350573521866995,0],"y":[37.859375,40.5,null,40.5,40.5,null,40.5,40,null,40,40,null,40.5,41,null,41,41],"text":["y: 1.05439723","y: 1.05439723",null,"y: 1.05439723","y: 1.05439723",null,"y: 0.47350574","y: 0.47350574",null,"y: 0.47350574","y: 0.47350574",null,"y: 0.47350574","y: 0.47350574",null,"y: 0.47350574","y: 0.47350574"],"type":"scatter","mode":"lines","line":{"width":2.2677165354330708,"color":"rgba(134,184,117,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x2","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.054397227224376,1.054397227224376,null,1.054397227224376,0.65936703189914236,null,0.65936703189914236,0.65936703189914236,null,0.65936703189914236,0,null,0.65936703189914236,0.65936703189914236,null,0.65936703189914236,0.3664468181726131,null,0.3664468181726131,0.3664468181726131,null,0.3664468181726131,0,null,0.3664468181726131,0.3664468181726131,null,0.3664468181726131,0.25729438180055098,null,0.25729438180055098,0.25729438180055098,null,0.25729438180055098,0.20244506563386871,null,0.20244506563386871,0.20244506563386871,null,0.20244506563386871,0,null,0.20244506563386871,0.20244506563386871,null,0.20244506563386871,0.12888304229422309,null,0.12888304229422309,0.12888304229422309,null,0.12888304229422309,0,null,0.12888304229422309,0.12888304229422309,null,0.12888304229422309,0,null,0.25729438180055098,0.25729438180055098,null,0.25729438180055098,0],"y":[37.859375,35.21875,null,35.21875,35.21875,null,35.21875,34,null,34,34,null,35.21875,36.4375,null,36.4375,36.4375,null,36.4375,35,null,35,35,null,36.4375,37.875,null,37.875,37.875,null,37.875,36.75,null,36.75,36.75,null,36.75,36,null,36,36,null,36.75,37.5,null,37.5,37.5,null,37.5,37,null,37,37,null,37.5,38,null,38,38,null,37.875,39,null,39,39],"text":["y: 1.05439723","y: 1.05439723",null,"y: 1.05439723","y: 1.05439723",null,"y: 0.65936703","y: 0.65936703",null,"y: 0.65936703","y: 0.65936703",null,"y: 0.65936703","y: 0.65936703",null,"y: 0.65936703","y: 0.65936703",null,"y: 0.36644682","y: 0.36644682",null,"y: 0.36644682","y: 0.36644682",null,"y: 0.36644682","y: 0.36644682",null,"y: 0.36644682","y: 0.36644682",null,"y: 0.25729438","y: 0.25729438",null,"y: 0.25729438","y: 0.25729438",null,"y: 0.20244507","y: 0.20244507",null,"y: 0.20244507","y: 0.20244507",null,"y: 0.20244507","y: 0.20244507",null,"y: 0.20244507","y: 0.20244507",null,"y: 0.12888304","y: 0.12888304",null,"y: 0.12888304","y: 0.12888304",null,"y: 0.12888304","y: 0.12888304",null,"y: 0.12888304","y: 0.12888304",null,"y: 0.25729438","y: 0.25729438",null,"y: 0.25729438","y: 0.25729438"],"type":"scatter","mode":"lines","line":{"width":2.2677165354330708,"color":"rgba(199,167,108,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x2","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.5941744666987299,1.5941744666987299,null,1.5941744666987299,0.61424845626023339,null,0.61424845626023339,0.61424845626023339,null,0.61424845626023339,0.27585786880898649,null,0.27585786880898649,0.27585786880898649,null,0.27585786880898649,0,null,0.27585786880898649,0.27585786880898649,null,0.27585786880898649,0,null,0.61424845626023339,0.61424845626023339,null,0.61424845626023339,0],"y":[49.9296875,54.25,null,54.25,54.25,null,54.25,53.5,null,53.5,53.5,null,53.5,53,null,53,53,null,53.5,54,null,54,54,null,54.25,55,null,55,55],"text":["y: 1.59417447","y: 1.59417447",null,"y: 1.59417447","y: 1.59417447",null,"y: 0.61424846","y: 0.61424846",null,"y: 0.61424846","y: 0.61424846",null,"y: 0.27585787","y: 0.27585787",null,"y: 0.27585787","y: 0.27585787",null,"y: 0.27585787","y: 0.27585787",null,"y: 0.27585787","y: 0.27585787",null,"y: 0.61424846","y: 0.61424846",null,"y: 0.61424846","y: 0.61424846"],"type":"scatter","mode":"lines","line":{"width":2.2677165354330708,"color":"rgba(205,153,216,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x2","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.2046648341508377,1.2046648341508377,null,1.2046648341508377,0.95788286362070973,null,0.95788286362070973,0.95788286362070973,null,0.95788286362070973,0.79474550028479152,null,0.79474550028479152,0.79474550028479152,null,0.79474550028479152,0.38162569396273166,null,0.38162569396273166,0.38162569396273166,null,0.38162569396273166,0,null,0.38162569396273166,0.38162569396273166,null,0.38162569396273166,0,null,0.79474550028479152,0.79474550028479152,null,0.79474550028479152,0.6664047769347069,null,0.6664047769347069,0.6664047769347069,null,0.6664047769347069,0.36706162143987942,null,0.36706162143987942,0.36706162143987942,null,0.36706162143987942,0,null,0.36706162143987942,0.36706162143987942,null,0.36706162143987942,0.24828582661663648,null,0.24828582661663648,0.24828582661663648,null,0.24828582661663648,0.087558107117793896,null,0.087558107117793896,0.087558107117793896,null,0.087558107117793896,0,null,0.087558107117793896,0.087558107117793896,null,0.087558107117793896,0,null,0.24828582661663648,0.24828582661663648,null,0.24828582661663648,0.23756964971442937,null,0.23756964971442937,0.23756964971442937,null,0.23756964971442937,0.12990466363518882,null,0.12990466363518882,0.12990466363518882,null,0.12990466363518882,0,null,0.12990466363518882,0.12990466363518882,null,0.12990466363518882,0,null,0.23756964971442937,0.23756964971442937,null,0.23756964971442937,0,null,0.6664047769347069,0.6664047769347069,null,0.6664047769347069,0.53487511869044835,null,0.53487511869044835,0.53487511869044835,null,0.53487511869044835,0.43836359937083058,null,0.43836359937083058,0.43836359937083058,null,0.43836359937083058,0.20347407832470954,null,0.20347407832470954,0.20347407832470954,null,0.20347407832470954,0,null,0.20347407832470954,0.20347407832470954,null,0.20347407832470954,0,null,0.43836359937083058,0.43836359937083058,null,0.43836359937083058,0.33205918608658225,null,0.33205918608658225,0.33205918608658225,null,0.33205918608658225,0.27419929098840362,null,0.27419929098840362,0.27419929098840362,null,0.27419929098840362,0,null,0.27419929098840362,0.27419929098840362,null,0.27419929098840362,0.1434382567577874,null,0.1434382567577874,0.1434382567577874,null,0.1434382567577874,0,null,0.1434382567577874,0.1434382567577874,null,0.1434382567577874,0,null,0.33205918608658225,0.33205918608658225,null,0.33205918608658225,0.20894513119211036,null,0.20894513119211036,0.20894513119211036,null,0.20894513119211036,0,null,0.20894513119211036,0.20894513119211036,null,0.20894513119211036,0.15445841184345191,null,0.15445841184345191,0.15445841184345191,null,0.15445841184345191,0.09039992811033179,null,0.09039992811033179,0.09039992811033179,null,0.09039992811033179,0,null,0.09039992811033179,0.09039992811033179,null,0.09039992811033179,0,null,0.15445841184345191,0.15445841184345191,null,0.15445841184345191,0,null,0.53487511869044835,0.53487511869044835,null,0.53487511869044835,0.3721232755076867,null,0.3721232755076867,0.3721232755076867,null,0.3721232755076867,0.35032421362805982,null,0.35032421362805982,0.35032421362805982,null,0.35032421362805982,0.24340283886100486,null,0.24340283886100486,0.24340283886100486,null,0.24340283886100486,0.2124431624834609,null,0.2124431624834609,0.2124431624834609,null,0.2124431624834609,0.12708171116759615,null,0.12708171116759615,0.12708171116759615,null,0.12708171116759615,0,null,0.12708171116759615,0.12708171116759615,null,0.12708171116759615,0,null,0.2124431624834609,0.2124431624834609,null,0.2124431624834609,0,null,0.24340283886100486,0.24340283886100486,null,0.24340283886100486,0,null,0.35032421362805982,0.35032421362805982,null,0.35032421362805982,0,null,0.3721232755076867,0.3721232755076867,null,0.3721232755076867,0.18257733577118407,null,0.18257733577118407,0.18257733577118407,null,0.18257733577118407,0,null,0.18257733577118407,0.18257733577118407,null,0.18257733577118407,0.12129831255664315,null,0.12129831255664315,0.12129831255664315,null,0.12129831255664315,0,null,0.12129831255664315,0.12129831255664315,null,0.12129831255664315,0.094902085465199792,null,0.094902085465199792,0.094902085465199792,null,0.094902085465199792,0,null,0.094902085465199792,0.094902085465199792,null,0.094902085465199792,0,null,0.95788286362070973,0.95788286362070973,null,0.95788286362070973,0.40783062668695391,null,0.40783062668695391,0.40783062668695391,null,0.40783062668695391,0.21815448450140359,null,0.21815448450140359,0.21815448450140359,null,0.21815448450140359,0.099186753204319189,null,0.099186753204319189,0.099186753204319189,null,0.099186753204319189,0,null,0.099186753204319189,0.099186753204319189,null,0.099186753204319189,0,null,0.21815448450140359,0.21815448450140359,null,0.21815448450140359,0,null,0.40783062668695391,0.40783062668695391,null,0.40783062668695391,0.31959962472454068,null,0.31959962472454068,0.31959962472454068,null,0.31959962472454068,0.20918247212427829,null,0.20918247212427829,0.20918247212427829,null,0.20918247212427829,0,null,0.20918247212427829,0.20918247212427829,null,0.20918247212427829,0,null,0.31959962472454068,0.31959962472454068,null,0.31959962472454068,0.11950480173549577,null,0.11950480173549577,0.11950480173549577,null,0.11950480173549577,0,null,0.11950480173549577,0.11950480173549577,null,0.11950480173549577,0],"y":[27.923828125,17.98828125,null,17.98828125,17.98828125,null,17.98828125,6.1015625,null,6.1015625,6.1015625,null,6.1015625,1.5,null,1.5,1.5,null,1.5,1,null,1,1,null,1.5,2,null,2,2,null,6.1015625,10.703125,null,10.703125,10.703125,null,10.703125,4.4375,null,4.4375,4.4375,null,4.4375,3,null,3,3,null,4.4375,5.875,null,5.875,5.875,null,5.875,4.5,null,4.5,4.5,null,4.5,4,null,4,4,null,4.5,5,null,5,5,null,5.875,7.25,null,7.25,7.25,null,7.25,6.5,null,6.5,6.5,null,6.5,6,null,6,6,null,6.5,7,null,7,7,null,7.25,8,null,8,8,null,10.703125,16.96875,null,16.96875,16.96875,null,16.96875,11.46875,null,11.46875,11.46875,null,11.46875,9.5,null,9.5,9.5,null,9.5,9,null,9,9,null,9.5,10,null,10,10,null,11.46875,13.4375,null,13.4375,13.4375,null,13.4375,11.75,null,11.75,11.75,null,11.75,11,null,11,11,null,11.75,12.5,null,12.5,12.5,null,12.5,12,null,12,12,null,12.5,13,null,13,13,null,13.4375,15.125,null,15.125,15.125,null,15.125,14,null,14,14,null,15.125,16.25,null,16.25,16.25,null,16.25,15.5,null,15.5,15.5,null,15.5,15,null,15,15,null,15.5,16,null,16,16,null,16.25,17,null,17,17,null,16.96875,22.46875,null,22.46875,22.46875,null,22.46875,21.0625,null,21.0625,21.0625,null,21.0625,20.125,null,20.125,20.125,null,20.125,19.25,null,19.25,19.25,null,19.25,18.5,null,18.5,18.5,null,18.5,18,null,18,18,null,18.5,19,null,19,19,null,19.25,20,null,20,20,null,20.125,21,null,21,21,null,21.0625,22,null,22,22,null,22.46875,23.875,null,23.875,23.875,null,23.875,23,null,23,23,null,23.875,24.75,null,24.75,24.75,null,24.75,24,null,24,24,null,24.75,25.5,null,25.5,25.5,null,25.5,25,null,25,25,null,25.5,26,null,26,26,null,17.98828125,29.875,null,29.875,29.875,null,29.875,28.25,null,28.25,28.25,null,28.25,27.5,null,27.5,27.5,null,27.5,27,null,27,27,null,27.5,28,null,28,28,null,28.25,29,null,29,29,null,29.875,31.5,null,31.5,31.5,null,31.5,30.5,null,30.5,30.5,null,30.5,30,null,30,30,null,30.5,31,null,31,31,null,31.5,32.5,null,32.5,32.5,null,32.5,32,null,32,32,null,32.5,33,null,33,33],"text":["y: 1.20466483","y: 1.20466483",null,"y: 1.20466483","y: 1.20466483",null,"y: 0.95788286","y: 0.95788286",null,"y: 0.95788286","y: 0.95788286",null,"y: 0.79474550","y: 0.79474550",null,"y: 0.79474550","y: 0.79474550",null,"y: 0.38162569","y: 0.38162569",null,"y: 0.38162569","y: 0.38162569",null,"y: 0.38162569","y: 0.38162569",null,"y: 0.38162569","y: 0.38162569",null,"y: 0.79474550","y: 0.79474550",null,"y: 0.79474550","y: 0.79474550",null,"y: 0.66640478","y: 0.66640478",null,"y: 0.66640478","y: 0.66640478",null,"y: 0.36706162","y: 0.36706162",null,"y: 0.36706162","y: 0.36706162",null,"y: 0.36706162","y: 0.36706162",null,"y: 0.36706162","y: 0.36706162",null,"y: 0.24828583","y: 0.24828583",null,"y: 0.24828583","y: 0.24828583",null,"y: 0.08755811","y: 0.08755811",null,"y: 0.08755811","y: 0.08755811",null,"y: 0.08755811","y: 0.08755811",null,"y: 0.08755811","y: 0.08755811",null,"y: 0.24828583","y: 0.24828583",null,"y: 0.24828583","y: 0.24828583",null,"y: 0.23756965","y: 0.23756965",null,"y: 0.23756965","y: 0.23756965",null,"y: 0.12990466","y: 0.12990466",null,"y: 0.12990466","y: 0.12990466",null,"y: 0.12990466","y: 0.12990466",null,"y: 0.12990466","y: 0.12990466",null,"y: 0.23756965","y: 0.23756965",null,"y: 0.23756965","y: 0.23756965",null,"y: 0.66640478","y: 0.66640478",null,"y: 0.66640478","y: 0.66640478",null,"y: 0.53487512","y: 0.53487512",null,"y: 0.53487512","y: 0.53487512",null,"y: 0.43836360","y: 0.43836360",null,"y: 0.43836360","y: 0.43836360",null,"y: 0.20347408","y: 0.20347408",null,"y: 0.20347408","y: 0.20347408",null,"y: 0.20347408","y: 0.20347408",null,"y: 0.20347408","y: 0.20347408",null,"y: 0.43836360","y: 0.43836360",null,"y: 0.43836360","y: 0.43836360",null,"y: 0.33205919","y: 0.33205919",null,"y: 0.33205919","y: 0.33205919",null,"y: 0.27419929","y: 0.27419929",null,"y: 0.27419929","y: 0.27419929",null,"y: 0.27419929","y: 0.27419929",null,"y: 0.27419929","y: 0.27419929",null,"y: 0.14343826","y: 0.14343826",null,"y: 0.14343826","y: 0.14343826",null,"y: 0.14343826","y: 0.14343826",null,"y: 0.14343826","y: 0.14343826",null,"y: 0.33205919","y: 0.33205919",null,"y: 0.33205919","y: 0.33205919",null,"y: 0.20894513","y: 0.20894513",null,"y: 0.20894513","y: 0.20894513",null,"y: 0.20894513","y: 0.20894513",null,"y: 0.20894513","y: 0.20894513",null,"y: 0.15445841","y: 0.15445841",null,"y: 0.15445841","y: 0.15445841",null,"y: 0.09039993","y: 0.09039993",null,"y: 0.09039993","y: 0.09039993",null,"y: 0.09039993","y: 0.09039993",null,"y: 0.09039993","y: 0.09039993",null,"y: 0.15445841","y: 0.15445841",null,"y: 0.15445841","y: 0.15445841",null,"y: 0.53487512","y: 0.53487512",null,"y: 0.53487512","y: 0.53487512",null,"y: 0.37212328","y: 0.37212328",null,"y: 0.37212328","y: 0.37212328",null,"y: 0.35032421","y: 0.35032421",null,"y: 0.35032421","y: 0.35032421",null,"y: 0.24340284","y: 0.24340284",null,"y: 0.24340284","y: 0.24340284",null,"y: 0.21244316","y: 0.21244316",null,"y: 0.21244316","y: 0.21244316",null,"y: 0.12708171","y: 0.12708171",null,"y: 0.12708171","y: 0.12708171",null,"y: 0.12708171","y: 0.12708171",null,"y: 0.12708171","y: 0.12708171",null,"y: 0.21244316","y: 0.21244316",null,"y: 0.21244316","y: 0.21244316",null,"y: 0.24340284","y: 0.24340284",null,"y: 0.24340284","y: 0.24340284",null,"y: 0.35032421","y: 0.35032421",null,"y: 0.35032421","y: 0.35032421",null,"y: 0.37212328","y: 0.37212328",null,"y: 0.37212328","y: 0.37212328",null,"y: 0.18257734","y: 0.18257734",null,"y: 0.18257734","y: 0.18257734",null,"y: 0.18257734","y: 0.18257734",null,"y: 0.18257734","y: 0.18257734",null,"y: 0.12129831","y: 0.12129831",null,"y: 0.12129831","y: 0.12129831",null,"y: 0.12129831","y: 0.12129831",null,"y: 0.12129831","y: 0.12129831",null,"y: 0.09490209","y: 0.09490209",null,"y: 0.09490209","y: 0.09490209",null,"y: 0.09490209","y: 0.09490209",null,"y: 0.09490209","y: 0.09490209",null,"y: 0.95788286","y: 0.95788286",null,"y: 0.95788286","y: 0.95788286",null,"y: 0.40783063","y: 0.40783063",null,"y: 0.40783063","y: 0.40783063",null,"y: 0.21815448","y: 0.21815448",null,"y: 0.21815448","y: 0.21815448",null,"y: 0.09918675","y: 0.09918675",null,"y: 0.09918675","y: 0.09918675",null,"y: 0.09918675","y: 0.09918675",null,"y: 0.09918675","y: 0.09918675",null,"y: 0.21815448","y: 0.21815448",null,"y: 0.21815448","y: 0.21815448",null,"y: 0.40783063","y: 0.40783063",null,"y: 0.40783063","y: 0.40783063",null,"y: 0.31959962","y: 0.31959962",null,"y: 0.31959962","y: 0.31959962",null,"y: 0.20918247","y: 0.20918247",null,"y: 0.20918247","y: 0.20918247",null,"y: 0.20918247","y: 0.20918247",null,"y: 0.20918247","y: 0.20918247",null,"y: 0.31959962","y: 0.31959962",null,"y: 0.31959962","y: 0.31959962",null,"y: 0.11950480","y: 0.11950480",null,"y: 0.11950480","y: 0.11950480",null,"y: 0.11950480","y: 0.11950480",null,"y: 0.11950480","y: 0.11950480"],"type":"scatter","mode":"lines","line":{"width":2.2677165354330708,"color":"rgba(228,149,165,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x2","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8228771534841937,1.8228771534841937,null,1.8228771534841937,1.2046648341508377,null,1.2046648341508377,1.2046648341508377,null,1.2046648341508377,1.054397227224376,null,1.8228771534841937,1.8228771534841937,null,1.8228771534841937,1.5941744666987299,null,1.5941744666987299,1.5941744666987299,null,1.5941744666987299,1.0908778897590077],"y":[38.9267578125,27.923828125,null,27.923828125,27.923828125,null,27.923828125,37.859375,null,37.859375,37.859375,null,38.9267578125,49.9296875,null,49.9296875,49.9296875,null,49.9296875,45.609375,null,45.609375,45.609375],"text":["y: 1.82287715","y: 1.82287715",null,"y: 1.82287715","y: 1.82287715",null,"y: 1.20466483","y: 1.20466483",null,"y: 1.20466483","y: 1.20466483",null,"y: 1.82287715","y: 1.82287715",null,"y: 1.82287715","y: 1.82287715",null,"y: 1.59417447","y: 1.59417447",null,"y: 1.59417447","y: 1.59417447"],"type":"scatter","mode":"lines","line":{"width":2.2677165354330708,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x2","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8228771534841937,1.2046648341508377,0.95788286362070973,0.79474550028479152,0.38162569396273166,0,0,0.6664047769347069,0.36706162143987942,0,0.24828582661663648,0.087558107117793896,0,0,0.23756964971442937,0.12990466363518882,0,0,0,0.53487511869044835,0.43836359937083058,0.20347407832470954,0,0,0.33205918608658225,0.27419929098840362,0,0.1434382567577874,0,0,0.20894513119211036,0,0.15445841184345191,0.09039992811033179,0,0,0,0.3721232755076867,0.35032421362805982,0.24340283886100486,0.2124431624834609,0.12708171116759615,0,0,0,0,0,0.18257733577118407,0,0.12129831255664315,0,0.094902085465199792,0,0,0.40783062668695391,0.21815448450140359,0.099186753204319189,0,0,0,0.31959962472454068,0.20918247212427829,0,0,0.11950480173549577,0,0,1.054397227224376,0.65936703189914236,0,0.3664468181726131,0,0.25729438180055098,0.20244506563386871,0,0.12888304229422309,0,0,0,0.47350573521866995,0,0,1.5941744666987299,1.0908778897590077,0.50094972196331145,0,0,0.73180022212606388,0.69115953326908108,0.3806270981887479,0.2552643168918356,0,0.185675404080306,0,0,0,0,0.4668075826896933,0.35841748229668219,0,0,0.1730199763105828,0,0,0.61424845626023339,0.27585786880898649,0,0,0],"y":[38.9267578125,27.923828125,17.98828125,6.1015625,1.5,1,2,10.703125,4.4375,3,5.875,4.5,4,5,7.25,6.5,6,7,8,16.96875,11.46875,9.5,9,10,13.4375,11.75,11,12.5,12,13,15.125,14,16.25,15.5,15,16,17,22.46875,21.0625,20.125,19.25,18.5,18,19,20,21,22,23.875,23,24.75,24,25.5,25,26,29.875,28.25,27.5,27,28,29,31.5,30.5,30,31,32.5,32,33,37.859375,35.21875,34,36.4375,35,37.875,36.75,36,37.5,37,38,39,40.5,40,41,49.9296875,45.609375,42.5,42,43,48.71875,46.9375,45.875,44.75,44,45.5,45,46,47,48,50.5,49.5,49,50,51.5,51,52,54.25,53.5,53,54,55],"text":["y: 1.82287715","y: 1.20466483","y: 0.95788286","y: 0.79474550","y: 0.38162569","y: 0.00000000","y: 0.00000000","y: 0.66640478","y: 0.36706162","y: 0.00000000","y: 0.24828583","y: 0.08755811","y: 0.00000000","y: 0.00000000","y: 0.23756965","y: 0.12990466","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.53487512","y: 0.43836360","y: 0.20347408","y: 0.00000000","y: 0.00000000","y: 0.33205919","y: 0.27419929","y: 0.00000000","y: 0.14343826","y: 0.00000000","y: 0.00000000","y: 0.20894513","y: 0.00000000","y: 0.15445841","y: 0.09039993","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.37212328","y: 0.35032421","y: 0.24340284","y: 0.21244316","y: 0.12708171","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.18257734","y: 0.00000000","y: 0.12129831","y: 0.00000000","y: 0.09490209","y: 0.00000000","y: 0.00000000","y: 0.40783063","y: 0.21815448","y: 0.09918675","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.31959962","y: 0.20918247","y: 0.00000000","y: 0.00000000","y: 0.11950480","y: 0.00000000","y: 0.00000000","y: 1.05439723","y: 0.65936703","y: 0.00000000","y: 0.36644682","y: 0.00000000","y: 0.25729438","y: 0.20244507","y: 0.00000000","y: 0.12888304","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.47350574","y: 0.00000000","y: 0.00000000","y: 1.59417447","y: 1.09087789","y: 0.50094972","y: 0.00000000","y: 0.00000000","y: 0.73180022","y: 0.69115953","y: 0.38062710","y: 0.25526432","y: 0.00000000","y: 0.18567540","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.00000000","y: 0.46680758","y: 0.35841748","y: 0.00000000","y: 0.00000000","y: 0.17301998","y: 0.00000000","y: 0.00000000","y: 0.61424846","y: 0.27585787","y: 0.00000000","y: 0.00000000","y: 0.00000000"],"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"transparent","opacity":1,"size":null,"symbol":null,"line":{"width":1.8897637795275593,"color":"transparent"}},"hoveron":"points","showlegend":false,"xaxis":"x2","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"xaxis":{"domain":[0,0.80000000000000004],"automargin":true,"type":"linear","autorange":false,"range":[0.5,5.5],"tickmode":"array","ticktext":["RADIO_PR","TV_PR","LLPHONE_PR","MPHONE_PR","COMPUTER_PR"],"tickvals":[1,2,3,4,5],"categoryorder":"array","categoryarray":["RADIO_PR","TV_PR","LLPHONE_PR","MPHONE_PR","COMPUTER_PR"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":14.611872146118724},"tickangle":-45,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176002,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":"ICT indicators","hoverformat":".2f"},"xaxis2":{"domain":[0.80000000000000004,1],"automargin":true,"type":"linear","autorange":false,"range":[0,1.8228771534841937],"tickmode":"array","ticktext":["0.0","0.5","1.0","1.5"],"tickvals":[0,0.5,1,1.5],"categoryorder":"array","categoryarray":["0.0","0.5","1.0","1.5"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":false,"tickfont":{"color":null,"family":null,"size":0},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"","font":{"color":null,"family":null,"size":0}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.5,55.5],"tickmode":"array","ticktext":["Narphan","Pangwaun","Mongpan","Nansang","Kyaukme","Kalaw","Hseni","Langkho","Kunhing","Laihka","Monghsat","Loilen","Mongnai","Mongton","Hsipaw","Hopong","Monghsu","Pinlaung","Mongmit","Pekon","Kutkai","Namtu","Hsihseng","Kyethi","Tangyan","Namhsan","Mongyai","Mongping","Mongkhet","Mawkmai","Mongkaing","Manton","Matman","Ywangan","Pindaya","Lawksawk","Nyaungshwe","Nawnghkio","Monghpyak","Mabein","Mongyawng","Kunlong","Konkyan","Mongyang","Mongmao","Hopang","Namhkan","Laukkaing","Mongla","Pangsang","Kengtung","Lashio","Taunggyi","Tachileik","Muse"],"tickvals":[1,2,3,3.9999999999999996,5,6,7,7.9999999999999991,9,10,11,12,13,14,14.999999999999998,15.999999999999998,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55],"categoryorder":"array","categoryarray":["Narphan","Pangwaun","Mongpan","Nansang","Kyaukme","Kalaw","Hseni","Langkho","Kunhing","Laihka","Monghsat","Loilen","Mongnai","Mongton","Hsipaw","Hopong","Monghsu","Pinlaung","Mongmit","Pekon","Kutkai","Namtu","Hsihseng","Kyethi","Tangyan","Namhsan","Mongyai","Mongping","Mongkhet","Mawkmai","Mongkaing","Manton","Matman","Ywangan","Pindaya","Lawksawk","Nyaungshwe","Nawnghkio","Monghpyak","Mabein","Mongyawng","Kunlong","Konkyan","Mongyang","Mongmao","Hopang","Namhkan","Laukkaing","Mongla","Pangsang","Kengtung","Lashio","Taunggyi","Tachileik","Muse"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296806,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.955168119551683},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176002,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":"Townships","hoverformat":".2f"},"annotations":[],"shapes":[],"images":[],"margin":{"t":55,"r":15,"b":65,"l":150},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.8897637795275593,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"y":1,"yanchor":"top"},"hovermode":"closest","height":950,"barmode":"relative","title":"Shan ICT profiles: min-max scaled rates"},"attrs":{"3c746e8d7933":{"x":{},"y":{},"fill":{},"text":{},"type":"heatmap"},"3c741f32741c":{"x":{},"y":{},"xend":{},"yend":{},"colour":{},"linetype":{},"size":{},"type":"scatter"},"3c742cb1ae9":{"x":{},"y":{},"colour":{},"shape":{},"size":{}}},"source":"A","config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false,"displaylogo":false,"modeBarButtonsToRemove":["sendDataToCloud","select2d","lasso2d","autoScale2d","hoverClosestCartesian","hoverCompareCartesian","sendDataToCloud"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"subplot":true,"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="mapping-the-hierarchy" class="level3" data-number="6.7">
+<h3 data-number="6.7" class="anchored" data-anchor-id="mapping-the-hierarchy"><span class="header-section-number">6.7</span> Mapping the hierarchy</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>shan_sf_cluster <span class="ot">&lt;-</span> shan_sf <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">CLUSTER =</span> <span class="fu">factor</span>(<span class="fu">cutree</span>(hclust_ward, <span class="at">k =</span> <span class="dv">6</span>)))</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>cluster_map <span class="ot">&lt;-</span> <span class="cf">function</span>(data, variable, title) {</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(data) <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_polygons</span>(<span class="at">fill =</span> variable,</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">fill.scale =</span> <span class="fu">tm_scale_categorical</span>(<span class="at">values =</span> cluster_colours),</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> <span class="st">"Cluster"</span>)) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_borders</span>() <span class="sc">+</span> <span class="fu">tm_title</span>(title)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>hierarchical_map <span class="ot">&lt;-</span> <span class="fu">cluster_map</span>(shan_sf_cluster, <span class="st">"CLUSTER"</span>, <span class="st">"Hierarchical clusters"</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>hierarchical_map</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/hierarchical-map-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Six clusters from the raw-rate ward.D hierarchy.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>This model uses ICT similarity without a spatial constraint. Townships with similar profiles can therefore share a group even when they are separated geographically.</p>
+</section>
+</section>
+<section id="spatially-constrained-clustering-with-skater" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="spatially-constrained-clustering-with-skater"><span class="header-section-number">7</span> Spatially Constrained Clustering with SKATER</h2>
+<section id="building-the-neighbour-graph" class="level3" data-number="7.1">
+<h3 data-number="7.1" class="anchored" data-anchor-id="building-the-neighbour-graph"><span class="header-section-number">7.1</span> Building the neighbour graph</h3>
+<p>SKATER starts with a graph of neighbouring townships. I use Queen contiguity, which accepts either a shared boundary edge or a shared vertex.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>shan_sp <span class="ot">&lt;-</span> <span class="fu">as_Spatial</span>(shan_sf)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>shan_nb <span class="ot">&lt;-</span> <span class="fu">poly2nb</span>(shan_sp, <span class="at">queen =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>coords <span class="ot">&lt;-</span> <span class="fu">st_coordinates</span>(<span class="fu">st_centroid</span>(<span class="fu">st_geometry</span>(shan_sf)))</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(shan_sf), <span class="at">border =</span> <span class="st">"grey55"</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(shan_nb, coords, <span class="at">col =</span> <span class="st">"#246a9b"</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/queen-neighbour-map-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Queen contiguity links between Shan townships.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The graph has 55 townships and 264 directed neighbour links. All townships belong to one connected component, allowing a spanning tree to cover the whole study area.</p>
+</section>
+<section id="edge-costs-and-the-minimum-spanning-tree" class="level3" data-number="7.2">
+<h3 data-number="7.2" class="anchored" data-anchor-id="edge-costs-and-the-minimum-spanning-tree"><span class="header-section-number">7.2</span> Edge costs and the minimum spanning tree</h3>
+<p>Each neighbour link receives a cost based on the difference between the two townships’ five ICT rates. The minimum spanning tree connects all townships while minimising the total edge cost. I retain the original costs with <code>style = "B"</code>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>lcosts <span class="ot">&lt;-</span> <span class="fu">nbcosts</span>(shan_nb, shan_ict)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>shan_w <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(shan_nb, <span class="at">glist =</span> lcosts, <span class="at">style =</span> <span class="st">"B"</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>shan_mst <span class="ot">&lt;-</span> <span class="fu">mstree</span>(shan_w, <span class="at">ini =</span> <span class="dv">1</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(shan_sf), <span class="at">border =</span> <span class="st">"grey55"</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">segments</span>(coords[shan_mst[, <span class="dv">1</span>], <span class="dv">1</span>], coords[shan_mst[, <span class="dv">1</span>], <span class="dv">2</span>],</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>         coords[shan_mst[, <span class="dv">2</span>], <span class="dv">1</span>], coords[shan_mst[, <span class="dv">2</span>], <span class="dv">2</span>],</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">col =</span> <span class="st">"#246a9b"</span>, <span class="at">lwd =</span> <span class="fl">1.2</span>)</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(coords, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">cex =</span> <span class="fl">0.45</span>, <span class="at">col =</span> <span class="st">"#246a9b"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/minimum-spanning-tree-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Minimum spanning tree based on ICT differences between adjacent townships.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="cutting-the-tree-into-six-regions" class="level3" data-number="7.3">
+<h3 data-number="7.3" class="anchored" data-anchor-id="cutting-the-tree-into-six-regions"><span class="header-section-number">7.3</span> Cutting the tree into six regions</h3>
+<p>Five cuts produce six groups. Since SKATER removes edges from the neighbour tree, each resulting group remains connected through the original Queen graph.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>clust6 <span class="ot">&lt;-</span> spdep<span class="sc">::</span><span class="fu">skater</span>(<span class="at">edges =</span> shan_mst[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="at">data =</span> shan_ict,</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">method =</span> <span class="st">"euclidean"</span>, <span class="at">ncuts =</span> <span class="dv">5</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(shan_sf), <span class="at">border =</span> <span class="st">"grey55"</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>kept_edges <span class="ot">&lt;-</span> shan_mst[</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  clust6<span class="sc">$</span>groups[shan_mst[, <span class="dv">1</span>]] <span class="sc">==</span> clust6<span class="sc">$</span>groups[shan_mst[, <span class="dv">2</span>]], <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="fu">segments</span>(coords[kept_edges[, <span class="dv">1</span>], <span class="dv">1</span>], coords[kept_edges[, <span class="dv">1</span>], <span class="dv">2</span>],</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>         coords[kept_edges[, <span class="dv">2</span>], <span class="dv">1</span>], coords[kept_edges[, <span class="dv">2</span>], <span class="dv">2</span>],</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">col =</span> cluster_colours[clust6<span class="sc">$</span>groups[kept_edges[, <span class="dv">1</span>]]], <span class="at">lwd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(coords, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">cex =</span> <span class="fl">0.5</span>, <span class="at">col =</span> cluster_colours[clust6<span class="sc">$</span>groups])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/skater-tree-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>The minimum spanning tree after SKATER divides it into six connected groups.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>shan_sf_spatialcluster <span class="ot">&lt;-</span> shan_sf <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SP_CLUSTER =</span> <span class="fu">factor</span>(clust6<span class="sc">$</span>groups))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>skater_map <span class="ot">&lt;-</span> <span class="fu">cluster_map</span>(shan_sf_spatialcluster, <span class="st">"SP_CLUSTER"</span>, <span class="st">"SKATER regions"</span>)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>skater_map</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/skater-map-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>SKATER’s six spatially connected ICT regions.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(hierarchical_map, skater_map, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/hierarchical-skater-comparison-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Raw-rate hierarchical clustering and SKATER. Cluster numbers are separate labels within each method.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The SKATER groups contain between 1 and 22 townships. The spatial constraint creates connected regions, but it does not require equally sized groups. A cluster number or colour in one method does not identify the same group in another.</p>
+</section>
+</section>
+<section id="spatially-constrained-clustering-with-clustgeo" class="level2" data-number="8">
+<h2 data-number="8" class="anchored" data-anchor-id="spatially-constrained-clustering-with-clustgeo"><span class="header-section-number">8</span> Spatially Constrained Clustering with ClustGeo</h2>
+<section id="ward-like-clustering-without-geography" class="level3" data-number="8.1">
+<h3 data-number="8.1" class="anchored" data-anchor-id="ward-like-clustering-without-geography"><span class="header-section-number">8.1</span> Ward-like clustering without geography</h3>
+<p>ClustGeo first provides a Ward-like hierarchy based on the ICT distance matrix alone. This gives a baseline before geographical distance is introduced.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>nongeo_cluster <span class="ot">&lt;-</span> <span class="fu">hclustgeo</span>(proxmat)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(nongeo_cluster, <span class="at">cex =</span> <span class="fl">0.55</span>, <span class="at">hang =</span> <span class="sc">-</span><span class="dv">1</span>,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"ClustGeo baseline: ICT distance only"</span>, <span class="at">xlab =</span> <span class="st">""</span>, <span class="at">sub =</span> <span class="st">""</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rect.hclust</span>(nongeo_cluster, <span class="at">k =</span> <span class="dv">6</span>, <span class="at">border =</span> cluster_colours)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/clustgeo-baseline-dendrogram-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>ClustGeo’s unconstrained hierarchy, cut into six groups.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>shan_sf_ngeo_cluster <span class="ot">&lt;-</span> shan_sf <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">CLUSTER =</span> <span class="fu">factor</span>(<span class="fu">cutree</span>(nongeo_cluster, <span class="at">k =</span> <span class="dv">6</span>)))</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>nongeo_map <span class="ot">&lt;-</span> <span class="fu">cluster_map</span>(shan_sf_ngeo_cluster, <span class="st">"CLUSTER"</span>, <span class="st">"ClustGeo: ICT only"</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>nongeo_map</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/clustgeo-baseline-map-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>The six ClustGeo baseline groups before adding geographical distance.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="balancing-ict-and-geographical-similarity" class="level3" data-number="8.2">
+<h3 data-number="8.2" class="anchored" data-anchor-id="balancing-ict-and-geographical-similarity"><span class="header-section-number">8.2</span> Balancing ICT and geographical similarity</h3>
+<p>ClustGeo combines the ICT distance matrix with distances between township polygons. Touching polygons have zero separation in the latter matrix. The mixing parameter <span class="math inline">\(\alpha\)</span> controls the influence of geography: zero uses ICT distance alone, while one uses geographical distance alone.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>geographic_distances <span class="ot">&lt;-</span> <span class="fu">st_distance</span>(shan_sf, shan_sf)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>distmat <span class="ot">&lt;-</span> <span class="fu">as.dist</span>(units<span class="sc">::</span><span class="fu">drop_units</span>(geographic_distances))</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>alpha_diagnostics <span class="ot">&lt;-</span> <span class="fu">choicealpha</span>(proxmat, distmat,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">range.alpha =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.1</span>), <span class="at">K =</span> <span class="dv">6</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">graph =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/alpha-choice-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>ClustGeo diagnostics across alpha values from zero to one.</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/alpha-choice-2.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>ClustGeo diagnostics across alpha values from zero to one.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Following the chapter, I choose <span class="math inline">\(\alpha=0.2\)</span> as a compromise that adds geographical cohesion while retaining emphasis on ICT similarity. This is a soft distance constraint: unlike SKATER, it does not guarantee that every group is connected through shared boundaries.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>clustG <span class="ot">&lt;-</span> <span class="fu">hclustgeo</span>(proxmat, distmat, <span class="at">alpha =</span> <span class="fl">0.2</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>shan_sf_Gcluster <span class="ot">&lt;-</span> shan_sf <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">CLUSTER =</span> <span class="fu">factor</span>(<span class="fu">cutree</span>(clustG, <span class="at">k =</span> <span class="dv">6</span>)))</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="fu">cluster_map</span>(shan_sf_Gcluster, <span class="st">"CLUSTER"</span>, <span class="st">"ClustGeo: alpha = 0.2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/clustgeo-spatial-map-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>ClustGeo with alpha = 0.2 and six groups.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="visual-interpretation-of-clusters" class="level2" data-number="9">
+<h2 data-number="9" class="anchored" data-anchor-id="visual-interpretation-of-clusters"><span class="header-section-number">9</span> Visual Interpretation of Clusters</h2>
+<section id="radio-ownership-within-groups" class="level3" data-number="9.1">
+<h3 data-number="9.1" class="anchored" data-anchor-id="radio-ownership-within-groups"><span class="header-section-number">9.1</span> Radio ownership within groups</h3>
+<p>The chapter profiles the <strong>ClustGeo baseline groups</strong>, so I use that same partition here. Each boxplot shows within-group variation in radio penetration, rather than only one representative value per group.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(shan_sf_ngeo_cluster, <span class="fu">aes</span>(CLUSTER, RADIO_PR, <span class="at">fill =</span> CLUSTER)) <span class="sc">+</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> cluster_colours) <span class="sc">+</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Baseline cluster"</span>, <span class="at">y =</span> <span class="st">"Radio-owning households per 1,000"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/cluster-radio-boxplots-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Radio penetration in the six ClustGeo baseline groups.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="multivariate-profiles" class="level3" data-number="9.2">
+<h3 data-number="9.2" class="anchored" data-anchor-id="multivariate-profiles"><span class="header-section-number">9.2</span> Multivariate profiles</h3>
+<p>The parallel-coordinate plots show how the five rates vary together within each baseline group. The chapter’s <code>globalminmax</code> option keeps the original rates and gives all five axes a common range. The interactive heatmap, in comparison, scales each variable separately between zero and one.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>profile_data <span class="ot">&lt;-</span> <span class="fu">st_drop_geometry</span>(shan_sf_ngeo_cluster) <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(CLUSTER, <span class="fu">all_of</span>(features)) <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggparcoord</span>(profile_data, <span class="at">columns =</span> <span class="fu">match</span>(features, <span class="fu">names</span>(profile_data)),</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">groupColumn =</span> <span class="dv">1</span>, <span class="at">scale =</span> <span class="st">"globalminmax"</span>, <span class="at">alphaLines =</span> <span class="fl">0.2</span>,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">boxplot =</span> <span class="cn">TRUE</span>, <span class="at">showPoints =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> CLUSTER, <span class="at">ncol =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> cluster_colours, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> rate_labels[features]) <span class="sc">+</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Households per 1,000 (common scale)"</span>) <span class="sc">+</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">35</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/parallel-coordinates-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Five-variable ICT profiles within each ClustGeo baseline cluster.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Finally, I plot the group means in the original units. Separate vertical scales make differences in the less common forms of access visible without changing their reported values.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show R code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>cluster_means <span class="ot">&lt;-</span> profile_data <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(CLUSTER) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">all_of</span>(features), mean), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>cluster_means <span class="sc">%&gt;%</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">all_of</span>(features), <span class="at">names_to =</span> <span class="st">"Indicator"</span>, <span class="at">values_to =</span> <span class="st">"Mean"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(CLUSTER, Mean, <span class="at">colour =</span> CLUSTER)) <span class="sc">+</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> <span class="fu">factor</span>(Indicator, <span class="at">levels =</span> features), <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">scales =</span> <span class="st">"free_y"</span>,</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">labeller =</span> <span class="fu">as_labeller</span>(rate_labels)) <span class="sc">+</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> cluster_colours, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Baseline cluster"</span>, <span class="at">y =</span> <span class="st">"Mean households per 1,000"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Hands-on_Ex06_files/figure-html/cluster-mean-profiles-1.png" class="img-fluid figure-img" width="1056"></p>
+<figcaption>Mean ICT penetration rates for each ClustGeo baseline group.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Baseline group 4 has the highest average television, mobile-phone and computer penetration. Radio ownership is highest in group 3, so the groups do not follow the same ranking for every form of ICT access.</p>
+<p>The three clustering approaches answer related questions: the hierarchical models group ICT profiles, SKATER requires connected regions, and ClustGeo allows a gradual trade-off between ICT similarity and geographical cohesion. The results describe the supplied 2014 census indicators and should not be read as current ICT access levels.</p>
+</section>
+</section>
+<section id="references" class="level2" data-number="10">
+<h2 data-number="10" class="anchored" data-anchor-id="references"><span class="header-section-number">10</span> References</h2>
+<ul>
+<li>Kam, T. S. <a href="https://r4gdsa.netlify.app/chap12.html">Geographical Segmentation with Spatially Constrained Clustering Techniques</a>, <em>R for Geospatial Data Science and Analytics</em>.</li>
+<li><a href="https://myanmar.unfpa.org/en/publications/2014-population-and-housing-census-myanmar-data-sheet">The 2014 Myanmar Population and Housing Census</a>. The exercise uses the supplied Shan ICT extract and township boundaries.</li>
+<li><a href="https://cran.r-project.org/web/packages/ClustGeo/vignettes/intro_ClustGeo.html">Introduction to ClustGeo</a>.</li>
+<li><strong>GGally</strong> documentation: <a href="https://ggobi.github.io/ggally/reference/ggparcoord.html">parallel coordinate plots and scaling options</a>.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -30,6 +30,8 @@ website:
             href: Hands-on_Ex/Hands-on_Ex05A/Hands-on_Ex05A.qmd
           - text: "Hands-on Exercise 5B"
             href: Hands-on_Ex/Hands-on_Ex05B/Hands-on_Ex05B.qmd
+          - text: "Hands-on Exercise 6"
+            href: Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.qmd
           - text: "In Class Exercise 4"
             href: In-class_Ex/In-class_Ex04/In-class_Ex04.qmd
       - text: "Take-Home Exercise"
