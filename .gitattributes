@@ -4,3 +4,6 @@ Take-home_Ex/Take-home_Ex01/R/cleaning.R -text
 Take-home_Ex/Take-home_Ex01/R/01-prepare.R -text
 Take-home_Ex/Take-home_Ex01/R/02-analyse.R -text
 Take-home_Ex/Take-home_Ex01/output/tables/** -text
+# Keep the source data for Exercises 5A and 5B byte-identical to Exercise 4.
+Hands-on_Ex/Hands-on_Ex05A/data/** -text
+Hands-on_Ex/Hands-on_Ex05B/data/** -text

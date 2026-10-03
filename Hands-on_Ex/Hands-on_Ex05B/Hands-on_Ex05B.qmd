@@ -1,0 +1,346 @@
+---
+title: "Hands-on Exercise 5B: Local Measures of Spatial Autocorrelation"
+author: "Bao Sihan"
+date: "October 3, 2026"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    number-sections: true
+    code-fold: false
+execute:
+  echo: true
+  warning: false
+  message: false
+  fig-width: 10
+  fig-height: 6
+---
+
+## Overview
+
+This exercise follows [Chapter 10: Local Measures of Spatial Autocorrelation](https://r4gdsa.netlify.app/chap10.html). The global measures in [Exercise 5A](../Hands-on_Ex05A/Hands-on_Ex05A.qmd) describe Hunan as a whole. Here I use local Moran's I to find county-level patterns and local Getis-Ord Gi* to distinguish hot and cold spots in 2012 GDP per capita (GDPPC).
+
+## Getting Started
+
+### The analytical question and data
+
+Where are counties with unusually similar or contrasting GDPPC values, and where are the high and low local concentrations? I use the same Hunan county shapefile and `Hunan_2012.csv` indicators as in Exercise 5A. This page has its own copies under `data/geospatial` and `data/aspatial` so it can render independently.
+
+### Loading the packages
+
+```{r}
+#| label: load-packages
+pacman::p_load(sf, sfdep, tmap, tidyverse)
+tmap_mode("plot")
+```
+
+## Getting the Data into R
+
+### Importing the county boundaries
+
+I transform the WGS 84 boundaries to UTM Zone 50N (EPSG:32650), as in the teaching chapter, so the distance calculations below use metres.
+
+```{r}
+#| label: import-boundaries
+hunan <- st_read(dsn = "data/geospatial", layer = "Hunan") %>%
+  st_transform(crs = 32650)
+hunan
+```
+
+### Importing the development indicators
+
+```{r}
+#| label: import-indicators
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+glimpse(hunan2012)
+```
+
+### Joining the data
+
+```{r}
+#| label: join-data
+hunan <- left_join(hunan, hunan2012, by = "County") %>%
+  select(NAME_2, ID_3, NAME_3, ENGTYPE_3, County, GDPPC)
+hunan
+```
+
+```{r}
+#| label: check-inputs
+#| include: false
+stopifnot(
+  nrow(hunan) == 88L,
+  !anyDuplicated(hunan$County),
+  !anyNA(hunan$GDPPC),
+  all(st_is_valid(hunan)),
+  st_crs(hunan)$epsg == 32650
+)
+```
+
+### Visualising GDPPC
+
+```{r}
+#| label: gdppc-maps
+#| fig-cap: "Hunan GDPPC in 2012, classified by equal intervals and quantiles."
+equal_map <- tm_shape(hunan) +
+  tm_polygons(fill = "GDPPC",
+              fill.scale = tm_scale_intervals(style = "equal", n = 5,
+                                              values = "brewer.blues"),
+              fill.legend = tm_legend(title = "GDPPC")) +
+  tm_borders() +
+  tm_title("Equal intervals")
+
+quantile_map <- tm_shape(hunan) +
+  tm_polygons(fill = "GDPPC",
+              fill.scale = tm_scale_intervals(style = "quantile", n = 5,
+                                              values = "brewer.blues"),
+              fill.legend = tm_legend(title = "GDPPC")) +
+  tm_borders() +
+  tm_title("Quantiles")
+
+tmap_arrange(equal_map, quantile_map, asp = 1, ncol = 2)
+```
+
+## Local Indicators of Spatial Association
+
+### Computing Queen contiguity weights
+
+I use Queen neighbours and row-standardised weights, matching the first-order definition used in Exercise 5A.
+
+```{r}
+#| label: queen-weights
+wm_q <- hunan %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb, style = "W"),
+         .before = 1)
+summary(wm_q$nb)
+```
+
+```{r}
+#| label: check-weights
+#| include: false
+stopifnot(
+  sum(lengths(wm_q$nb)) == 448L,
+  all(lengths(wm_q$nb) > 0L),
+  all(abs(vapply(wm_q$wt, sum, numeric(1)) - 1) < 1e-12)
+)
+```
+
+### Computing local Moran's I
+
+`local_moran()` calculates a statistic for each county. I use 99 simulations with a fixed seed. Following the chapter, the mapped `p_ii` field is the analytical p-value; the function also returns simulated p-values in a separate field.
+
+```{r}
+#| label: local-moran
+set.seed(1234)
+lisa <- wm_q %>%
+  mutate(local_moran = local_moran(GDPPC, nb, wt, nsim = 99),
+         .before = 1) %>%
+  unnest(local_moran)
+glimpse(lisa)
+```
+
+### Mapping local Moran's I and p-values
+
+The first map shows the local statistic; the second shows its analytical p-value. A county's colour on the first map alone does not establish statistical significance.
+
+```{r}
+#| label: local-moran-maps
+#| fig-cap: "Local Moran's I and analytical p-values for Hunan GDPPC."
+ii_map <- tm_shape(lisa) +
+  tm_polygons(fill = "ii",
+              fill.scale = tm_scale_intervals(style = "pretty", n = 5,
+                                              values = "brewer.rd_bu"),
+              fill.legend = tm_legend(title = "Local Moran's I")) +
+  tm_borders() +
+  tm_title("Local Moran's I")
+
+p_ii_map <- tm_shape(lisa) +
+  tm_polygons(fill = "p_ii",
+              fill.scale = tm_scale_intervals(
+                breaks = c(0, 0.001, 0.01, 0.05, 0.1, 1),
+                values = "-brewer.reds"),
+              fill.legend = tm_legend(title = "Analytical p-value")) +
+  tm_borders() +
+  tm_title("Local Moran's I p-values")
+
+tmap_arrange(ii_map, p_ii_map, asp = 1, ncol = 2)
+```
+
+### Preparing and visualising the LISA map
+
+I calculate the spatial lag and plot it against each county's GDPPC. The four quadrants compare a county with the average of its neighbours. The quadrant describes the relationship; the local p-value determines whether I display it on the final cluster map.
+
+```{r}
+#| label: lisa-lag
+lisa <- lisa %>%
+  mutate(lag_GDPPC = st_lag(GDPPC, nb, wt),
+         z_GDPPC = as.numeric(scale(GDPPC)),
+         .before = 1)
+lisa$z_lag_GDPPC <- as.numeric(scale(lisa$lag_GDPPC))
+```
+
+```{r}
+#| label: moran-scatterplots
+#| fig-cap: "GDPPC and its spatial lag, before and after standardisation. Colours show the local Moran quadrant."
+quadrant_colours <- c("High-High" = "red", "Low-Low" = "blue",
+                      "Low-High" = "lightblue", "High-Low" = "pink")
+
+raw_scatter <- ggplot(lisa, aes(GDPPC, lag_GDPPC, colour = mean)) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE, colour = "black") +
+  geom_vline(xintercept = mean(lisa$GDPPC), linetype = 2) +
+  geom_hline(yintercept = mean(lisa$lag_GDPPC), linetype = 2) +
+  scale_colour_manual(values = quadrant_colours) +
+  labs(x = "GDPPC", y = "Spatial lag of GDPPC", colour = "Quadrant") +
+  theme_minimal()
+
+standard_scatter <- ggplot(lisa, aes(z_GDPPC, z_lag_GDPPC, colour = mean)) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE, colour = "black") +
+  geom_vline(xintercept = 0, linetype = 2) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  scale_colour_manual(values = quadrant_colours) +
+  labs(x = "Standardised GDPPC", y = "Standardised spatial lag",
+       colour = "Quadrant") +
+  theme_minimal()
+
+print(raw_scatter)
+print(standard_scatter)
+```
+
+I use an unadjusted 0.05 cutoff, as in the chapter, to make the LISA cluster map.
+
+```{r}
+#| label: lisa-clusters
+lisa <- lisa %>%
+  mutate(LISA_cluster = if_else(p_ii < 0.05, as.character(mean),
+                                "Insignificant"),
+         LISA_cluster = factor(LISA_cluster,
+                               levels = c("Insignificant", "Low-Low",
+                                          "Low-High", "High-Low", "High-High")))
+lisa %>% st_drop_geometry() %>% count(LISA_cluster, .drop = FALSE)
+```
+
+```{r}
+#| label: lisa-cluster-map
+#| fig-cap: "Local Moran clusters based on analytical p < 0.05."
+tm_shape(lisa) +
+  tm_polygons(fill = "LISA_cluster",
+              fill.scale = tm_scale_categorical(
+                values = c("Insignificant" = "grey80", "Low-Low" = "blue",
+                           "Low-High" = "lightblue", "High-Low" = "pink",
+                           "High-High" = "red")),
+              fill.legend = tm_legend(title = "LISA cluster")) +
+  tm_borders() +
+  tm_title("Local Moran clusters (p < 0.05)")
+```
+
+The map identifies `r sum(lisa$LISA_cluster == "High-High")` high-high and `r sum(lisa$LISA_cluster == "Low-Low")` low-low counties under this cutoff. The p-values are unadjusted across 88 local tests, so I treat these mapped categories as exploratory.
+
+## Hot Spots and Cold Spots Analysis
+
+### Deriving distance weights
+
+For Gi*, the chapter uses a fixed distance band that keeps the county network connected and also demonstrates an adaptive six-nearest-neighbour definition. Both include each county itself, as required for Gi*.
+
+```{r}
+#| label: fixed-distance-weights
+ct <- critical_threshold(st_geometry(hunan))
+ct
+
+hunan_fdw <- hunan %>%
+  mutate(nb = include_self(st_dist_band(st_geometry(geometry), upper = ct)),
+         wt = st_weights(nb, style = "W"),
+         .before = 1)
+summary(lengths(hunan_fdw$nb))
+```
+
+The fixed threshold is `r round(ct / 1000, 2)` km.
+
+```{r}
+#| label: adaptive-distance-weights
+hunan_adw <- hunan %>%
+  mutate(nb = include_self(st_knn(st_geometry(geometry), k = 6)),
+         wt = st_weights(nb, style = "W"),
+         .before = 1)
+summary(lengths(hunan_adw$nb))
+```
+
+The adaptive definition includes six nearby counties plus the county itself. The chapter calculates Gi* with the fixed distance weights, so I use those for the maps below.
+
+### Computing local Gi*
+
+I use 99 conditional permutations and a fixed seed. Positive Gi* values indicate concentrations of high GDPPC; negative values indicate concentrations of low GDPPC. Significance is assessed using the simulated `p_sim` field.
+
+```{r}
+#| label: local-gistar
+set.seed(1234)
+HCSA_fdw <- hunan_fdw %>%
+  mutate(gistar = local_gstar_perm(GDPPC, nb, wt, nsim = 99),
+         .before = 1) %>%
+  unnest(gistar)
+glimpse(HCSA_fdw)
+```
+
+### Mapping Gi* and its p-values
+
+```{r}
+#| label: gistar-maps
+#| fig-cap: "Fixed distance local Gi* statistics and simulated p-values."
+gi_map <- tm_shape(HCSA_fdw) +
+  tm_polygons(fill = "gi_star",
+              fill.scale = tm_scale_intervals(style = "pretty", n = 6,
+                                              values = "-brewer.rd_bu"),
+              fill.legend = tm_legend(title = "Gi*")) +
+  tm_borders() +
+  tm_title("Local Gi* (fixed distance)")
+
+gi_p_map <- tm_shape(HCSA_fdw) +
+  tm_polygons(fill = "p_sim",
+              fill.scale = tm_scale_intervals(
+                breaks = c(0, 0.001, 0.01, 0.05, 0.1, 1),
+                values = "-brewer.reds"),
+              fill.legend = tm_legend(title = "Simulated p-value")) +
+  tm_borders() +
+  tm_title("Local Gi* p-values")
+
+tmap_arrange(gi_map, gi_p_map, asp = 1, ncol = 2)
+```
+
+### Plotting the hot and cold spot map
+
+```{r}
+#| label: hcsa-clusters
+HCSA_fdw <- HCSA_fdw %>%
+  mutate(HCSA_cluster = case_when(
+           p_sim <= 0.05 & cluster == "High" ~ "Hot spot",
+           p_sim <= 0.05 & cluster == "Low" ~ "Cold spot",
+           TRUE ~ "Insignificant"),
+         HCSA_cluster = factor(HCSA_cluster,
+                               levels = c("Insignificant", "Hot spot",
+                                          "Cold spot")),
+         .before = 1)
+HCSA_fdw %>% st_drop_geometry() %>% count(HCSA_cluster, .drop = FALSE)
+```
+
+```{r}
+#| label: hcsa-cluster-map
+#| fig-cap: "Fixed distance Gi* hot and cold spots using simulated p <= 0.05."
+hcsa_map <- tm_shape(HCSA_fdw) +
+  tm_polygons(fill = "HCSA_cluster",
+              fill.scale = tm_scale_categorical(
+                values = c("Insignificant" = "grey80",
+                           "Hot spot" = "red", "Cold spot" = "blue")),
+              fill.legend = tm_legend(title = "Gi* cluster")) +
+  tm_borders() +
+  tm_title("GDPPC hot and cold spots (p <= 0.05)")
+
+tmap_arrange(gi_map, hcsa_map, asp = 1, ncol = 2)
+```
+
+At this cutoff, there are `r sum(HCSA_fdw$HCSA_cluster == "Hot spot")` hot-spot and `r sum(HCSA_fdw$HCSA_cluster == "Cold spot")` cold-spot counties. These are local GDPPC concentrations under the fixed distance definition, not evidence that proximity causes development differences. As with the LISA map, 88 unadjusted local tests make this an exploratory result.
+
+## References
+
+- Kam, T. S. [Local Measures of Spatial Autocorrelation](https://r4gdsa.netlify.app/chap10.html), *R for Geospatial Data Science and Analytics*.
+- **sfdep** documentation: [local Moran's I](https://sfdep.josiahparry.com/reference/local_moran.html) and [local Gi* permutations](https://sfdep.josiahparry.com/reference/local_gstar_perm.html).

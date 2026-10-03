@@ -1,0 +1,250 @@
+---
+title: "Hands-on Exercise 5A: Global Measures of Spatial Autocorrelation"
+author: "Bao Sihan"
+date: "October 3, 2026"
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    number-sections: true
+    code-fold: false
+execute:
+  echo: true
+  warning: false
+  message: false
+  fig-width: 10
+  fig-height: 6
+---
+
+## Overview
+
+This exercise follows [Chapter 9: Global Measures of Spatial Autocorrelation](https://r4gdsa.netlify.app/chap09.html). I examine whether GDP per capita (GDPPC) in Hunan's 88 counties shows an overall spatial pattern. I use Queen contiguity and row-standardised weights, then compare analytical and permutation results for Moran's I and Geary's C. Finally, I examine how association changes across neighbour orders.
+
+## Getting Started
+
+### The analytical question and data
+
+Do counties with similar 2012 GDPPC values tend to be near one another? I use the Hunan county shapefile and the `Hunan_2012.csv` development indicators. They are stored in this exercise's `data/geospatial` and `data/aspatial` folders, so the page can render from its own folder.
+
+### Loading the packages
+
+```{r}
+#| label: load-packages
+pacman::p_load(sf, spdep, tmap, tidyverse)
+tmap_mode("plot")
+```
+
+## Getting the Data into R
+
+### Importing the county boundaries
+
+```{r}
+#| label: import-boundaries
+hunan <- st_read(dsn = "data/geospatial", layer = "Hunan")
+hunan
+```
+
+### Importing the development indicators
+
+```{r}
+#| label: import-indicators
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+glimpse(hunan2012)
+```
+
+### Joining the data
+
+I use `County` as the join key and retain the attributes needed below.
+
+```{r}
+#| label: join-data
+hunan <- left_join(hunan, hunan2012, by = "County") %>%
+  select(NAME_2, ID_3, NAME_3, ENGTYPE_3, County, GDPPC)
+hunan
+```
+
+```{r}
+#| label: check-inputs
+#| include: false
+stopifnot(
+  nrow(hunan) == 88L,
+  !anyDuplicated(hunan$County),
+  !anyNA(hunan$GDPPC),
+  all(st_is_valid(hunan))
+)
+```
+
+The joined layer contains `r nrow(hunan)` counties and no missing GDPPC values.
+
+### Visualising GDPPC
+
+Equal interval and quantile classification emphasise different parts of the same distribution. I compare both before calculating spatial statistics.
+
+```{r}
+#| label: gdppc-maps
+#| fig-cap: "Hunan GDPPC in 2012, classified by equal intervals and quantiles."
+equal_map <- tm_shape(hunan) +
+  tm_polygons(fill = "GDPPC",
+              fill.scale = tm_scale_intervals(style = "equal", n = 5,
+                                              values = "brewer.blues"),
+              fill.legend = tm_legend(title = "GDPPC")) +
+  tm_borders() +
+  tm_title("Equal intervals")
+
+quantile_map <- tm_shape(hunan) +
+  tm_polygons(fill = "GDPPC",
+              fill.scale = tm_scale_intervals(style = "quantile", n = 5,
+                                              values = "brewer.blues"),
+              fill.legend = tm_legend(title = "GDPPC")) +
+  tm_borders() +
+  tm_title("Quantiles")
+
+tmap_arrange(equal_map, quantile_map, asp = 1, ncol = 2)
+```
+
+## Global Measures of Spatial Autocorrelation
+
+### Computing Queen contiguity
+
+Two counties are neighbours if they share an edge or a vertex. This gives a first-order neighbour list.
+
+```{r}
+#| label: queen-neighbours
+wm_q <- poly2nb(hunan, queen = TRUE)
+summary(wm_q)
+```
+
+The `r length(wm_q)` counties have `r sum(card(wm_q))` directed neighbour links, and `r sum(card(wm_q) == 0L)` counties have no neighbours. The average county has `r round(mean(card(wm_q)), 2)` neighbours.
+
+### Creating row-standardised weights
+
+Each neighbour receives weight $1/k_i$, where $k_i$ is the number of neighbours of county $i$. Thus, every county contributes a row whose weights sum to one.
+
+```{r}
+#| label: row-weights
+rswm_q <- nb2listw(wm_q, style = "W", zero.policy = TRUE)
+rswm_q
+```
+
+```{r}
+#| label: check-weights
+#| include: false
+stopifnot(
+  sum(card(wm_q)) == 448L,
+  all(card(wm_q) > 0L),
+  all(abs(vapply(rswm_q$weights, sum, numeric(1)) - 1) < 1e-12)
+)
+```
+
+## Moran's I
+
+### Analytical test
+
+Moran's I compares each county's GDPPC with its neighbours' GDPPC. A positive value indicates that similar values tend to occur together under this weight definition.
+
+```{r}
+#| label: moran-test
+moran_result <- moran.test(hunan$GDPPC, listw = rswm_q,
+                           zero.policy = TRUE, na.action = na.omit)
+moran_result
+```
+
+The observed Moran's I is `r round(unname(moran_result$estimate["Moran I statistic"]), 3)`. Its analytical one-sided p-value is `r format.pval(moran_result$p.value, digits = 3)`, giving evidence of positive global spatial autocorrelation. This is a province-wide result; it does not identify individual clusters.
+
+### Monte Carlo test
+
+I compare the observed statistic with 999 random permutations of GDPPC, using a fixed seed to make the result reproducible.
+
+```{r}
+#| label: moran-permutations
+set.seed(1234)
+moran_perm <- moran.mc(hunan$GDPPC, listw = rswm_q, nsim = 999,
+                       zero.policy = TRUE, na.action = na.omit)
+moran_perm
+```
+
+The permutation p-value is `r format.pval(moran_perm$p.value, digits = 3)`. With 999 permutations, the smallest attainable one-sided p-value is 0.001.
+
+### Visualising the permutation distribution
+
+```{r}
+#| label: moran-histogram
+#| fig-cap: "Permutation distribution of Moran's I. The red line is the observed statistic."
+moran_simulated <- moran_perm$res[-length(moran_perm$res)]
+summary(moran_simulated)
+hist(moran_simulated, breaks = 20, xlab = "Simulated Moran's I",
+     main = "Monte Carlo Moran's I")
+abline(v = as.numeric(moran_perm$statistic), col = "red", lwd = 2)
+```
+
+## Geary's C
+
+### Analytical test
+
+Geary's C is based on differences between neighbouring counties. Values below one indicate positive spatial autocorrelation.
+
+```{r}
+#| label: geary-test
+geary_result <- geary.test(hunan$GDPPC, listw = rswm_q,
+                           zero.policy = TRUE)
+geary_result
+```
+
+The observed Geary's C is `r round(unname(geary_result$estimate["Geary C statistic"]), 3)`, below its no-autocorrelation reference value of one. The analytical one-sided p-value is `r format.pval(geary_result$p.value, digits = 3)`.
+
+### Monte Carlo test
+
+```{r}
+#| label: geary-permutations
+set.seed(1234)
+geary_perm <- geary.mc(hunan$GDPPC, listw = rswm_q, nsim = 999,
+                       zero.policy = TRUE)
+geary_perm
+```
+
+The permutation p-value is `r format.pval(geary_perm$p.value, digits = 3)`, consistent with the analytical result.
+
+### Visualising the permutation distribution
+
+```{r}
+#| label: geary-histogram
+#| fig-cap: "Permutation distribution of Geary's C. The red line is the observed statistic."
+geary_simulated <- geary_perm$res[-length(geary_perm$res)]
+summary(geary_simulated)
+hist(geary_simulated, breaks = 20, xlab = "Simulated Geary's C",
+     main = "Monte Carlo Geary's C")
+abline(v = as.numeric(geary_perm$statistic), col = "red", lwd = 2)
+```
+
+## Spatial Correlograms
+
+I calculate both statistics for neighbour orders one through six. These plots show how the measured association changes as the neighbour definition reaches further from each county.
+
+### Moran's I correlogram
+
+```{r}
+#| label: moran-correlogram
+#| fig-cap: "Moran's I across six neighbour orders."
+MI_corr <- sp.correlogram(wm_q, hunan$GDPPC, order = 6,
+                         method = "I", style = "W")
+plot(MI_corr)
+print(MI_corr)
+```
+
+### Geary's C correlogram
+
+```{r}
+#| label: geary-correlogram
+#| fig-cap: "Geary's C across six neighbour orders."
+GC_corr <- sp.correlogram(wm_q, hunan$GDPPC, order = 6,
+                         method = "C", style = "W")
+plot(GC_corr)
+print(GC_corr)
+```
+
+Moran's I is positive for the first four orders and negative at orders five and six. Geary's C is below one for the first three orders and above one from order four. Together, the correlograms show that the association is strongest nearby and does not stay constant as the neighbour order increases. Each order uses a different set of county pairs, so these values are descriptive of this particular weight structure.
+
+## References
+
+- Kam, T. S. [Global Measures of Spatial Autocorrelation](https://r4gdsa.netlify.app/chap09.html), *R for Geospatial Data Science and Analytics*.
+- **spdep** documentation: [Global Moran's I](https://r-spatial.github.io/spdep/reference/moran.test.html), [Global Geary's C](https://r-spatial.github.io/spdep/reference/geary.test.html), and [spatial correlogram](https://r-spatial.github.io/spdep/reference/sp.correlogram.html).
