@@ -25,3 +25,19 @@
 /Take-home_Ex/Take-home_Ex01/_workflow/report-render.log
 /Take-home_Ex/Take-home_Ex01/presentation/figures/*.svg
 /_site/Take-home_Ex/Take-home_Ex01/presentation/figures/*.svg
+
+# Exercise 2 inputs and event-level derivatives remain local pending data permissions.
+/Take-home_Ex/Take-home_Ex02/data/raw/
+/Take-home_Ex/Take-home_Ex02/data/processed/
+/Take-home_Ex/Take-home_Ex02/_workflow/*.log
+/Take-home_Ex/Take-home_Ex02/_workflow/*.rds
+/Take-home_Ex/Take-home_Ex02/_workflow/environment.txt
+/Take-home_Ex/Take-home_Ex02/_workflow/sources/
+/Take-home_Ex/Take-home_Ex02/_workflow/RESUME.md
+/Take-home_Ex/Take-home_Ex02/_workflow/IMPLEMENTATION_PLAN.md
+/Take-home_Ex/Take-home_Ex02/_workflow/REQUIREMENTS.md
+/Take-home_Ex/Take-home_Ex02/_workflow/REVIEW.md
+/Take-home_Ex/Take-home_Ex02/_workflow/LMSA_FINDINGS.md
+/Take-home_Ex/Take-home_Ex02/_workflow/EHSA_FINDINGS.md
+/Take-home_Ex/Take-home_Ex02/_workflow/PUBLICATION.md
+/Take-home_Ex/Take-home_Ex02/_workflow/*validation.json

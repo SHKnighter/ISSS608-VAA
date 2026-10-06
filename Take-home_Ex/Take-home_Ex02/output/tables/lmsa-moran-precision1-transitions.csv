@@ -1,0 +1,26 @@
+main,comparison,townships
+HH,HH,32
+LH,HH,0
+LL,HH,0
+No contiguous neighbours,HH,0
+Not significant,HH,1
+HH,LH,0
+LH,LH,1
+LL,LH,0
+No contiguous neighbours,LH,0
+Not significant,LH,3
+HH,LL,0
+LH,LL,0
+LL,LL,39
+No contiguous neighbours,LL,0
+Not significant,LL,10
+HH,No contiguous neighbours,0
+LH,No contiguous neighbours,0
+LL,No contiguous neighbours,0
+No contiguous neighbours,No contiguous neighbours,3
+Not significant,No contiguous neighbours,0
+HH,Not significant,3
+LH,Not significant,0
+LL,Not significant,10
+No contiguous neighbours,Not significant,0
+Not significant,Not significant,228

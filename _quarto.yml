@@ -1,6 +1,11 @@
 project:
   type: website
   output-dir: _site
+  resources:
+    - "!Take-home_Ex/Take-home_Ex02/data/**"
+    - "!Take-home_Ex/Take-home_Ex02/_workflow/**"
+    - "!Take-home_Ex/Take-home_Ex02/R/**"
+    - "!Take-home_Ex/Take-home_Ex02/tests/**"
   render:
     - "*.qmd"
     - "Hands-on_Ex/**/*.qmd"
@@ -42,6 +47,8 @@ website:
             href: take-home.html
           - text: "Take-Home Exercise 1"
             href: Take-home_Ex/Take-home_Ex01/Take-home_Ex01.qmd
+          - text: "Take-Home Exercise 2"
+            href: Take-home_Ex/Take-home_Ex02/Take-home_Ex02.qmd
 
     right:
       - href: index.html

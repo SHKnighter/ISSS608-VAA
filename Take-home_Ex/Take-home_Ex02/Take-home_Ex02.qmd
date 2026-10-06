@@ -1,0 +1,18 @@
+---
+title: "Take-Home Exercise 2"
+subtitle: "Geospatial Analytics for Peace"
+author: "Bao Sihan"
+toc: false
+---
+
+## Conflict patterns across Myanmar townships
+
+This exercise studies recorded battles, explosions and remote violence, and violence against civilians in Myanmar from January 2021 to September 2025. I use township-level Local Moran's I, Getis–Ord Gi* and Emerging Hot Spot Analysis to examine spatial clusters and changes over time.
+
+The analysis retains **53,899 events**, arranged into a complete panel of **330 townships and 57 months**. Full-period local clusters and monthly histories provide complementary views of recorded activity.
+
+- [Read the technical report](technical-report.qmd) — data quality, methods, maps, findings, limitations and reproducible R code.
+- [View the executive summary](executive-summary.qmd) — eight slides covering the questions, approach and main findings.
+- [Project repository](https://github.com/SHKnighter/ISSS608-VAA).
+
+The study uses ACLED records and Myanmar Township Boundaries MIMU v9.4. Recorded event counts describe the available reports, not population-adjusted risk or complete knowledge of conflict activity.

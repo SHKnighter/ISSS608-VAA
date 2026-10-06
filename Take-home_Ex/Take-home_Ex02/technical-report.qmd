@@ -1,0 +1,378 @@
+---
+title: "Conflict Patterns across Myanmar Townships"
+subtitle: "Take-Home Exercise 2: Geospatial Analytics for Peace"
+author: "Bao Sihan"
+lang: en
+params:
+  recompute: true
+format:
+  html:
+    toc: true
+    number-sections: true
+    code-fold: true
+execute:
+  echo: false
+  message: false
+  warning: true
+  freeze: false
+---
+
+[Exercise overview](Take-home_Ex02.qmd) · [Executive summary](executive-summary.qmd)
+
+```{r}
+#| include: false
+source('R/cache-guard.R',local=TRUE)
+if (isTRUE(params$recompute)) {
+  source('R/01-prepare.R',local=TRUE)
+  source('R/02-panel-lmsa.R',local=TRUE)
+  source('R/03-ehsa.R',local=TRUE)
+  source('R/04-figures.R',local=TRUE)
+  record_analysis_fingerprint()
+} else {
+  verify_analysis_fingerprint()
+}
+p <- readRDS('data/processed/prepared.rds')
+panel <- readRDS('data/processed/panel.rds')
+lm <- readRDS('data/processed/lmsa.rds')
+eh <- readRDS('data/processed/ehsa.rds')
+fmt <- function(x) format(x,big.mark=',',trim=TRUE,scientific=FALSE)
+tab <- function(name) read.csv(paste0('output/tables/',name,'.csv'),check.names=FALSE)
+show_figure <- function(name) knitr::include_graphics(paste0('output/figures/',name,'.png'))
+```
+
+## Introduction and questions
+
+In this exercise, I examine the distribution of recorded violence across Myanmar townships between 1 January 2021 and 30 September 2025. I focus on three ACLED event types: Battles, Explosions/Remote violence, and Violence against civilians. Keeping this definition consistent will help me compare places and months without mixing peaceful protests and strategic developments into the main outcome.
+
+Three questions guide the analysis:
+
+1. Where are recorded conflict events concentrated?
+2. Which townships form significant high or low clusters, and which differ from their neighbours?
+3. Where do hot and cold spot patterns appear, persist, strengthen or weaken over time?
+
+## Data and study design
+
+| Source | Coverage and role |
+|---|---|
+| User-supplied ACLED CSV | January 2021–September 2025; 87,109 rows, each identified by `event_id_cnty`. The original download date is unknown. |
+| Myanmar Township Boundaries MIMU v9.4 | Official nationwide WFS snapshot acquired on 5 October 2026, Singapore time; 330 townships, 330 unique PCODEs, WGS84. The source field `PCode_V` is 9.4. |
+
+The analytical unit is one township in one month. I use the same boundary snapshot throughout the study; it does not reconstruct changes in boundaries or territorial control. The main outcome is the number of retained events. Type-specific counts and reported fatalities provide descriptive context, rather than separate repeated hypothesis tests.
+
+The [ACLED codebook](https://acleddata.com/methodology/acled-codebook) explains the event categories and precision fields. The [MIMU layer page](https://geonode.themimu.info/layers/geonode%3Ammr_polbnda_adm3_250k_mimu_1) supplies the version and source description. URLs, acquisition times and SHA-256 checksums are recorded in the project. The ACLED reference page captured now is not assumed to be the edition used when the CSV was downloaded.
+
+In this selection, **Battles** covers armed encounters between organised groups. **Explosions/Remote violence** covers attacks using explosives or other destructive weapons at range, such as shelling and airstrikes. **Violence against civilians** covers violence by organised armed actors against unarmed non-combatants. ACLED applies an event hierarchy, so civilian harm during a battle or an explosive attack may belong to another category. These three categories therefore do not provide a separate census of all civilian harm. These descriptions follow the [ACLED codebook](https://acleddata.com/methodology/acled-codebook).
+
+## Data preparation and quality
+
+### Filtering the records
+
+I first check that event IDs are present and unique and that reported fatalities are nonnegative integers. Missing or duplicated IDs and invalid fatality values stop the workflow for inspection. Date, country, event-type, precision and coordinate exclusions are then counted in sequence. I preserve the original files and store exclusions separately.
+
+```{r}
+knitr::kable(p$audit,col.names=c('Step','Input records','Removed','Remaining'),
+             caption='Sequential preparation audit. Each exclusion is counted once.')
+```
+
+The three selected event types contain 54,000 Myanmar records. Removing 93 records with geographic precision 3 leaves 53,907 candidates. Their coordinates are numerically valid. Precision 1 and 2 are retained, but they should not be read as exact incident locations in every case. I compare the LMSA result with a precision-1-only analysis to assess this choice.
+
+### Assigning events to townships
+
+I read the coordinates as WGS84 longitude and latitude and transform the polygons to the same CRS. `st_intersects()` uses closed polygons so that shared-edge or overlapping matches are visible. An event is retained only when it intersects exactly one township. I use `TS_PCODE` as the key because names can repeat. No unmatched event is moved to the nearest township.
+
+The boundary contains 330 valid, nonempty polygons with unique codes. Of 53,907 candidate events, **`r fmt(nrow(p$events))`** match exactly one township, eight match none, and none match multiple townships. The retained events cover 322 townships and all 57 months. The other eight townships remain present in the complete panel.
+
+Missing township text is not, by itself, a reason to discard a record: 102 retained events lack `admin3` but have a unique spatial match. Eight retained events have different township names and 36 have different district names after simple punctuation and case normalisation. These differences include alternative spellings and administrative distinctions, as well as possible location disagreements. I retain the spatial assignments and record the differences for inspection; a name mismatch is not automatically a false location.
+
+### What this preparation does not establish
+
+The exclusions are a reproducible quality rule, not proof that the retained locations are exact. Unmatched coordinates can reflect coastal features, boundary scale or coding differences. I have not corrected them without evidence. Likewise, an absent event record is not proof that violence did not occur. Reporting access and coverage may differ between townships and periods.
+
+## Township-month panel and descriptive patterns
+
+I expand the study to all 330 townships and 57 months, then join event counts by PCODE and month. The completed panel contains 18,810 rows, including 9,533 with zero recorded events, and still sums to 53,899 events. Geometry is stored once alongside the table to form the space-time cube. Zero means no retained record in the supplied data, rather than confirmed absence of violence.
+
+### Monthly pattern
+
+```{r}
+#| label: fig-monthly
+#| fig-cap: "Monthly count of retained events, January 2021 to September 2025."
+show_figure('monthly-events')
+```
+
+<!-- commentary:monthly:start -->
+Recorded events vary substantially across the study period. The highest month is November 2023, with 1,466 events, followed by December 2023 with 1,449. This suggests particularly high recorded activity near the end of 2023, rather than a steady increase every month. To compare recent years fairly, I use January to September in each year. The retained count falls from 9,969 in those months of 2024 to 8,736 in 2025, a decrease of 12.4%. This describes the dataset, not a confirmed improvement in security. Reporting access, the geographic mix of events and the excluded event types may affect the totals. The monthly series provides context for the township analysis but cannot identify the causes of changes.
+<!-- commentary:monthly:end -->
+
+### Event composition
+
+```{r}
+#| label: fig-types
+#| fig-cap: "Composition of the 53,899 retained events."
+show_figure('event-types')
+```
+
+<!-- commentary:types:start -->
+Explosions and remote violence form the largest group, with 22,899 events or 42.5% of the retained total. Battles account for 21,065 events, while violence against civilians accounts for 9,935. Combining these categories gives a consistent measure to follow over time, but townships with similar totals may have different mixtures of events. Violence against civilians is an ACLED category, not a count of all incidents in which civilians were harmed. The reported fatality field is also a separate measure: the retained records contain 89,005 reported fatalities, which I do not treat as a complete estimate of deaths. I interpret the maps as patterns of recorded activity and avoid assuming that each event represents the same harm.
+<!-- commentary:types:end -->
+
+### Geographic distribution
+
+```{r}
+#| label: fig-counts
+#| fig-cap: "Cumulative township counts using fixed intervals. Zero-count townships remain visible."
+#| out-width: 85%
+show_figure('township-counts')
+```
+
+<!-- commentary:counts:start -->
+The events are unevenly distributed. Monywa in Sagaing has the largest retained total, with 1,039 events, followed by Kawkareik in Kayin with 946 and Myaing in Magway with 934. Other high-count townships include Kale and Shwebo in Sagaing, Hpakant in Kachin, and Madaya in Mandalay. These places are starting points for examining local relationships, but a high count alone does not establish a significant hotspot. The ten highest-count townships together account for 15.9% of all retained events, so the activity is not confined to only a few locations. The map shows counts rather than population rates. Differences in township area, population and reporting coverage remain relevant, and the eight zero-count townships should not be interpreted as proven safe areas.
+<!-- commentary:counts:end -->
+
+## Spatial weights and statistical assumptions
+
+I use first-order Queen contiguity: townships are neighbours if their polygons share an edge or vertex. Row-standardised weights make the neighbours contribute a weighted average. Local Moran's I excludes the focal township; Gi* includes it. This represents local administrative proximity, not actual travel, armed-group movement or communication. The fixed graph contains 1,716 directed links and an average of 5.2 neighbours across all 330 townships.
+
+Chaungzon, Munaung and Cocokyun have no contiguous neighbours under the source geometry. They remain in the descriptive data and comparison population, but I mask their local statistical labels and p-values. I do not add distant neighbours merely to obtain a classification for every township. The three isolated townships account for three of the graph's four connected components.
+
+Standalone LMSA uses 999 conditional permutations, seed 6262026, one CPU and two-sided rank permutation p-values. I classify the full-period raw event count, without a logarithmic transformation. Main maps use unadjusted p < 0.05. A Benjamini–Hochberg (BH) comparison treats each method's 327 non-isolated townships as one testing family. No population denominator is available in the supplied data. Maps use an equal-area display projection centred on Myanmar, while WGS84 is retained for joins and adjacency construction.
+
+## Local measures of spatial association
+
+### Local Moran's I
+
+Local Moran's I compares a township's deviation from the national mean with the weighted deviations of its neighbours. The permutation test evaluates how unusual that local association is under conditional random reassignment. HH and LL describe clusters; HL and LH describe spatial outliers. A quadrant label is displayed only when the permutation p-value passes the cutoff.
+
+```{r}
+#| label: fig-moran
+#| fig-cap: "Local Moran clusters and outliers. HH = high-high; LL = low-low; HL = high-low; LH = low-high."
+#| out-width: 85%
+show_figure('local-moran')
+```
+
+<!-- commentary:moran:start -->
+The main map contains 35 high-high and 49 low-low townships, one low-high outlier and no high-low outliers. Sagaing contains 17 of the high-high townships, followed by Mandalay with seven and Magway with five. This indicates a concentration of high recorded counts and high neighbouring counts in parts of central Myanmar. Low-low clusters include parts of Ayeyarwady, Yangon and Shan. Hlaingbwe in Kayin is the single low-high outlier: its 61 events are low relative to its neighbours, with a permutation p-value of 0.004. This contrast is worth investigating but does not establish why the township differs. Because the map combines 57 months, it may conceal changes within individual places. EHSA is needed to examine whether their relative patterns persisted or changed.
+<!-- commentary:moran:end -->
+
+### Getis–Ord Gi*
+
+Gi* evaluates whether a focal township and its neighbourhood contain unusually high or low values. Unlike Local Moran's I, it includes the focal value in the neighbourhood sum. I use the standardised Gi* sign to distinguish hot from cold spots and the two-sided conditional permutation p-value for significance.
+
+```{r}
+#| label: fig-gistar
+#| fig-cap: "Gi* hot and cold spots using unadjusted two-sided permutation p < 0.05."
+#| out-width: 85%
+show_figure('gistar')
+```
+
+<!-- commentary:gistar:start -->
+Gi* identifies 35 hotspots and 50 coldspots, leaving 242 non-significant townships and three isolated ones. Sixteen hotspots are in Sagaing, seven in Mandalay and five in Magway. Salingyi, Yesagyo and Myaing have the three largest standardised Gi* values, supporting the broader central concentration seen in the Moran map. The methods do not agree exactly because they ask different questions and handle the focal township differently. A coldspot indicates low counts relative to this reference distribution, not safety or an absence of severe events. The maps are exploratory: testing many townships at the same cutoff creates opportunities for false positives. The adjusted comparison below shows that a smaller group retains statistical support after accounting for multiple tests.
+<!-- commentary:gistar:end -->
+
+### Multiple testing and geographic precision
+
+| Specification | Moran HH | Moran LL | Moran LH | Gi* hot | Gi* cold |
+|---|---:|---:|---:|---:|---:|
+| Main: geographic precision 1 or 2 |35|49|1|35|50|
+| Main with BH-adjusted p < 0.05 |15|26|1|17|29|
+| Precision 1 only |33|49|4|36|51|
+
+After BH adjustment, the main Moran high-high count falls from 35 to 15 and the Gi* hotspot count from 35 to 17. Thus the unadjusted maps should not be read as equally strong evidence for every coloured township. The precision-1-only analysis contains 29,588 events and uses the same graph, permutations and seed. Among the 327 non-isolated townships, Moran classifications agree in 300 cases (91.7%) and Gi* classifications in 303 (92.7%). This supports some broad stability, but 27 and 24 classifications respectively change. The full transition tables are retained, since a high overall agreement can hide changes among specific significant clusters.
+
+## Emerging hot spot analysis
+
+### From monthly Gi* to township histories
+
+I use monthly counts with a one-month backward neighbourhood (`k = 1`). Each bin includes its own township and Queen neighbours in the current and previous month. January 2021 has only the current month, giving that first bin a shorter temporal neighbourhood. The spatial weights repeat across temporal neighbours under the installed `sfdep` implementation.
+
+I fix seed 6262027 and use 999 permutations. Observed Gi* uses the current month's national mean and variance as its reference. The implementation reports the smaller of its two permutation tail probabilities without doubling it. I retain this directional convention with bin threshold p ≤ 0.05 for EHSA; it differs from the standalone two-sided Gi* p-values. Its permutation calculation resamples values from across the cube and does not preserve each month's national distribution or fix the focal observation. These choices matter when national activity changes over time. This is the classroom `sfdep` approach, not an exact reproduction of ArcGIS or its FDR procedure.
+
+Mann–Kendall tests the ordered Gi* series for each township. Positive tau indicates increasing Gi* relative to its reference, while negative tau indicates decreasing Gi*. Tau is not an estimate of additional events per month. Trend p-values are kept separate from monthly-bin permutation p-values. Adjacent bins share observations, so the usual temporal-independence assumption is imperfect and trend significance should be treated cautiously.
+
+### Classifying the histories
+
+I use sign-aware rules based on the [published EHSA category descriptions](https://doc.esri.com/en/arcgis-pro/latest/tool-reference/space-time-pattern-mining/learnmoreemerging.html). The installed `sfdep` classifier has a sign condition missing from its intensifying-hotspot rule and other differences in its history conditions. I therefore retain its Gi* calculation but use a small local classification function that checks sign, final-month status, significant-bin frequency and MK trend. Original package labels remain available for comparison. Known synthetic histories test both hot and cold patterns, including a diminishing coldspot and a constant series. This changes category handling, not the calculated Gi* values.
+
+```{r}
+#| label: fig-ehsa-full
+#| fig-cap: "Full EHSA history classification. This supplementary view includes persistent patterns without a significant monotonic trend."
+#| out-width: 90%
+show_figure('ehsa-categories')
+```
+
+```{r}
+#| label: ehsa-category-counts
+knitr::kable(eh$category_counts[eh$category_counts$townships>0,],row.names=FALSE,
+  col.names=c('History category','All townships','With MK p < 0.05'),
+  caption='Observed categories and their significant-trend subsets.')
+```
+
+<!-- commentary:ehsa-full:start -->
+The full classification assigns 51 townships to hot spot patterns and 99 to cold spot patterns. Another 177 have no named pattern, and the three isolated townships are not tested. Nine of the sixteen named categories occur under these settings. Oscillating hotspots are the largest hot group, while sporadic coldspots are the largest cold group. The full view is needed because a recurring local pattern does not necessarily strengthen or weaken monotonically: all fourteen persistent coldspots have non-significant MK trends. The sign-aware local rules change 79 labels relative to the installed package classifier, while preserving its Gi* values and permutation p-values. These labels depend on the final month, the 90% persistence rule and the stated software convention.
+<!-- commentary:ehsa-full:end -->
+
+### Categories observed in the data
+
+#### Consecutive hotspots
+
+<!-- commentary:category-consecutive-hot:start -->
+Six townships end with a continuous run of significant hot bins, with no earlier hot bins outside that run, and fewer than 90% hot bins overall. Myaing has 49 hot months, Yesagyo 48 and Madaya 36. Only Madaya and Singu have significant MK trends, both positive. Myaing's non-significant trend shows that a long uninterrupted hotspot run is not the same as steady intensification. The other members are Wetlet and Salingyi.
+<!-- commentary:category-consecutive-hot:end -->
+
+#### Sporadic hotspots
+
+<!-- commentary:category-sporadic-hot:start -->
+Twelve townships have intermittent significant hot bins, including the final month, and no significant cold bins. Eight also have significant MK trends. Hpakant has twelve hot months without a significant trend; Nawnghkio has 25 hot months and an increasing Gi* trend, while Kyaukkyi has thirty and also increases. The category describes recurrence with interruptions, so it should not be read as a continuous hotspot throughout the study.
+<!-- commentary:category-sporadic-hot:end -->
+
+#### Oscillating hotspots
+
+<!-- commentary:category-oscillating-hot:start -->
+Thirty-three townships finish as significant hotspots but also have significant cold bins earlier in their histories. Twenty-two have significant MK trends. Monywa records 44 hot and three cold months, yet its MK p-value is 0.066. Kawkareik records thirty hot and two cold months and has a significant increasing trend. Their common category therefore does not imply a common trend direction or strength. It records switching within the history and the final hot status.
+<!-- commentary:category-oscillating-hot:end -->
+
+#### New coldspots
+
+<!-- commentary:category-new-cold:start -->
+Namhkan and Konkyan, both in Shan (North), are significant coldspots for the first time in September 2025. Both have significant decreasing Gi* trends. They also have earlier hot bins; the declared rule gives a first-time final cold bin precedence over an oscillating label. This is an example of overlapping category descriptions that require an explicit decision. The label identifies the timing of the relative statistical pattern, rather than the beginning of a safe period.
+<!-- commentary:category-new-cold:end -->
+
+#### Intensifying coldspot
+
+<!-- commentary:category-intensifying-cold:start -->
+Lanmadaw in Yangon is the only intensifying coldspot. It has 54 significant cold bins out of 57, including the final month, and a negative MK tau of −0.251 (p = 0.006). Its relative low-count concentration becomes more pronounced under this model. The township still contains seventeen retained events, so this classification cannot establish an absence of violence or justify treating the area as free from need.
+<!-- commentary:category-intensifying-cold:end -->
+
+#### Persistent coldspots
+
+<!-- commentary:category-persistent-cold:start -->
+Fourteen townships are coldspots in at least 90% of months, including September 2025, without a significant MK trend. Examples include Taikkyi with 53 cold months, and Myaungmya and Monghsu with 52 each. They appear in the full classification but are neutral in the primary significant-trend display. This is intentional: a persistent low-count cluster can remain relatively stable rather than intensifying or diminishing. Non-significant trend evidence does not erase that recurring spatial pattern.
+<!-- commentary:category-persistent-cold:end -->
+
+#### Diminishing coldspots
+
+<!-- commentary:category-diminishing-cold:start -->
+All nine diminishing coldspots are in Shan. Each remains a significant coldspot in the final month and is cold in at least 90% of months, but has a significant positive Gi* trend. Mongnai has 56 cold months and Kengtung has 57. Their relative coldspot concentration weakens as Gi* moves towards zero. This is precisely why a positive MK trend cannot automatically be called an intensifying hotspot. The local sign check prevents that misclassification.
+<!-- commentary:category-diminishing-cold:end -->
+
+#### Sporadic coldspots
+
+<!-- commentary:category-sporadic-cold:start -->
+Fifty-nine townships are sporadic coldspots, and 33 also have significant MK trends. They have interrupted significant cold bins, including the last month, without significant hot bins. Yangon supplies many examples: Hlaingtharya (East) has twenty cold months and Shwepyithar ten, both with decreasing Gi*. Pinlaung in Shan (South) has nine cold months but no significant MK trend. The category combines these different trend histories because its main feature is intermittent relative low-count clustering.
+<!-- commentary:category-sporadic-cold:end -->
+
+#### Oscillating coldspots
+
+<!-- commentary:category-oscillating-cold:start -->
+Fourteen townships finish as coldspots after also having significant hot bins; nine pass the MK cutoff. Kutkai has eight hot and three cold months and a significant decreasing trend. Lashio has five hot and seventeen cold months, but its trend is not significant. Both are in Shan (North). The switching history is more informative here than a simple label of low activity, and the final cold status does not describe every earlier month.
+<!-- commentary:category-oscillating-cold:end -->
+
+#### No named pattern and untested townships
+
+<!-- commentary:category-none:start -->
+No pattern is detected for 177 townships, including 123 with significant MK trends. Chauk has the strongest positive tau but no named history pattern. Kale has nineteen hot and two cold months, yet also falls outside the final category rules. Thus no pattern does not mean no clustering ever occurred or no temporal change. Chaungzon, Munaung and Cocokyun are separately marked not testable because they lack Queen neighbours; they are not part of this no-pattern group.
+<!-- commentary:category-none:end -->
+
+### Significant Gi* trends
+
+```{r}
+#| label: fig-ehsa-trend
+#| fig-cap: "Primary EHSA display. History categories are coloured only where Mann–Kendall p < 0.05."
+#| out-width: 85%
+show_figure('ehsa-significant-categories')
+```
+
+<!-- commentary:ehsa-trend:start -->
+Mann–Kendall identifies 209 significant Gi* trends among the 327 non-isolated townships: 106 increase and 103 decrease. The remaining 118 have no significant monotonic trend. Of the 209, 86 have a named hot or cold history and 123 have no named pattern, shown in tan. Direction alone does not identify a hot or cold spot. For example, a negative Gi* series moving towards zero has a positive trend, even though this may represent weakening coldspot concentration. I therefore display history categories together with the trend cutoff, rather than labelling every positive trend an intensifying hotspot. The result describes change in relative local concentration under the chosen monthly reference and does not directly measure a change in event counts or civilian risk.
+<!-- commentary:ehsa-trend:end -->
+
+```{r}
+#| label: fig-ehsa-examples
+#| fig-cap: "Example Gi* histories. The largest event total selects a township within each displayed category."
+show_figure('ehsa-examples')
+```
+
+<!-- commentary:ehsa-examples:start -->
+The examples show the highest-count township in each of the four largest named groups. Monywa represents oscillating hotspots and Kutkai oscillating coldspots; Taikkyi represents persistent coldspots and Hlaingtharya (East) sporadic coldspots. A common vertical scale keeps their Gi* magnitudes comparable. The lines illustrate the histories, while category assignment also uses each month's permutation p-value. Crossing zero alone is not sufficient to establish a significant switch. These examples are selected illustrations, not a separate statistical test or a representative sample of all townships. Reading the curves alongside the bin counts helps explain why the full history category and the MK trend can give different information about the same place.
+<!-- commentary:ehsa-examples:end -->
+
+## Bringing the results together
+
+```{r}
+selected_names <- c('Monywa','Myaing','Madaya','Kawkareik','Hlaingbwe')
+selected <- sf::st_drop_geometry(lm$results)
+selected <- selected[match(selected_names,selected$TS),]
+ei <- match(selected$TS_PCODE,eh$results$TS_PCODE)
+stopifnot(!anyNA(ei))
+format_p <- function(x) ifelse(x<.001,'<0.001',sprintf('%.3f',x))
+knitr::kable(data.frame(Township=selected$TS,Events=selected$event_count,
+  Moran=selected$moran_class,Gi=selected$gi_class,
+  EHSA=eh$results$classification[ei],
+  Tau=round(eh$results$tau[ei],3),MK_p=format_p(eh$results$p_value[ei])),
+  col.names=c('Township','Events','Moran','Gi*','EHSA','MK tau','MK p'),
+  caption='Selected comparisons of cumulative counts, local spatial association and monthly histories.')
+```
+
+The methods provide different information about the same records. Monywa and Myaing have large totals and are both Moran HH clusters and Gi* hotspots, but their Gi* trends are not significant (MK p = 0.066 and 0.513). Their long-run concentration therefore should not be described as continuous intensification. Madaya is also a full-period HH cluster and hotspot, and its Gi* increases significantly (tau = 0.604, p < 0.001). This is a change in relative concentration, not evidence of a cause.
+
+Kawkareik illustrates the opposite distinction: it has the second-largest event total, but neither full-period local test passes the main significance cutoff. Its Gi* nevertheless increases over time (tau = 0.315, p < 0.001). Hlaingbwe is a Moran low-high outlier and a Gi* hotspot because Gi* includes its high-count neighbourhood; it has no significant MK trend. These examples show why counts, outlier tests, hotspot tests and temporal categories should be read together rather than treated as interchangeable labels.
+
+## Implications for peacebuilding
+
+These results can help organise further questions about where support may be needed. Townships in a high-count cluster deserve closer contextual review, especially when their monthly histories also show sustained or increasing relative concentration. Neighbouring townships should be considered together when discussing access to services and civilian protection, because the mapped patterns cross township boundaries. This is a way to prioritise investigation, not a rule for allocating assistance directly from a coloured map.
+
+For example, the central concentration around parts of Sagaing, Magway and Mandalay suggests a need to compare local information across adjoining areas. A township such as Hlaingbwe also deserves a different question: why are its recorded counts lower than those of its neighbours? The data alone cannot distinguish actual differences in activity from differences in access or reporting. Local knowledge, service needs and independent information on civilian harm are necessary before drawing practical conclusions. Assistance in a coldspot should not be reduced merely because its relative recorded count is low.
+
+## Limitations
+
+- **Coverage and location.** ACLED records depend on available information. Geographic precision 2 is useful for broad coverage but can introduce uncertainty near township boundaries. The precision-1 comparison checks one part of this problem; it cannot establish the completeness of reporting.
+- **Counts and scale.** Event counts do not measure population-adjusted exposure or the severity of every event. A township analysis may conceal smaller areas with very different conditions. A different zoning scheme or neighbourhood definition could change the results.
+- **Time and statistical reference.** Fifty-seven monthly bins provide a common timeline, but January 2021 lacks a preceding bin. The classroom Gi* implementation compares observations using monthly moments while drawing permutations across the cube. Its results depend on that reference model.
+- **Repeated and dependent tests.** The primary LMSA and EHSA displays use unadjusted cutoffs. The LMSA BH comparison shows sensitivity to multiple testing; EHSA bin and trend tests are not adjusted. Overlapping temporal neighbours create dependence that can make ordinary MK p-values too optimistic.
+- **Interpretation.** A hotspot is a relative concentration under the stated model. A coldspot is not a declaration of safety, and a significant trend does not prove a cause. This study does not identify the political or operational mechanisms behind the observed patterns.
+
+## Reproducibility
+
+Keep the raw inputs in the paths described in `data/README.md`. A normal `quarto render technical-report.qmd` runs preparation, panel construction, LMSA, EHSA and figures. For wording-only edits, `quarto render technical-report.qmd -P recompute:false` verifies input and output fingerprints before using saved results. The raw inputs are also checked against their recorded SHA-256 values. A valid simulation cache can be reused when its data, parameters and implementation match. No R package is installed automatically.
+
+```{r}
+knitr::kable(data.frame(Package=c('sf','spdep','sfdep','tmap','readr','dplyr','tidyr','Kendall'),
+ Version=vapply(c('sf','spdep','sfdep','tmap','readr','dplyr','tidyr','Kendall'),
+ function(x) as.character(utils::packageVersion(x)),character(1))),row.names=FALSE,
+ caption='Installed versions used for this analysis.')
+```
+
+```{r}
+#| echo: true
+#| eval: false
+source('R/01-prepare.R')
+source('R/02-panel-lmsa.R')
+source('R/03-ehsa.R')
+source('R/04-figures.R')
+```
+
+<details>
+<summary>Reproducible preparation and analysis code</summary>
+
+```{r}
+#| results: asis
+for (script in c('R/cleaning.R','R/01-prepare.R','R/lmsa-helpers.R',
+                 'R/02-panel-lmsa.R','R/ehsa-helpers.R','R/03-ehsa.R','R/04-figures.R')) {
+  cat('\n### ',basename(script),'\n\n```r\n',
+      paste(readLines(script,warn=FALSE),collapse='\n'),'\n```\n',sep='')
+}
+```
+
+</details>
+
+## References
+
+- [Course assignment and requirements](https://isss626-ay2026-27aug.netlify.app/take-home_ex02).
+- [ACLED codebook](https://acleddata.com/methodology/acled-codebook).
+- [Myanmar Township Boundaries MIMU v9.4](https://geonode.themimu.info/layers/geonode%3Ammr_polbnda_adm3_250k_mimu_1).
+- [spdep Local Moran documentation](https://r-spatial.github.io/spdep/reference/localmoran.html).
+- [spdep Gi and Gi* documentation](https://r-spatial.github.io/spdep/reference/localG.html).
+- [EHSA category definitions](https://doc.esri.com/en/arcgis-pro/latest/tool-reference/space-time-pattern-mining/learnmoreemerging.html).
+- Course learning base: Hands-on Exercises 4, 5A and 5B, and In-class Exercise 6.
+
+Raw data and event-level audit files remain local and are not distributed through this website. The report presents aggregate results with source attribution.

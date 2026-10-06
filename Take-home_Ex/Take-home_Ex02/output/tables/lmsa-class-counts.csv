@@ -1,0 +1,31 @@
+method,variant,class,townships
+moran,main,HH,35
+moran,main,LL,49
+moran,main,HL,0
+moran,main,LH,1
+moran,main,Not significant,242
+moran,main,No contiguous neighbours,3
+moran,BH,HH,15
+moran,BH,LL,26
+moran,BH,HL,0
+moran,BH,LH,1
+moran,BH,Not significant,285
+moran,BH,No contiguous neighbours,3
+moran,precision1,HH,33
+moran,precision1,LL,49
+moran,precision1,HL,0
+moran,precision1,LH,4
+moran,precision1,Not significant,241
+moran,precision1,No contiguous neighbours,3
+gi,main,Hotspot,35
+gi,main,Coldspot,50
+gi,main,Not significant,242
+gi,main,No contiguous neighbours,3
+gi,BH,Hotspot,17
+gi,BH,Coldspot,29
+gi,BH,Not significant,281
+gi,BH,No contiguous neighbours,3
+gi,precision1,Hotspot,36
+gi,precision1,Coldspot,51
+gi,precision1,Not significant,240
+gi,precision1,No contiguous neighbours,3

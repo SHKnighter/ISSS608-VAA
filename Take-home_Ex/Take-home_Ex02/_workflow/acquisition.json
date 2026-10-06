@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "study": "Take-home Exercise 2: Myanmar ACLED snapshot and township boundaries",
+  "acquisition_status": "complete",
+  "verified_at_utc": "2026-10-04T19:14:38.4444391+00:00",
+  "storage_policy": "Local only. Raw inputs and source snapshots are not approved for commit, publication, or redistribution.",
+  "sources": [
+    {
+      "id": "acled_events",
+      "provider": "ACLED",
+      "kind": "user_supplied_csv",
+      "local_file": "data/raw/ACLED_Data_Myanmar_Jan2021-Sep2025.csv",
+      "source_url": "https://acleddata.com/",
+      "local_input": "C:\\Users\\Lenovo\\Downloads\\Geo\\ACLED_Data_Myanmar_Jan2021-Sep2025.csv",
+      "original_download_date": null,
+      "original_download_date_status": "unknown; filesystem timestamps are not treated as download dates",
+      "snapshot_label_from_filename": "January 2021 to September 2025",
+      "refresh_policy": "Use the supplied historical snapshot; do not replace with a fresh ACLED export.",
+      "local_input_sha256": "B0E4A044BDFEC7883DB11A3E8B92922ED6E4AEA949B06CDCBCB872B9EBC1DB1A",
+      "byte_identical_to_local_input": true,
+      "acquired_at_utc": "2026-10-05T03:13:15.6175684+08:00",
+      "acquired_at_singapore": "2026-10-05T03:13:15.6175684+08:00",
+      "bytes": 60791784,
+      "sha256": "B0E4A044BDFEC7883DB11A3E8B92922ED6E4AEA949B06CDCBCB872B9EBC1DB1A"
+    },
+    {
+      "id": "mimu_townships",
+      "provider": "Myanmar Information Management Unit (MIMU)",
+      "kind": "wfs_geojson",
+      "local_file": "data/raw/myanmar-townships-mimu-v9.4.geojson",
+      "source_url": "https://geonode.themimu.info/geoserver/wfs?srsName=EPSG%3A4326&typename=geonode%3Ammr_polbnda_adm3_250k_mimu_1&outputFormat=json&version=1.0.0&service=WFS&request=GetFeature",
+      "layer_name": "geonode:mmr_polbnda_adm3_250k_mimu_1",
+      "requested_crs": "EPSG:4326",
+      "requested_version": "PCode v9.4",
+      "expected_features": 330,
+      "query_limit": null,
+      "query_limit_note": "No maxFeatures parameter: request the nationwide layer.",
+      "public_release_permission": "unverified",
+      "online_use_restriction": "MIMU metadata states online-platform use requires prior written agreement. Keep the raw boundary local until permission is verified.",
+      "http_status": 200,
+      "http_content_type": "application/json; charset=UTF-8",
+      "acquired_at_utc": "2026-10-05T03:13:18.6217002+08:00",
+      "acquired_at_singapore": "2026-10-05T03:13:18.6217002+08:00",
+      "bytes": 11429434,
+      "sha256": "9894D2FD2437CA747A301B4FB6E238ED837F265A14FCA80D62EDCD609DBA60DF"
+    },
+    {
+      "id": "mimu_layer_page",
+      "provider": "MIMU",
+      "kind": "metadata_html",
+      "local_file": "_workflow/sources/mimu-townships-v9.4-metadata.html",
+      "source_url": "https://geonode.themimu.info/layers/geonode%3Ammr_polbnda_adm3_250k_mimu_1",
+      "http_status": 200,
+      "http_content_type": "text/html; charset=utf-8",
+      "acquired_at_utc": "2026-10-05T03:13:19.4748917+08:00",
+      "acquired_at_singapore": "2026-10-05T03:13:19.4748917+08:00",
+      "bytes": 65891,
+      "sha256": "207292DFAA44019BB9B6D5ED04407B20AA752ACAD4AB7FF0BF7DB1942B044D2D"
+    },
+    {
+      "id": "mimu_layer_api",
+      "provider": "MIMU",
+      "kind": "metadata_json",
+      "local_file": "_workflow/sources/mimu-townships-api.json",
+      "source_url": "https://geonode.themimu.info/api/layers/?title__icontains=Township&limit=10",
+      "http_status": 200,
+      "http_content_type": "application/json",
+      "acquired_at_utc": "2026-10-05T03:13:20.3073858+08:00",
+      "acquired_at_singapore": "2026-10-05T03:13:20.3073858+08:00",
+      "bytes": 1432,
+      "sha256": "4CC7ACF6DC35087FA694DBD8A00377054678DAE0E231D438FC35E75FEBD3BD63"
+    },
+    {
+      "id": "acled_codebook",
+      "provider": "ACLED",
+      "kind": "methodology_html",
+      "local_file": "_workflow/sources/acled-codebook.html",
+      "source_url": "https://acleddata.com/methodology/acled-codebook",
+      "note": "Current reference captured at acquisition; not claimed to be the codebook version at the unknown original CSV download date.",
+      "http_status": 200,
+      "http_content_type": "text/html; charset=utf-8",
+      "acquired_at_utc": "2026-10-05T03:13:20.6416906+08:00",
+      "acquired_at_singapore": "2026-10-05T03:13:20.6416906+08:00",
+      "bytes": 157905,
+      "sha256": "FF81539260D27B7EF93A58ECB8D18D94CABFFAF0A9E425EED9FBA99B84A30086"
+    }
+  ],
+  "boundary_checks": {
+    "geojson_type": "FeatureCollection",
+    "returned_feature_count": 330,
+    "total_features": 330,
+    "response_crs": {
+      "type": "name",
+      "properties": {
+        "name": "urn:ogc:def:crs:EPSG::4326"
+      }
+    },
+    "property_names": [
+      "ST",
+      "ST_PCODE",
+      "DT",
+      "DT_PCODE",
+      "TS",
+      "TS_PCODE",
+      "TS_MMR",
+      "PCode_V"
+    ],
+    "pcode_version_values": [
+      9.4
+    ],
+    "matching_api_layer_count": 1,
+    "api_title": "Myanmar Township Boundaries MIMU v9.4",
+    "api_metadata_date": "2023-06-18T13:30:00",
+    "api_scale_note": "This dataset was mainly digitized at 1:250,000 scale. \r\nPlace names are in line with the general cartographic practice to reflect the names of such places as designated by the host governments. "
+  },
+  "codebook_check": "ACLED Codebook title and geo_precision field found in saved HTML."
+}

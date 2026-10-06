@@ -1,0 +1,19 @@
+classification,townships,significant_trend
+new hotspot,0,0
+consecutive hotspot,6,2
+intensifying hotspot,0,0
+persistent hotspot,0,0
+diminishing hotspot,0,0
+sporadic hotspot,12,8
+oscillating hotspot,33,22
+historical hotspot,0,0
+new coldspot,2,2
+consecutive coldspot,0,0
+intensifying coldspot,1,1
+persistent coldspot,14,0
+diminishing coldspot,9,9
+sporadic coldspot,59,33
+oscillating coldspot,14,9
+historical coldspot,0,0
+no pattern detected,177,123
+not testable,3,0

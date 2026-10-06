@@ -1,0 +1,16 @@
+.reveal { font-family: Arial, sans-serif; font-size: 27px; color: #233331; }
+.reveal h1 { font-size: 1.65em; color: #195d58; }
+.reveal h2 { font-size: 1.3em; color: #195d58; margin-bottom: 0.7em; }
+.reveal p, .reveal li { line-height: 1.32; }
+.reveal li { margin-bottom: 0.42em; }
+.reveal strong { color: #195d58; }
+.reveal table { font-size: 0.9em; }
+.reveal table td, .reveal table th { padding: 0.3em 0.45em; }
+.reveal .columns { gap: 1.2em; align-items: flex-start; }
+.reveal .map-image { display: block; height: 490px; max-width: 100%; margin: 0 auto; object-fit: contain; }
+.reveal .trend-image { max-height: 365px; margin: 0; object-fit: contain; }
+.reveal .source-note { font-size: 18px; line-height: 1.3; color: #566562; margin-top: 0.6em; }
+.reveal .callout { font-size: 0.93em; }
+.reveal .footer { font-size: 15px; }
+.reveal #title-slide { text-align: left; padding-top: 100px; }
+.reveal #title-slide .subtitle { margin-top: 1.3em; color: #566562; }

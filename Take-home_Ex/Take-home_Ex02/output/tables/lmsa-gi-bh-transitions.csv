@@ -1,0 +1,17 @@
+main,comparison,townships
+Coldspot,Coldspot,29
+Hotspot,Coldspot,0
+No contiguous neighbours,Coldspot,0
+Not significant,Coldspot,0
+Coldspot,Hotspot,0
+Hotspot,Hotspot,17
+No contiguous neighbours,Hotspot,0
+Not significant,Hotspot,0
+Coldspot,No contiguous neighbours,0
+Hotspot,No contiguous neighbours,0
+No contiguous neighbours,No contiguous neighbours,3
+Not significant,No contiguous neighbours,0
+Coldspot,Not significant,21
+Hotspot,Not significant,18
+No contiguous neighbours,Not significant,0
+Not significant,Not significant,242

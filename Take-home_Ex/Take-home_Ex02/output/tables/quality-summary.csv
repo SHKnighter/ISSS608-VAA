@@ -1,0 +1,15 @@
+measure,value
+raw_records,87109
+raw_unique_ids,87109
+raw_missing_admin3,1118
+main_scope_before_precision,54000
+after_precision_and_coordinates,53907
+retained_unique_township,53899
+retained_missing_admin3,102
+unmatched_points,8
+multiple_matches,0
+township_name_difference,8
+admin1_name_difference,0
+admin2_name_difference,36
+boundary_townships,330
+observed_months,57

@@ -1,0 +1,14 @@
+measure,value
+townships,330
+months,57
+township_month_rows,18810
+recorded_events,53899
+reported_fatalities,89005
+zero_township_months,9533
+zero_townships_full_period,8
+nonzero_townships,322
+monthly_min,62
+monthly_max,1466
+township_median,79
+township_mean,163.33030303030304
+top_10_event_share_percent,15.91680736191766

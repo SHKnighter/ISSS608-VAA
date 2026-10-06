@@ -1,0 +1,172 @@
+month,event_type,events
+2021-01-01,Battles,26
+2021-02-01,Battles,38
+2021-03-01,Battles,92
+2021-04-01,Battles,201
+2021-05-01,Battles,299
+2021-06-01,Battles,176
+2021-07-01,Battles,191
+2021-08-01,Battles,198
+2021-09-01,Battles,256
+2021-10-01,Battles,263
+2021-11-01,Battles,342
+2021-12-01,Battles,340
+2022-01-01,Battles,399
+2022-02-01,Battles,308
+2022-03-01,Battles,366
+2022-04-01,Battles,391
+2022-05-01,Battles,397
+2022-06-01,Battles,382
+2022-07-01,Battles,393
+2022-08-01,Battles,422
+2022-09-01,Battles,455
+2022-10-01,Battles,383
+2022-11-01,Battles,411
+2022-12-01,Battles,345
+2023-01-01,Battles,400
+2023-02-01,Battles,401
+2023-03-01,Battles,385
+2023-04-01,Battles,350
+2023-05-01,Battles,372
+2023-06-01,Battles,384
+2023-07-01,Battles,502
+2023-08-01,Battles,456
+2023-09-01,Battles,483
+2023-10-01,Battles,467
+2023-11-01,Battles,685
+2023-12-01,Battles,497
+2024-01-01,Battles,506
+2024-02-01,Battles,420
+2024-03-01,Battles,492
+2024-04-01,Battles,452
+2024-05-01,Battles,423
+2024-06-01,Battles,441
+2024-07-01,Battles,545
+2024-08-01,Battles,475
+2024-09-01,Battles,319
+2024-10-01,Battles,361
+2024-11-01,Battles,452
+2024-12-01,Battles,392
+2025-01-01,Battles,365
+2025-02-01,Battles,343
+2025-03-01,Battles,360
+2025-04-01,Battles,303
+2025-05-01,Battles,370
+2025-06-01,Battles,435
+2025-07-01,Battles,381
+2025-08-01,Battles,385
+2025-09-01,Battles,389
+2021-01-01,Explosions/Remote violence,14
+2021-02-01,Explosions/Remote violence,11
+2021-03-01,Explosions/Remote violence,50
+2021-04-01,Explosions/Remote violence,154
+2021-05-01,Explosions/Remote violence,399
+2021-06-01,Explosions/Remote violence,230
+2021-07-01,Explosions/Remote violence,160
+2021-08-01,Explosions/Remote violence,169
+2021-09-01,Explosions/Remote violence,401
+2021-10-01,Explosions/Remote violence,500
+2021-11-01,Explosions/Remote violence,376
+2021-12-01,Explosions/Remote violence,404
+2022-01-01,Explosions/Remote violence,458
+2022-02-01,Explosions/Remote violence,355
+2022-03-01,Explosions/Remote violence,363
+2022-04-01,Explosions/Remote violence,370
+2022-05-01,Explosions/Remote violence,341
+2022-06-01,Explosions/Remote violence,299
+2022-07-01,Explosions/Remote violence,351
+2022-08-01,Explosions/Remote violence,367
+2022-09-01,Explosions/Remote violence,398
+2022-10-01,Explosions/Remote violence,432
+2022-11-01,Explosions/Remote violence,448
+2022-12-01,Explosions/Remote violence,362
+2023-01-01,Explosions/Remote violence,371
+2023-02-01,Explosions/Remote violence,353
+2023-03-01,Explosions/Remote violence,400
+2023-04-01,Explosions/Remote violence,341
+2023-05-01,Explosions/Remote violence,378
+2023-06-01,Explosions/Remote violence,397
+2023-07-01,Explosions/Remote violence,428
+2023-08-01,Explosions/Remote violence,436
+2023-09-01,Explosions/Remote violence,407
+2023-10-01,Explosions/Remote violence,470
+2023-11-01,Explosions/Remote violence,656
+2023-12-01,Explosions/Remote violence,797
+2024-01-01,Explosions/Remote violence,663
+2024-02-01,Explosions/Remote violence,487
+2024-03-01,Explosions/Remote violence,629
+2024-04-01,Explosions/Remote violence,552
+2024-05-01,Explosions/Remote violence,476
+2024-06-01,Explosions/Remote violence,438
+2024-07-01,Explosions/Remote violence,483
+2024-08-01,Explosions/Remote violence,469
+2024-09-01,Explosions/Remote violence,421
+2024-10-01,Explosions/Remote violence,512
+2024-11-01,Explosions/Remote violence,511
+2024-12-01,Explosions/Remote violence,384
+2025-01-01,Explosions/Remote violence,441
+2025-02-01,Explosions/Remote violence,509
+2025-03-01,Explosions/Remote violence,475
+2025-04-01,Explosions/Remote violence,562
+2025-05-01,Explosions/Remote violence,449
+2025-06-01,Explosions/Remote violence,417
+2025-07-01,Explosions/Remote violence,370
+2025-08-01,Explosions/Remote violence,455
+2025-09-01,Explosions/Remote violence,350
+2021-01-01,Violence against civilians,22
+2021-02-01,Violence against civilians,17
+2021-03-01,Violence against civilians,130
+2021-04-01,Violence against civilians,110
+2021-05-01,Violence against civilians,168
+2021-06-01,Violence against civilians,221
+2021-07-01,Violence against civilians,158
+2021-08-01,Violence against civilians,198
+2021-09-01,Violence against civilians,274
+2021-10-01,Violence against civilians,289
+2021-11-01,Violence against civilians,259
+2021-12-01,Violence against civilians,231
+2022-01-01,Violence against civilians,238
+2022-02-01,Violence against civilians,161
+2022-03-01,Violence against civilians,177
+2022-04-01,Violence against civilians,229
+2022-05-01,Violence against civilians,252
+2022-06-01,Violence against civilians,248
+2022-07-01,Violence against civilians,215
+2022-08-01,Violence against civilians,235
+2022-09-01,Violence against civilians,205
+2022-10-01,Violence against civilians,244
+2022-11-01,Violence against civilians,201
+2022-12-01,Violence against civilians,164
+2023-01-01,Violence against civilians,203
+2023-02-01,Violence against civilians,170
+2023-03-01,Violence against civilians,204
+2023-04-01,Violence against civilians,158
+2023-05-01,Violence against civilians,182
+2023-06-01,Violence against civilians,175
+2023-07-01,Violence against civilians,196
+2023-08-01,Violence against civilians,202
+2023-09-01,Violence against civilians,173
+2023-10-01,Violence against civilians,174
+2023-11-01,Violence against civilians,125
+2023-12-01,Violence against civilians,155
+2024-01-01,Violence against civilians,138
+2024-02-01,Violence against civilians,149
+2024-03-01,Violence against civilians,176
+2024-04-01,Violence against civilians,162
+2024-05-01,Violence against civilians,146
+2024-06-01,Violence against civilians,116
+2024-07-01,Violence against civilians,133
+2024-08-01,Violence against civilians,132
+2024-09-01,Violence against civilians,126
+2024-10-01,Violence against civilians,133
+2024-11-01,Violence against civilians,153
+2024-12-01,Violence against civilians,231
+2025-01-01,Violence against civilians,199
+2025-02-01,Violence against civilians,164
+2025-03-01,Violence against civilians,129
+2025-04-01,Violence against civilians,118
+2025-05-01,Violence against civilians,133
+2025-06-01,Violence against civilians,138
+2025-07-01,Violence against civilians,137
+2025-08-01,Violence against civilians,170
+2025-09-01,Violence against civilians,189

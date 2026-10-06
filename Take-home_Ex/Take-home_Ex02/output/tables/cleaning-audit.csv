@@ -1,0 +1,8 @@
+step,input,removed,remaining
+raw,87109,0,87109
+date_in_scope,87109,0,87109
+myanmar,87109,6,87103
+three_violence_types,87103,33103,54000
+township_precision,54000,93,53907
+valid_coordinates,53907,0,53907
+unique_township_match,53907,8,53899

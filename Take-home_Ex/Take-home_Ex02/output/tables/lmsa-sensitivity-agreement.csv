@@ -1,0 +1,5 @@
+method,scope,townships,agree,disagree,agreement_percent
+moran,all townships,330,303,27,91.81818181818183
+moran,with contiguous neighbours,327,300,27,91.74311926605505
+gi,all townships,330,306,24,92.72727272727272
+gi,with contiguous neighbours,327,303,24,92.66055045871559

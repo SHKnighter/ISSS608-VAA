@@ -3,3 +3,4 @@ title: "Take-Home Exercise"
 ---
 
 - [Take-Home Exercise 1: Geospatial Analytics for Public Safety](Take-home_Ex/Take-home_Ex01/Take-home_Ex01.qmd) — Thermal anomaly patterns in Kapuas Regency, January–August 2026.
+- [Take-Home Exercise 2: Geospatial Analytics for Peace](Take-home_Ex/Take-home_Ex02/Take-home_Ex02.qmd) — Myanmar township conflict patterns, January 2021–September 2025, using local spatial association and emerging hot spot analysis.
