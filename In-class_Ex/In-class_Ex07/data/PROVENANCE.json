@@ -1,0 +1,123 @@
+{
+  "downloaded_utc": "2026-10-18T20:53:53.1810005Z",
+  "source_repository": "https://github.com/tskam/ISSS626-AY2026-27Aug",
+  "source_commit": "641bd779e733218874a95238aae53d3e3b1d5ecf",
+  "instructor_chapter": "https://r4gdsa.netlify.app/chap17.html",
+  "purpose": "In-class Exercise 7 coursework",
+  "files": [
+    {
+      "path": "aspatial/OD_Matrix.csv",
+      "bytes": 23291166,
+      "git_blob_sha1": "4f1239afc6b54a39981911a0557eb99f3e4bb725",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/aspatial/OD_Matrix.csv"
+    },
+    {
+      "path": "geospatial/ELDERCARE.cpg",
+      "bytes": 5,
+      "git_blob_sha1": "3ad133c048f2189041151425a73485649e6c32c0",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/ELDERCARE.cpg"
+    },
+    {
+      "path": "geospatial/ELDERCARE.dbf",
+      "bytes": 314802,
+      "git_blob_sha1": "cd6b4a1886a5b256cb36314152a0f41096eeb812",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/ELDERCARE.dbf"
+    },
+    {
+      "path": "geospatial/ELDERCARE.prj",
+      "bytes": 421,
+      "git_blob_sha1": "53b79761ea80562b0b6bb4a7d75fdc4f6ed97c58",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/ELDERCARE.prj"
+    },
+    {
+      "path": "geospatial/ELDERCARE.shp",
+      "bytes": 3460,
+      "git_blob_sha1": "f6729c1c6e3d53975616e9c6de0b2eef0e171303",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/ELDERCARE.shp"
+    },
+    {
+      "path": "geospatial/ELDERCARE.shp.xml",
+      "bytes": 12150,
+      "git_blob_sha1": "571b7bc4430976ea369f8c8be42a41a92b077022",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/ELDERCARE.shp.xml"
+    },
+    {
+      "path": "geospatial/ELDERCARE.shx",
+      "bytes": 1060,
+      "git_blob_sha1": "52ed1b64aa1fd80cf8a777735d122a0db1a5d322",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/ELDERCARE.shx"
+    },
+    {
+      "path": "geospatial/MP14_SUBZONE_NO_SEA_PL.dbf",
+      "bytes": 81264,
+      "git_blob_sha1": "5787c5528f26f17d37e391d31693c974aa9135bb",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/MP14_SUBZONE_NO_SEA_PL.dbf"
+    },
+    {
+      "path": "geospatial/MP14_SUBZONE_NO_SEA_PL.prj",
+      "bytes": 416,
+      "git_blob_sha1": "b848068d2e9a4320ae8a549c31a43cc2672d2eb1",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/MP14_SUBZONE_NO_SEA_PL.prj"
+    },
+    {
+      "path": "geospatial/MP14_SUBZONE_NO_SEA_PL.sbn",
+      "bytes": 3396,
+      "git_blob_sha1": "6f2e6af1b2b740f93a4d2089050cbb121b819569",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/MP14_SUBZONE_NO_SEA_PL.sbn"
+    },
+    {
+      "path": "geospatial/MP14_SUBZONE_NO_SEA_PL.sbx",
+      "bytes": 356,
+      "git_blob_sha1": "a675efd1719c6af8c9b155802aeed4d8e3f18352",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/MP14_SUBZONE_NO_SEA_PL.sbx"
+    },
+    {
+      "path": "geospatial/MP14_SUBZONE_NO_SEA_PL.shp",
+      "bytes": 911052,
+      "git_blob_sha1": "ca0506ace8c63adee718c07d04b0eca76a596390",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/MP14_SUBZONE_NO_SEA_PL.shp"
+    },
+    {
+      "path": "geospatial/MP14_SUBZONE_NO_SEA_PL.shp.xml",
+      "bytes": 11637,
+      "git_blob_sha1": "e47406f4bd2af472e3d9afe880a724d032d30728",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/MP14_SUBZONE_NO_SEA_PL.shp.xml"
+    },
+    {
+      "path": "geospatial/MP14_SUBZONE_NO_SEA_PL.shx",
+      "bytes": 2684,
+      "git_blob_sha1": "86b62d8ea166cb1e064ef33b084592dd682cba0b",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/MP14_SUBZONE_NO_SEA_PL.shx"
+    },
+    {
+      "path": "geospatial/hexagons.cpg",
+      "bytes": 5,
+      "git_blob_sha1": "3ad133c048f2189041151425a73485649e6c32c0",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/hexagons.cpg"
+    },
+    {
+      "path": "geospatial/hexagons.dbf",
+      "bytes": 428351,
+      "git_blob_sha1": "767c708f47f827ea4d2848559b778627abd8c17f",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/hexagons.dbf"
+    },
+    {
+      "path": "geospatial/hexagons.prj",
+      "bytes": 421,
+      "git_blob_sha1": "53b79761ea80562b0b6bb4a7d75fdc4f6ed97c58",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/hexagons.prj"
+    },
+    {
+      "path": "geospatial/hexagons.shp",
+      "bytes": 525100,
+      "git_blob_sha1": "298c63914fb3440d8fbaa722830ec50226e41f6c",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/hexagons.shp"
+    },
+    {
+      "path": "geospatial/hexagons.shx",
+      "bytes": 25100,
+      "git_blob_sha1": "909fe6a1ec1c7a4133013f09ec44727fc6e1aa38",
+      "source": "https://raw.githubusercontent.com/tskam/ISSS626-AY2026-27Aug/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data/geospatial/hexagons.shx"
+    }
+  ]
+}

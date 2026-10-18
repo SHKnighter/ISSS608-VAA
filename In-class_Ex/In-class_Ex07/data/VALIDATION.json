@@ -1,0 +1,35 @@
+{
+  "verified_utc": "2026-10-18T20:55:03.1953649Z",
+  "input_files": 19,
+  "input_bytes": 25612846,
+  "all_input_sizes_and_git_blob_sha1_match_source": true,
+  "geospatial": [
+    {
+      "layer": "MP14_SUBZONE_NO_SEA_PL",
+      "features": 323,
+      "shape_type": "Polygon"
+    },
+    {
+      "layer": "hexagons",
+      "features": 3125,
+      "shape_type": "Polygon"
+    },
+    {
+      "layer": "ELDERCARE",
+      "features": 120,
+      "shape_type": "Point"
+    }
+  ],
+  "csv": {
+    "records": 375000,
+    "origins": 3125,
+    "destinations": 120,
+    "unique_pairs": 375000,
+    "missing_total_cost": 0,
+    "origin_min": 1.0,
+    "origin_max": 3125.0,
+    "destination_min": 1.0,
+    "destination_max": 133.0
+  },
+  "notes": "Shapefile DBF and SHX feature counts agree. Projection metadata describes SVY21. No input records or geometries were altered."
+}

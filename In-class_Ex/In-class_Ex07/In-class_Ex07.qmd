@@ -1,0 +1,366 @@
+---
+title: "In Class Exercise 7: Modelling Geographical Accessibility"
+author: "Bao Sihan"
+date: "October 19, 2026"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    code-summary: "Show R code"
+execute:
+  echo: true
+  results: hide
+  warning: false
+  message: false
+  fig-width: 10
+  fig-height: 7
+---
+
+## Overview
+
+In this exercise, I examine accessibility to eldercare centres in Singapore using the two-step floating catchment area method (2SFCA), enhanced 2SFCA (E2SFCA), and the Hansen method. I follow the supplied classroom code, with the Lesson 7 slides as the conceptual reference.
+
+The floating catchment methods consider both supply and competing demand. E2SFCA also reduces the contribution of more distant centres. The final Hansen map provides a separate view based on distance-weighted supply. All distances in this exercise are **kilometres**, rather than the travel-time units used in the slides' E2SFCA example.
+
+## Getting Started
+
+### Packages
+
+The following installation block is needed only when setting up a new R environment. It is not executed during rendering. The `catchment` version is pinned to the revision used here.
+
+```{r}
+#| label: install-packages
+#| eval: false
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+install.packages(c("sf", "tmap", "SpatialAcc", "tidyverse", "remotes"))
+remotes::install_github("uva-bi-sdad/catchment@b96fb58",
+                        upgrade = "never")
+```
+
+```{r}
+#| label: setup
+library(sf)
+library(tmap)
+library(catchment)
+library(SpatialAcc)
+library(tidyverse)
+tmap_mode("plot")
+theme_set(theme_minimal(base_size = 12))
+```
+
+### Importing the data
+
+I use the instructor's [Exercise 7 data](https://github.com/tskam/ISSS626-AY2026-27Aug/tree/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07/data): planning subzones, a hexagonal grid, eldercare centre locations, and a precomputed origin-destination (OD) matrix. Each file is stored in this exercise's own `data` folder, so the paths remain relative.
+
+```{r}
+#| label: import-data
+mpsz <- st_read("data/geospatial/MP14_SUBZONE_NO_SEA_PL.shp",
+                quiet = TRUE)
+hexagons <- st_read("data/geospatial/hexagons.shp", quiet = TRUE)
+eldercare <- st_read("data/geospatial/ELDERCARE.shp", quiet = TRUE)
+ODMatrix <- read_csv("data/aspatial/OD_Matrix.csv",
+                     show_col_types = FALSE)
+```
+
+### Preparing the spatial layers
+
+All three layers are transformed to SVY21 (EPSG:3414), which uses metres. I repair invalid subzone geometries for the background map. The accessibility calculations use the supplied OD costs; changing the layers' CRS does not recalculate those costs.
+
+```{r}
+#| label: prepare-layers
+invalid_subzones <- sum(!st_is_valid(mpsz))
+mpsz <- mpsz %>% st_transform(3414) %>% st_make_valid()
+hexagons <- st_transform(hexagons, 3414)
+eldercare <- st_transform(eldercare, 3414)
+
+eldercare <- eldercare %>%
+  select(fid, ADDRESSPOS) %>%
+  mutate(fid = as.character(fid), capacity = 100)
+hexagons <- hexagons %>%
+  select(fid) %>%
+  mutate(fid = as.character(fid), demand = 100)
+```
+
+There are **`r nrow(mpsz)` subzones**, **`r format(nrow(hexagons), big.mark = ",")` hexagons** and **`r nrow(eldercare)` eldercare centres**. I repaired `r invalid_subzones` invalid subzone geometries. Each centre is assigned a capacity of **100**, and each hexagon a demand of **100**. These are uniform teaching assumptions, rather than observed facility capacities or elderly population counts.
+
+```{r}
+#| label: study-area
+#| fig-cap: "The supplied hexagonal grid and eldercare locations in Singapore."
+tm_shape(mpsz) +
+  tm_polygons(fill = "#edf0ed", col = "#aeb9b3", lwd = 0.3) +
+  tm_shape(hexagons) +
+  tm_borders(col = "#8aa19c", lwd = 0.25) +
+  tm_shape(eldercare) +
+  tm_dots(fill = "red", col = "black", size = 0.15) +
+  tm_title("Study area and eldercare centres") +
+  tm_compass(type = "8star", size = 1.5) +
+  tm_scalebar() +
+  tm_layout(frame = TRUE)
+```
+
+### Preparing the OD matrix
+
+The OD table contains one record for each hexagon-centre pair. `total_cost` is the sum of the supplied entry, network and exit distances in metres. I convert it to kilometres after reshaping it into a matrix.
+
+I explicitly match the rows to hexagon IDs and the columns to centre IDs. This matters because the centre IDs contain gaps; their values cannot be treated as consecutive column positions.
+
+```{r}
+#| label: prepare-od-matrix
+ODMatrix <- ODMatrix %>%
+  mutate(origin_id = as.character(origin_id),
+         destination_id = as.character(destination_id))
+
+stopifnot(!anyDuplicated(hexagons$fid),
+          !anyDuplicated(eldercare$fid),
+          !anyNA(ODMatrix),
+          !anyDuplicated(ODMatrix[c("origin_id", "destination_id")]),
+          setequal(ODMatrix$origin_id, hexagons$fid),
+          setequal(ODMatrix$destination_id, eldercare$fid),
+          nrow(ODMatrix) == nrow(hexagons) * nrow(eldercare),
+          all(is.finite(ODMatrix$total_cost)),
+          all(ODMatrix$total_cost > 0))
+
+distmat <- ODMatrix %>%
+  select(origin_id, destination_id, total_cost) %>%
+  pivot_wider(names_from = destination_id, values_from = total_cost)
+
+distmat_km <- as.matrix(
+  distmat[match(hexagons$fid, distmat$origin_id), eldercare$fid]
+) / 1000
+dimnames(distmat_km) <- list(hexagons$fid, eldercare$fid)
+consumers <- setNames(hexagons$demand, hexagons$fid)
+providers <- setNames(eldercare$capacity, eldercare$fid)
+
+stopifnot(identical(dim(distmat_km),
+                    c(nrow(hexagons), nrow(eldercare))),
+          identical(rownames(distmat_km), names(consumers)),
+          identical(colnames(distmat_km), names(providers)),
+          !anyNA(distmat_km),
+          all(st_is_valid(mpsz)), all(st_is_valid(hexagons)),
+          all(st_is_valid(eldercare)))
+```
+
+The checks confirm **`r format(nrow(ODMatrix), big.mark = ",")` unique OD pairs**, with no missing costs. The final matrix has **`r nrow(distmat_km)` rows by `r ncol(distmat_km)` columns**. I use these supplied network-based costs throughout, without substituting straight-line distance.
+
+## Two-Step Floating Catchment Area (2SFCA)
+
+First, each centre's capacity is divided by the total demand in its 5 km catchment. Second, each hexagon receives the sum of the capacity-to-demand ratios of the centres in its own catchment. All eligible centres have the same distance weight, so a nearby centre and one near the catchment edge contribute on the same basis.
+
+In this package, `max_cost = 5` includes costs strictly below 5 km; the E2SFCA bands used below include their upper endpoints.
+
+```{r}
+#| label: calculate-2sfca
+df_2sfca <- tibble(
+  fid = hexagons$fid,
+  `2SFCA` = as.numeric(catchment_ratio(
+    consumers = consumers,
+    providers = providers,
+    cost = distmat_km,
+    max_cost = 5))
+)
+summary_2sfca <- summary(df_2sfca$`2SFCA`)
+```
+
+The mean 2SFCA score is **`r sprintf("%.4f", mean(df_2sfca[["2SFCA"]]))`** capacity units per unit of demand. **`r format(sum(df_2sfca[["2SFCA"]] == 0), big.mark = ",")` hexagons (`r sprintf("%.1f", 100 * mean(df_2sfca[["2SFCA"]] == 0))`%) have zero accessibility** under the 5 km catchment. A zero score means that no supplied centre is reachable within this model's threshold; it does not describe access to every possible eldercare service.
+
+## Enhanced 2SFCA (E2SFCA)
+
+E2SFCA uses the same two steps, but applies decreasing distance weights in both steps. I retain the classroom code's five bands: up to 1 km has weight 1; over 1 to 2 km has weight 0.4; over 2 to 3 km has weight 0.1; over 3 to 4 km has weight 0.05; and over 4 to 5 km has weight 0.01. Costs beyond 5 km receive no weight.
+
+```{r}
+#| label: calculate-e2sfca
+step_weights <- list(c(5, .01), c(4, .05), c(3, .1),
+                     c(2, .4), c(1, 1))
+df_e2sfca <- tibble(
+  fid = hexagons$fid,
+  E2SFCA = as.numeric(catchment_ratio(
+    consumers = consumers,
+    providers = providers,
+    cost = distmat_km,
+    weight = step_weights))
+)
+summary_e2sfca <- summary(df_e2sfca$E2SFCA)
+```
+
+Unlike ordinary 2SFCA, this method gives much less weight to a centre 4-5 km away than to a centre within 1 km. The same weights also reduce the competing demand around each centre, so the final change in a hexagon's accessibility depends on both steps.
+
+## Comparing 2SFCA and E2SFCA
+
+```{r}
+#| label: compare-methods
+hexagon_acc <- hexagons %>%
+  left_join(df_2sfca, by = "fid") %>%
+  left_join(df_e2sfca, by = "fid")
+
+rho <- cor(hexagon_acc$`2SFCA`, hexagon_acc$E2SFCA,
+           method = "spearman")
+comparison <- tibble(
+  Method = c("2SFCA", "E2SFCA"),
+  Mean = c(mean(hexagon_acc$`2SFCA`), mean(hexagon_acc$E2SFCA)),
+  Median = c(median(hexagon_acc$`2SFCA`), median(hexagon_acc$E2SFCA)),
+  Maximum = c(max(hexagon_acc$`2SFCA`), max(hexagon_acc$E2SFCA)),
+  Zero_hexagons = c(sum(hexagon_acc$`2SFCA` == 0),
+                   sum(hexagon_acc$E2SFCA == 0))
+)
+```
+
+```{r}
+#| label: comparison-summary
+#| results: asis
+#| echo: false
+comparison_table <- comparison %>%
+  pivot_longer(-Method, names_to = "Statistic", values_to = "Value") %>%
+  mutate(Value = if_else(Statistic == "Zero_hexagons",
+                         formatC(Value, format = "f", digits = 0, big.mark = ","),
+                         sprintf("%.4f", Value)),
+         Statistic = recode(Statistic, Zero_hexagons = "Zero hexagons")) %>%
+  pivot_wider(names_from = Method, values_from = Value)
+knitr::kable(comparison_table)
+```
+
+The Spearman rank correlation is **`r sprintf("%.3f", rho)`**, showing how similarly the two methods rank hexagons. In this dataset, the E2SFCA median is `r if (comparison$Median[2] < comparison$Median[1]) "lower" else "higher"` and its maximum is `r if (comparison$Maximum[2] < comparison$Maximum[1]) "lower" else "higher"` than for 2SFCA. These are observed results for the supplied data, rather than general properties of distance decay.
+
+```{r}
+#| label: check-calculations
+#| include: false
+w2 <- as.matrix(catchment_weight(distmat_km, max_cost = 5))
+we <- as.matrix(catchment_weight(distmat_km, weight = step_weights))
+demand2 <- as.numeric(crossprod(w2, consumers))
+demande <- as.numeric(crossprod(we, consumers))
+stopifnot(all(demand2 > 0), all(demande > 0),
+          all(is.finite(hexagon_acc$`2SFCA`)),
+          all(is.finite(hexagon_acc$E2SFCA)),
+          isTRUE(all.equal(as.numeric(w2 %*% (providers / demand2)),
+                           df_2sfca$`2SFCA`, tolerance = 1e-10)),
+          isTRUE(all.equal(as.numeric(we %*% (providers / demande)),
+                           df_e2sfca$E2SFCA, tolerance = 1e-10)),
+          abs(sum(consumers * hexagon_acc$`2SFCA`) - sum(providers)) < 1e-7,
+          abs(sum(consumers * hexagon_acc$E2SFCA) - sum(providers)) < 1e-7)
+```
+
+Every centre has positive catchment demand in both calculations, so both methods allocate the same total capacity. Because demand is equal across hexagons, their unweighted means are also equal: **`r sprintf("%.4f", mean(hexagon_acc$E2SFCA))`**. The mean therefore hides the local differences between the methods.
+
+### Mapping the floating catchment results
+
+The two maps use a **shared colour scale**, with zero-access hexagons shown separately in light grey. The positive classes are quartiles of the pooled scores, so the same colour represents the same score range in both maps.
+
+```{r}
+#| label: map-2sfca
+#| fig-cap: "2SFCA accessibility using a 5 km catchment. Grey denotes zero accessibility."
+pooled <- c(hexagon_acc$`2SFCA`, hexagon_acc$E2SFCA)
+shared_breaks <- c(-1e-12, 0,
+                   unname(quantile(pooled[pooled > 0],
+                                   probs = c(.25, .5, .75, 1))))
+shared_labels <- c("0 (no access)",
+                   paste0(formatC(shared_breaks[2:5], digits = 4, format = "f"),
+                          " - ",
+                          formatC(shared_breaks[3:6], digits = 4, format = "f")))
+
+tm_shape(hexagon_acc) +
+  tm_polygons(fill = "2SFCA", col = NA,
+    fill.scale = tm_scale_intervals(
+      breaks = shared_breaks, interval.closure = "right",
+      values = c("#e5e7eb", "#c6dbef", "#6baed6", "#2171b5", "#08306b"),
+      labels = shared_labels),
+    fill.legend = tm_legend(title = "Capacity / demand")) +
+  tm_shape(eldercare) +
+  tm_dots(size = 0.12, fill = "red", col = "black") +
+  tm_title("Accessibility to eldercare: 2SFCA") +
+  tm_compass(type = "8star", size = 1.5) +
+  tm_scalebar() +
+  tm_layout(frame = TRUE)
+```
+
+```{r}
+#| label: map-e2sfca
+#| fig-cap: "E2SFCA accessibility with distance-decay bands, on the same scale as 2SFCA."
+tm_shape(hexagon_acc) +
+  tm_polygons(fill = "E2SFCA", col = NA,
+    fill.scale = tm_scale_intervals(
+      breaks = shared_breaks, interval.closure = "right",
+      values = c("#e5e7eb", "#c6dbef", "#6baed6", "#2171b5", "#08306b"),
+      labels = shared_labels),
+    fill.legend = tm_legend(title = "Capacity / demand")) +
+  tm_shape(eldercare) +
+  tm_dots(size = 0.12, fill = "red", col = "black") +
+  tm_title("Accessibility to eldercare: E2SFCA") +
+  tm_compass(type = "8star", size = 1.5) +
+  tm_scalebar() +
+  tm_layout(frame = TRUE)
+```
+
+```{r}
+#| label: compare-scores-plot
+#| fig-height: 5
+#| fig-cap: "Each point is a hexagon. The dashed line marks equal scores from both methods."
+hexagon_acc %>% st_drop_geometry() %>%
+  ggplot(aes(`2SFCA`, E2SFCA)) +
+  geom_abline(slope = 1, intercept = 0, colour = "#777777", linetype = 2) +
+  geom_point(colour = "#2171b5", alpha = .3, size = 1.2) +
+  coord_equal() +
+  labs(x = "2SFCA (capacity / demand)",
+       y = "E2SFCA (capacity / demand)")
+```
+
+Points above the line gain accessibility under E2SFCA, while points below it lose accessibility. The maps show where this redistribution occurs; the scatterplot shows why equal means do not imply equal access at each location.
+
+## Hansen Accessibility
+
+Finally, I retain the classroom code's Hansen calculation with `power = 0.5`. In the [SpatialAcc implementation](https://github.com/cran/SpatialAcc/blob/master/R/ac.R), this parameter controls **exponential distance decay**. With the uniform capacity used here, the score is
+
+$$
+A_i^{H} = \sum_j 100\exp(-0.5d_{ij}),
+$$
+
+where $d_{ij}$ is measured in kilometres. All centres contribute, with distant ones receiving progressively smaller weights. This call does not use a hard 5 km cutoff or divide capacity by competing demand, so its score is not on the same scale as 2SFCA or E2SFCA.
+
+```{r}
+#| label: calculate-hansen
+acc_Hansen <- tibble(
+  fid = hexagons$fid,
+  accHansen = as.numeric(SpatialAcc::ac(
+    hexagons$demand, eldercare$capacity, distmat_km,
+    power = 0.5, family = "Hansen"))
+)
+hexagon_Hansen <- left_join(hexagons, acc_Hansen, by = "fid")
+stopifnot(all(is.finite(hexagon_Hansen$accHansen)),
+          all(hexagon_Hansen$accHansen > 0),
+          isTRUE(all.equal(hexagon_Hansen$accHansen,
+                           rowSums(100 * exp(-0.5 * distmat_km)),
+                           check.attributes = FALSE)))
+mapex <- st_bbox(hexagons)
+```
+
+```{r}
+#| label: map-hansen
+#| fig-cap: "Hansen accessibility in ten quantile classes, with eldercare centres in red."
+tm_shape(hexagon_Hansen, bbox = mapex) +
+  tm_polygons(fill = "accHansen", col = NA,
+    fill.scale = tm_scale_intervals(
+      style = "quantile", n = 10, values = "brewer.blues"),
+    fill.legend = tm_legend(title = "Hansen score")) +
+  tm_shape(eldercare) +
+  tm_dots(size = 0.3, fill = "red", col = "black") +
+  tm_title("Accessibility to eldercare: Hansen method") +
+  tm_layout(frame = TRUE) +
+  tm_compass(type = "8star", size = 2) +
+  tm_scalebar() +
+  tm_grid(alpha = 0.2)
+```
+
+Darker blue indicates higher distance-weighted supply. The ten classes describe relative position within the Hansen scores; they do not represent service adequacy thresholds. Hexagons with zero 2SFCA access can still have a positive Hansen score because Hansen includes centres beyond 5 km.
+
+## What I Learned
+
+2SFCA incorporates demand competition within a fixed catchment. E2SFCA keeps that supply-demand structure while giving nearby connections more weight. Hansen measures distance-weighted supply without the same competition adjustment. Choosing a method therefore changes what the accessibility score represents.
+
+These results depend on the supplied network costs, the chosen distance parameters, and the uniform capacity and demand assumptions. The source layers are teaching data, including 2014 planning subzones, so the maps should be read as a method demonstration rather than a current assessment of eldercare provision.
+
+## References
+
+- Lesson 7: *Modelling Geographies of Accessibility*, instructor's slides supplied with this exercise.
+- Instructor's [Exercise 7 data and classroom materials](https://github.com/tskam/ISSS626-AY2026-27Aug/tree/641bd779e733218874a95238aae53d3e3b1d5ecf/In-class_Ex/In-class_Ex07).
+- [`catchment_ratio()` documentation and implementation](https://github.com/uva-bi-sdad/catchment/blob/b96fb58/R/catchment_ratio.R).
+- [`SpatialAcc::ac()` implementation](https://github.com/cran/SpatialAcc/blob/master/R/ac.R).
