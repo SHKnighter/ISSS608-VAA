@@ -1,0 +1,185 @@
+station_id,station_name,point_source,bus_stops_500m,lines_existing,available_existing,attraction_existing,lines_jrl,available_jrl,attraction_jrl,lines_crl,available_crl,attraction_crl,lines_both,available_both,attraction_both,observed_boardings
+ADMIRALTY,Admiralty,LTA footprint union interior point,21,1,TRUE,22,1,TRUE,22,1,TRUE,22,1,TRUE,22,450847
+ALJUNIED,Aljunied,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,200747
+ANG_MO_KIO,Ang Mo Kio,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,2,TRUE,36,2,TRUE,36,346232
+BAKAU,Bakau,LTA footprint union interior point,22,1,TRUE,23,1,TRUE,23,1,TRUE,23,1,TRUE,23,38607
+BANGKIT,Bangkit,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,18663
+BARTLEY,Bartley,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,89008
+BAYFRONT,Bayfront,Professor-linked coordinate library,5,2,TRUE,12,2,TRUE,12,2,TRUE,12,2,TRUE,12,42701
+BAYSHORE,Bayshore,LTA footprint union interior point,6,1,TRUE,7,1,TRUE,7,1,TRUE,7,1,TRUE,7,42712
+BEAUTY_WORLD,Beauty World,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,133051
+BEDOK,Bedok,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,254839
+BEDOK_NORTH,Bedok North,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,97506
+BEDOK_RESERVOIR,Bedok Reservoir,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,127202
+BENCOOLEN,Bencoolen,LTA footprint union interior point,20,1,TRUE,21,1,TRUE,21,1,TRUE,21,1,TRUE,21,28971
+BENDEMEER,Bendemeer,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,21679
+BISHAN,Bishan,LTA footprint union interior point,12,2,TRUE,26,2,TRUE,26,2,TRUE,26,2,TRUE,26,342666
+BOON_KENG,Boon Keng,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,176460
+BOON_LAY,Boon Lay,LTA footprint union interior point,14,1,TRUE,15,2,TRUE,30,1,TRUE,15,2,TRUE,30,346906
+BOTANIC_GARDENS,Botanic Gardens,LTA footprint union interior point,8,2,TRUE,18,2,TRUE,18,2,TRUE,18,2,TRUE,18,35191
+BRADDELL,Braddell,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,132797
+BRAS_BASAH,Bras Basah,LTA footprint union interior point,24,1,TRUE,25,1,TRUE,25,1,TRUE,25,1,TRUE,25,6137
+BRIGHT_HILL,Bright Hill,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,2,TRUE,20,2,TRUE,20,53949
+BUANGKOK,Buangkok,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,284403
+BUGIS,Bugis,LTA footprint union interior point,29,2,TRUE,60,2,TRUE,60,2,TRUE,60,2,TRUE,60,96801
+BUKIT_BATOK,Bukit Batok,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,272831
+BUKIT_GOMBAK,Bukit Gombak,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,218947
+BUKIT_PANJANG,Bukit Panjang,LTA footprint union interior point,24,2,TRUE,50,2,TRUE,50,2,TRUE,50,2,TRUE,50,423128
+BUONA_VISTA,Buona Vista,LTA footprint union interior point,15,2,TRUE,32,2,TRUE,32,2,TRUE,32,2,TRUE,32,95636
+CALDECOTT,Caldecott,LTA footprint union interior point,17,2,TRUE,36,2,TRUE,36,2,TRUE,36,2,TRUE,36,79747
+CANBERRA,Canberra,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,259868
+CANTONMENT,Cantonment,LTA footprint union interior point,8,1,TRUE,9,1,TRUE,9,1,TRUE,9,1,TRUE,9,17735
+CASHEW,Cashew,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,23885
+CHANGI_AIRPORT,Changi Airport,LTA footprint union interior point,3,1,TRUE,4,1,TRUE,4,1,TRUE,4,1,TRUE,4,55679
+CHENG_LIM,Cheng Lim,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,15732
+CHINATOWN,Chinatown,LTA footprint union interior point,16,2,TRUE,34,2,TRUE,34,2,TRUE,34,2,TRUE,34,80629
+CHINESE_GARDEN,Chinese Garden,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,180210
+CHOA_CHU_KANG,Choa Chu Kang,LTA footprint union interior point,17,2,TRUE,36,3,TRUE,54,2,TRUE,36,3,TRUE,54,319539
+CITY_HALL,City Hall,Professor-linked coordinate library,21,2,TRUE,44,2,TRUE,44,2,TRUE,44,2,TRUE,44,32958
+CLARKE_QUAY,Clarke Quay,LTA footprint union interior point,20,1,TRUE,21,1,TRUE,21,1,TRUE,21,1,TRUE,21,15024
+CLEMENTI,Clementi,LTA footprint union interior point,21,1,TRUE,22,1,TRUE,22,1,TRUE,22,1,TRUE,22,332046
+COMMONWEALTH,Commonwealth,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,98980
+COMPASSVALE,Compassvale,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,43853
+CORAL_EDGE,Coral Edge,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,54656
+COVE,Cove,LTA footprint union interior point,18,1,TRUE,19,1,TRUE,19,1,TRUE,19,1,TRUE,19,39832
+DAKOTA,Dakota,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,65471
+DAMAI,Damai,LTA footprint union interior point,19,1,TRUE,20,1,TRUE,20,1,TRUE,20,1,TRUE,20,42068
+DHOBY_GHAUT,Dhoby Ghaut,LTA footprint union interior point,9,3,TRUE,30,3,TRUE,30,3,TRUE,30,3,TRUE,30,63198
+DOVER,Dover,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,46083
+DOWNTOWN,Downtown,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,13653
+ESPLANADE,Esplanade,LTA footprint union interior point,20,1,TRUE,21,1,TRUE,21,1,TRUE,21,1,TRUE,21,4559
+EUNOS,Eunos,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,131500
+EXPO,Expo,LTA footprint union interior point,14,2,TRUE,30,2,TRUE,30,2,TRUE,30,2,TRUE,30,12958
+FAJAR,Fajar,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,33499
+FARMWAY,Farmway,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,34586
+FARRER_PARK,Farrer Park,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,143786
+FARRER_ROAD,Farrer Road,LTA footprint union interior point,6,1,TRUE,7,1,TRUE,7,1,TRUE,7,1,TRUE,7,45085
+FERNVALE,Fernvale,LTA footprint union interior point,18,1,TRUE,19,1,TRUE,19,1,TRUE,19,1,TRUE,19,50893
+FORT_CANNING,Fort Canning,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,29336
+GARDENS_BY_THE_BAY,Gardens by the Bay,LTA footprint union interior point,5,1,TRUE,6,1,TRUE,6,1,TRUE,6,1,TRUE,6,1399
+GEYLANG_BAHRU,Geylang Bahru,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,54424
+GREAT_WORLD,Great World,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,52759
+GUL_CIRCLE,Gul Circle,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,10835
+HARBOURFRONT,HarbourFront,LTA footprint union interior point,5,2,TRUE,12,2,TRUE,12,2,TRUE,12,2,TRUE,12,83230
+HAVELOCK,Havelock,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,48017
+HAW_PAR_VILLA,Haw Par Villa,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,42816
+HILLVIEW,Hillview,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,76164
+HOLLAND_VILLAGE,Holland Village,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,47263
+HOUGANG,Hougang,LTA footprint union interior point,19,1,TRUE,20,1,TRUE,20,2,TRUE,40,2,TRUE,40,313427
+HUME,Hume,LTA footprint union interior point,6,1,TRUE,7,1,TRUE,7,1,TRUE,7,1,TRUE,7,26569
+JALAN_BESAR,Jalan Besar,LTA footprint union interior point,13,1,TRUE,14,1,TRUE,14,1,TRUE,14,1,TRUE,14,64792
+JELAPANG,Jelapang,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,34648
+JOO_KOON,Joo Koon,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,43810
+JURONG_EAST,Jurong East,Professor-linked coordinate library,18,2,TRUE,38,3,TRUE,57,2,TRUE,38,3,TRUE,57,207756
+KADALOOR,Kadaloor,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,70819
+KAKI_BUKIT,Kaki Bukit,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,106407
+KALLANG,Kallang,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,116518
+KANGKAR,Kangkar,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,36475
+KATONG_PARK,Katong Park,LTA footprint union interior point,8,1,TRUE,9,1,TRUE,9,1,TRUE,9,1,TRUE,9,25239
+KEAT_HONG,Keat Hong,LTA footprint union interior point,18,1,TRUE,19,1,TRUE,19,1,TRUE,19,1,TRUE,19,55190
+KEMBANGAN,Kembangan,LTA footprint union interior point,13,1,TRUE,14,1,TRUE,14,1,TRUE,14,1,TRUE,14,106870
+KENT_RIDGE,Kent Ridge,LTA footprint union interior point,21,1,TRUE,22,1,TRUE,22,1,TRUE,22,1,TRUE,22,32059
+KEPPEL,Keppel,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,1379
+KHATIB,Khatib,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,391918
+KING_ALBERT_PARK,King Albert Park,LTA footprint union interior point,6,1,TRUE,7,1,TRUE,7,1,TRUE,7,1,TRUE,7,43343
+KOVAN,Kovan,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,190870
+KRANJI,Kranji,LTA footprint union interior point,6,1,TRUE,7,1,TRUE,7,1,TRUE,7,1,TRUE,7,263280
+KUPANG,Kupang,LTA footprint union interior point,4,1,TRUE,5,1,TRUE,5,1,TRUE,5,1,TRUE,5,21367
+LABRADOR_PARK,Labrador Park,LTA footprint union interior point,7,1,TRUE,8,1,TRUE,8,1,TRUE,8,1,TRUE,8,6509
+LAKESIDE,Lakeside,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,395032
+LAVENDER,Lavender,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,94054
+LAYAR,Layar,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,14676
+LENTOR,Lentor,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,67701
+LITTLE_INDIA,Little India,LTA footprint union interior point,9,2,TRUE,20,2,TRUE,20,2,TRUE,20,2,TRUE,20,99348
+LORONG_CHUAN,Lorong Chuan,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,61689
+MACPHERSON,MacPherson,LTA footprint union interior point,15,2,TRUE,32,2,TRUE,32,2,TRUE,32,2,TRUE,32,136468
+MARINA_BAY,Marina Bay,LTA footprint union interior point,3,3,TRUE,12,3,TRUE,12,3,TRUE,12,3,TRUE,12,7900
+MARINA_SOUTH_PIER,Marina South Pier,LTA footprint union interior point,2,1,TRUE,3,1,TRUE,3,1,TRUE,3,1,TRUE,3,10124
+MARINE_PARADE,Marine Parade,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,48729
+MARINE_TERRACE,Marine Terrace,LTA footprint union interior point,21,1,TRUE,22,1,TRUE,22,1,TRUE,22,1,TRUE,22,58080
+MARSILING,Marsiling,LTA footprint union interior point,19,1,TRUE,20,1,TRUE,20,1,TRUE,20,1,TRUE,20,222541
+MARYMOUNT,Marymount,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,54939
+MATTAR,Mattar,LTA footprint union interior point,13,1,TRUE,14,1,TRUE,14,1,TRUE,14,1,TRUE,14,39845
+MAXWELL,Maxwell,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,14790
+MAYFLOWER,Mayflower,LTA footprint union interior point,13,1,TRUE,14,1,TRUE,14,1,TRUE,14,1,TRUE,14,146541
+MERIDIAN,Meridian,LTA footprint union interior point,13,1,TRUE,14,1,TRUE,14,1,TRUE,14,1,TRUE,14,60873
+MOUNTBATTEN,Mountbatten,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,46078
+NAPIER,Napier,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,19513
+NEWTON,Newton,LTA footprint union interior point,12,2,TRUE,26,2,TRUE,26,2,TRUE,26,2,TRUE,26,318097
+NIBONG,Nibong,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,28682
+NICOLL_HIGHWAY,Nicoll Highway,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,14228
+NOVENA,Novena,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,95305
+OASIS,Oasis,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,58018
+ONE_NORTH,one-north,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,15005
+ORCHARD,Orchard,LTA footprint union interior point,11,2,TRUE,24,2,TRUE,24,2,TRUE,24,2,TRUE,24,74922
+ORCHARD_BOULEVARD,Orchard Boulevard,LTA footprint union interior point,13,1,TRUE,14,1,TRUE,14,1,TRUE,14,1,TRUE,14,12611
+OUTRAM_PARK,Outram Park,LTA footprint union interior point,17,3,TRUE,54,3,TRUE,54,3,TRUE,54,3,TRUE,54,107453
+PASIR_PANJANG,Pasir Panjang,LTA footprint union interior point,4,1,TRUE,5,1,TRUE,5,1,TRUE,5,1,TRUE,5,24712
+PASIR_RIS,Pasir Ris,LTA footprint union interior point,19,1,TRUE,20,1,TRUE,20,2,TRUE,40,2,TRUE,40,323225
+PAYA_LEBAR,Paya Lebar,LTA footprint union interior point,17,2,TRUE,36,2,TRUE,36,2,TRUE,36,2,TRUE,36,177015
+PENDING,Pending,LTA footprint union interior point,19,1,TRUE,20,1,TRUE,20,1,TRUE,20,1,TRUE,20,13874
+PETIR,Petir,LTA footprint union interior point,22,1,TRUE,23,1,TRUE,23,1,TRUE,23,1,TRUE,23,12480
+PHOENIX,Phoenix,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,17232
+PIONEER,Pioneer,LTA footprint union interior point,23,1,TRUE,24,1,TRUE,24,1,TRUE,24,1,TRUE,24,343631
+POTONG_PASIR,Potong Pasir,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,124420
+PRINCE_EDWARD_ROAD,Prince Edward Road,LTA footprint union interior point,8,1,TRUE,9,1,TRUE,9,1,TRUE,9,1,TRUE,9,4666
+PROMENADE,Promenade,LTA footprint union interior point,12,2,TRUE,26,2,TRUE,26,2,TRUE,26,2,TRUE,26,12418
+PUNGGOL,Punggol,LTA footprint union interior point,16,2,TRUE,34,2,TRUE,34,2,TRUE,34,2,TRUE,34,369583
+PUNGGOL_COAST,Punggol Coast,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,82960
+PUNGGOL_POINT,Punggol Point,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,9906
+QUEENSTOWN,Queenstown,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,163020
+RAFFLES_PLACE,Raffles Place,Professor-linked coordinate library,9,2,TRUE,20,2,TRUE,20,2,TRUE,20,2,TRUE,20,34061
+RANGGUNG,Ranggung,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,28624
+REDHILL,Redhill,LTA footprint union interior point,23,1,TRUE,24,1,TRUE,24,1,TRUE,24,1,TRUE,24,133946
+RENJONG,Renjong,LTA footprint union interior point,21,1,TRUE,22,1,TRUE,22,1,TRUE,22,1,TRUE,22,3814
+RIVIERA,Riviera,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,17758
+ROCHOR,Rochor,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,39235
+RUMBIA,Rumbia,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,65022
+SAMUDERA,Samudera,LTA footprint union interior point,7,1,TRUE,8,1,TRUE,8,1,TRUE,8,1,TRUE,8,35116
+SAM_KEE,Sam Kee,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,3174
+SEGAR,Segar,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,46114
+SEMBAWANG,Sembawang,LTA footprint union interior point,28,1,TRUE,29,1,TRUE,29,1,TRUE,29,1,TRUE,29,431155
+SENGKANG,Sengkang,LTA footprint union interior point,23,2,TRUE,48,2,TRUE,48,2,TRUE,48,2,TRUE,48,444963
+SENJA,Senja,LTA footprint union interior point,24,1,TRUE,25,1,TRUE,25,1,TRUE,25,1,TRUE,25,13382
+SERANGOON,Serangoon,LTA footprint union interior point,20,2,TRUE,42,2,TRUE,42,2,TRUE,42,2,TRUE,42,447272
+SHENTON_WAY,Shenton Way,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,7637
+SIGLAP,Siglap,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,39570
+SIMEI,Simei,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,143925
+SIXTH_AVENUE,Sixth Avenue,LTA footprint union interior point,7,1,TRUE,8,1,TRUE,8,1,TRUE,8,1,TRUE,8,25878
+SOMERSET,Somerset,LTA footprint union interior point,8,1,TRUE,9,1,TRUE,9,1,TRUE,9,1,TRUE,9,42763
+SOO_TECK,Soo Teck,LTA footprint union interior point,18,1,TRUE,19,1,TRUE,19,1,TRUE,19,1,TRUE,19,29316
+SOUTH_VIEW,South View,LTA footprint union interior point,24,1,TRUE,25,1,TRUE,25,1,TRUE,25,1,TRUE,25,39923
+SPRINGLEAF,Springleaf,LTA footprint union interior point,6,1,TRUE,7,1,TRUE,7,1,TRUE,7,1,TRUE,7,34526
+STADIUM,Stadium,LTA footprint union interior point,6,1,TRUE,7,1,TRUE,7,1,TRUE,7,1,TRUE,7,12897
+STEVENS,Stevens,LTA footprint union interior point,11,2,TRUE,24,2,TRUE,24,2,TRUE,24,2,TRUE,24,71576
+SUMANG,Sumang,LTA footprint union interior point,17,1,TRUE,18,1,TRUE,18,1,TRUE,18,1,TRUE,18,19941
+TAI_SENG,Tai Seng,LTA footprint union interior point,11,1,TRUE,12,1,TRUE,12,1,TRUE,12,1,TRUE,12,49940
+TAMPINES,Tampines,LTA footprint union interior point,20,2,TRUE,42,2,TRUE,42,2,TRUE,42,2,TRUE,42,437782
+TAMPINES_EAST,Tampines East,LTA footprint union interior point,22,1,TRUE,23,1,TRUE,23,1,TRUE,23,1,TRUE,23,231256
+TAMPINES_WEST,Tampines West,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,109196
+TANAH_MERAH,Tanah Merah,LTA footprint union interior point,6,1,TRUE,7,1,TRUE,7,1,TRUE,7,1,TRUE,7,139543
+TANJONG_KATONG,Tanjong Katong,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,27331
+TANJONG_PAGAR,Tanjong Pagar,LTA footprint union interior point,18,1,TRUE,19,1,TRUE,19,1,TRUE,19,1,TRUE,19,50299
+TANJONG_RHU,Tanjong Rhu,LTA footprint union interior point,9,1,TRUE,10,1,TRUE,10,1,TRUE,10,1,TRUE,10,24552
+TAN_KAH_KEE,Tan Kah Kee,LTA footprint union interior point,5,1,TRUE,6,1,TRUE,6,1,TRUE,6,1,TRUE,6,26739
+TECK_LEE,Teck Lee,LTA footprint union interior point,5,1,TRUE,6,1,TRUE,6,1,TRUE,6,1,TRUE,6,362
+TECK_WHYE,Teck Whye,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,19851
+TELOK_AYER,Telok Ayer,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,13322
+TELOK_BLANGAH,Telok Blangah,LTA footprint union interior point,13,1,TRUE,14,1,TRUE,14,1,TRUE,14,1,TRUE,14,42809
+THANGGAM,Thanggam,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,33684
+TIONG_BAHRU,Tiong Bahru,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,195956
+TOA_PAYOH,Toa Payoh,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,249713
+TONGKANG,Tongkang,LTA footprint union interior point,13,1,TRUE,14,1,TRUE,14,1,TRUE,14,1,TRUE,14,6223
+TUAS_CRESCENT,Tuas Crescent,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,18063
+TUAS_LINK,Tuas Link,LTA footprint union interior point,8,1,TRUE,9,1,TRUE,9,1,TRUE,9,1,TRUE,9,58494
+TUAS_WEST_ROAD,Tuas West Road,LTA footprint union interior point,15,1,TRUE,16,1,TRUE,16,1,TRUE,16,1,TRUE,16,20662
+UBI,Ubi,LTA footprint union interior point,18,1,TRUE,19,1,TRUE,19,1,TRUE,19,1,TRUE,19,64534
+UPPER_CHANGI,Upper Changi,LTA footprint union interior point,14,1,TRUE,15,1,TRUE,15,1,TRUE,15,1,TRUE,15,44198
+UPPER_THOMSON,Upper Thomson,LTA footprint union interior point,8,1,TRUE,9,1,TRUE,9,1,TRUE,9,1,TRUE,9,57326
+WOODLANDS,Woodlands,LTA footprint union interior point,17,2,TRUE,36,2,TRUE,36,2,TRUE,36,2,TRUE,36,458466
+WOODLANDS_NORTH,Woodlands North,LTA footprint union interior point,4,1,TRUE,5,1,TRUE,5,1,TRUE,5,1,TRUE,5,43456
+WOODLANDS_SOUTH,Woodlands South,LTA footprint union interior point,12,1,TRUE,13,1,TRUE,13,1,TRUE,13,1,TRUE,13,120793
+WOODLEIGH,Woodleigh,LTA footprint union interior point,16,1,TRUE,17,1,TRUE,17,1,TRUE,17,1,TRUE,17,106165
+YEW_TEE,Yew Tee,LTA footprint union interior point,10,1,TRUE,11,1,TRUE,11,1,TRUE,11,1,TRUE,11,330395
+YIO_CHU_KANG,Yio Chu Kang,LTA footprint union interior point,18,1,TRUE,19,1,TRUE,19,1,TRUE,19,1,TRUE,19,115764
+YISHUN,Yishun,LTA footprint union interior point,18,1,TRUE,19,1,TRUE,19,1,TRUE,19,1,TRUE,19,484091

@@ -1,0 +1,58 @@
+[
+  {
+    "filename": "data/raw/train-stations-sep2026.zip",
+    "source": "C:\\Users\\Lenovo\\Downloads\\TrainStation_Sep2026.zip",
+    "sha256": "f6d745bfd3f23af5656f58cbc1cd264e8185f61ec38ac786406a9e2958b2b8f4",
+    "bytes": 256104,
+    "acquired_utc": "2026-11-01T18:47:03.462247+00:00"
+  },
+  {
+    "filename": "data/raw/population-2025.csv",
+    "source": "C:\\Users\\Lenovo\\Downloads\\\u7b2c\u4e8c\u5b66\u671f\\respopagesextod2025\\respopagesextod2025.csv",
+    "sha256": "e6fad37e3804078318527d8ea75d7148fdbe66f30b04447ac9d6f2cf0f8928ce",
+    "bytes": 7142528,
+    "acquired_utc": "2026-11-01T18:47:03.466177+00:00"
+  },
+  {
+    "filename": "data/raw/population-2025-notes.csv",
+    "source": "C:\\Users\\Lenovo\\Downloads\\\u7b2c\u4e8c\u5b66\u671f\\respopagesextod2025\\Notes_respopagesextod2025.csv",
+    "sha256": "b015966671707ec3f7446deaf0abbb2a3e4baa4bc101dbc8d64f033be03ee7bd",
+    "bytes": 713,
+    "acquired_utc": "2026-11-01T18:47:03.461799+00:00"
+  },
+  {
+    "filename": "data/raw/bus-stops-sep2026.zip",
+    "source": "https://datamall.lta.gov.sg/content/dam/datamall/datasets/Geospatial/BusStopLocation_Sep2026.zip",
+    "sha256": "326a42fd3dd0b4c7c7baec94907732091796c6c06f0c6689408ba0917f59f885",
+    "bytes": 251797,
+    "acquired_utc": "2026-11-01T18:47:03.529321+00:00"
+  },
+  {
+    "filename": "data/raw/station-codes.zip",
+    "source": "https://datamall.lta.gov.sg/content/dam/datamall/datasets/Geospatial/Train%20Station%20Codes%20and%20Chinese%20Names.zip",
+    "sha256": "2d518f326e0e76444722caa96e784b5b86f8767652a2f730417294f1b4c4f2b6",
+    "bytes": 16598,
+    "acquired_utc": "2026-11-01T18:47:03.550467+00:00"
+  },
+  {
+    "filename": "data/raw/future-stations.csv",
+    "source": "https://raw.githubusercontent.com/elliotwutingfeng/singapore_train_station_coordinates/9f5972c71db8a529801eee9c527946a45a78e409/future_stations.csv",
+    "sha256": "16f61a996ca6b9d295d3efc751ef93a8fe233a62c18f3c34f86468141ba13b28",
+    "bytes": 3905,
+    "acquired_utc": "2026-11-01T18:47:03.784921+00:00"
+  },
+  {
+    "filename": "data/raw/operational-stations.csv",
+    "source": "https://raw.githubusercontent.com/elliotwutingfeng/singapore_train_station_coordinates/9f5972c71db8a529801eee9c527946a45a78e409/operational_stations.csv",
+    "sha256": "bb3e876ae1ae0e342bf368c691e0db6cfbdb4ca30cdc7321c1698308c1ad6b2c",
+    "bytes": 12508,
+    "acquired_utc": "2026-11-01T18:47:03.787698+00:00"
+  },
+  {
+    "filename": "data/raw/subzones-mp2019.geojson",
+    "source": "https://api-open.data.gov.sg/v1/public/api/datasets/d_8594ae9ff96d0c708bc2af633048edfb/poll-download",
+    "sha256": "77e30aa02b1784b649d9b6f23e3b2ebb825af787de554f3a3fb76bbee3013c42",
+    "bytes": 3180569,
+    "acquired_utc": "2026-11-01T18:47:04.119167+00:00"
+  }
+]

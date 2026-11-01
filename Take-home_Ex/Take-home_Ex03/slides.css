@@ -1,0 +1,15 @@
+.reveal { font-family: Arial, sans-serif; font-size: 26px; color: #223444; }
+.reveal h1 { font-size: 1.65em; color: #164c70; }
+.reveal h2 { font-size: 1.3em; color: #164c70; margin-bottom: 0.65em; }
+.reveal p, .reveal li { line-height: 1.28; }
+.reveal li { margin-bottom: 0.35em; }
+.reveal strong { color: #164c70; }
+.reveal table { font-size: 0.83em; margin: 0.4em 0; }
+.reveal table td, .reveal table th { padding: 0.25em 0.4em; }
+.reveal .columns { gap: 1em; align-items: flex-start; }
+.reveal .map-image { display: block; max-height: 420px; max-width: 100%; object-fit: contain; margin: 0 auto; }
+.reveal .wide-image { display: block; max-height: 405px; max-width: 100%; object-fit: contain; margin: 0 auto; }
+.reveal .source-note { font-size: 17px; line-height: 1.24; color: #526575; margin-top: 0.65em; }
+.reveal .footer { font-size: 14px; }
+.reveal #title-slide { text-align: left; padding-top: 95px; }
+.reveal #title-slide .subtitle { margin-top: 1em; color: #526575; }

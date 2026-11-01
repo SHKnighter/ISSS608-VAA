@@ -1,0 +1,548 @@
+---
+title: "Estimating morning station entries and changing rail market areas"
+subtitle: "Take-home Exercise 3 · ISSS626 Geospatial Analytics and Applications"
+author: "Bao Sihan"
+date: "2026-11-02"
+date-format: "D MMMM YYYY"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    code-summary: "Show R code"
+    fig-width: 10
+    fig-height: 6
+params:
+  recompute: true
+execute:
+  echo: false
+  message: false
+  warning: false
+  error: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+source("R/workflow.R", local = TRUE)
+ensure_ex03_analysis(recompute = isTRUE(params$recompute))
+p <- readRDS("data/processed/public-prepared.rds")
+study <- readRDS("output/huff-study.rds")
+tab <- function(name) read.csv(file.path("output", "tables", paste0(name, ".csv")),
+                               stringsAsFactors = FALSE, check.names = FALSE)
+fig <- function(name) knitr::include_graphics(file.path("output", "figures", paste0(name, ".png")))
+fmt <- function(x, digits = 0) formatC(x, format = "f", digits = digits, big.mark = ",")
+pct <- function(x, digits = 2) paste0(fmt(100 * x, digits), "%")
+station_name <- function(ids) p$stations$station_name[match(ids, p$stations$station_id)]
+audit <- tab("public-data-audit")
+ridership <- tab("ridership-audit")
+metrics <- tab("model-metrics")
+parameters <- tab("model-parameters")
+changes <- tab("scenario-station-changes")
+switches <- tab("scenario-switches")
+validation <- tab("model-validation")
+validation$residual <- validation$predicted - validation$observed
+val_huff <- metrics[metrics$stage == "validation" & metrics$model == "huff", ]
+val_ref <- metrics[metrics$stage == "validation" & metrics$model == "equal_attraction_beta2", ]
+
+# A historical-share reference uses August observations and the same known
+# September total as the spatial validation. Align by physical station ID.
+august <- tab("observed-202608")
+stopifnot(!anyDuplicated(august$station_id), !anyDuplicated(validation$station_id),
+          setequal(august$station_id, validation$station_id))
+august_entries <- august$observed_boardings[match(validation$station_id, august$station_id)]
+persistence_prediction <- august_entries / sum(august_entries) * sum(validation$observed)
+persistence_error <- persistence_prediction - validation$observed
+val_persistence <- data.frame(
+  MAE = mean(abs(persistence_error)), RMSE = sqrt(mean(persistence_error^2)),
+  WAPE = sum(abs(persistence_error)) / sum(validation$observed))
+total_sep <- sum(study$market)
+population_total <- sum(study$population)
+both_switch <- switches[switches$scenario == "both", ]
+new_both <- changes[changes$scenario == "both" & changes$status == "new", ]
+new_both <- new_both[order(-new_both$predicted), ]
+existing_both <- changes[changes$scenario == "both" & changes$status == "existing", ]
+pretty_scenario <- c(existing = "Existing", jrl = "+ JRL", crl = "+ CRL1", both = "+ Both")
+```
+
+[Exercise overview](Take-home_Ex03.qmd) · [Presentation](executive-summary.qmd)
+
+# Overview
+
+This exercise examines how residential demand, station connectivity and access distance can be combined to estimate Singapore's morning MRT/LRT station entries. It then adds the assignment's original 24 Jurong Region Line (JRL) stations and 12 Cross Island Line Phase 1 (CRL1) stations to explore changes in station market areas.
+
+The fitted Huff model improves on an equal-attraction, inverse-square reference: September conditional validation WAPE falls from `r pct(val_ref$WAPE)` to `r pct(val_huff$WAPE)`. A reference that retains August's observed station shares performs much better, with `r pct(val_persistence$WAPE)` WAPE. The spatial model therefore has limited value for next-month prediction at existing stations. I use it to explore conditional redistribution when new stations have no observed history, with substantial uncertainty in individual station estimates.
+
+With both lines included, the dominant modelled station changes for subzones containing `r fmt(both_switch$switched_population)` residents, or `r pct(both_switch$population_share)` of the residential population. This is a population-based indication of changing market areas. It is not an observed passenger count. All scenarios retain September's `r fmt(total_sep)` monthly weekday morning entries, so their results describe allocation within a fixed market.
+
+The analysis addresses three questions:
+
+1. How well can a common-parameter Huff model reproduce the distribution of existing station entries?
+2. Which proposed stations receive the largest allocations, and which existing stations gain or lose modelled entries?
+3. Where do dominant station market areas change, and how sensitive are these findings to the distance assumption?
+
+# Data and study definition
+
+## What counts as a morning entry?
+
+The response is a **monthly total of weekday tap-ins during 06:00–09:59**, selected with `DAY_TYPE == "WEEKDAY"` and `TIME_PER_HOUR %in% 6:9`. It covers MRT and LRT stations. These numbers are neither average weekday volumes nor four-hour totals for a single day. Station entries also differ from transfers within the paid rail network and from passenger loads on individual lines.
+
+I use August 2026 for calibration and September 2026 for temporal validation. After validation, I refit the same specification to September to produce the existing-network baseline and the expansion scenarios. The known September network total is used in validation; therefore, the test concerns station shares conditional on that total.
+
+## Sources and preparation
+
+| Input | Version and unit | Use in this exercise |
+|:--|:--|:--|
+| SingStat resident population | June 2025; age, sex and dwelling categories by MP2019 subzone | Sum categories to obtain residential market weights |
+| URA no-sea subzones | MP2019 geography; 332 polygons | Origin geography and map context |
+| LTA station footprints | September 2026; polygons identified by station codes | Derive station representative points where available |
+| Professor-linked station coordinate library | Pinned GitHub commit `9f5972c71db8a529801eee9c527946a45a78e409` | Supplement coordinates and select the JRL24/CRL1 targets |
+| LTA bus stops | September 2026; operational stop points | Count unique stops within 500 m of each station |
+| LTA DataMall PV train data | August and September 2026; station/hour/day-type totals | Direct observed tap-in response |
+| LTA DataMall OD train data | Same months; origin–destination/hour/day-type totals | Independent origin-sum and roster checks |
+
+Population is supplied in rounded categories, so the sum of `r fmt(population_total)` residents should not be treated as an exact census count. I preserve the supplied June 2025 vintage rather than combine different population years. The boundary source is the [official URA MP2019 dataset](https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view); the coordinate library is retained at a [fixed commit](https://github.com/elliotwutingfeng/singapore_train_station_coordinates/tree/9f5972c71db8a529801eee9c527946a45a78e409).
+
+`01-prepare-public.R` checks category keys, sums population, normalises planning-area/subzone names and joins to the boundaries. All positive-population records match. Of 332 subzones, `r nrow(p$origins)` have positive population and enter the model; the remaining subzones remain on maps as context. A zero-resident subzone does not establish zero rail demand: work, education and other nonresidential activities are outside this origin specification.
+
+All spatial layers are transformed to **SVY21 / Singapore TM, EPSG:3414**, which gives distances in metres. `st_point_on_surface()` places each origin within its subzone. Station points are taken from the union of matching LTA footprint polygons where possible; otherwise, the pinned coordinate library supplies the point. `st_distance()` then gives straight-line origin–station distances. This avoids angular distance calculations, but does not represent actual walking routes or barriers.
+
+## Reconcile physical stations before modelling
+
+The unit of analysis is a **physical station**, including a whole interchange. Line codes are retained in a crosswalk but do not become competing copies of the same station. The current network contains `r sum(p$stations$available_existing)` physical stations. The monthly data contain 185 reported code units because Stevens is separately reported as DT10 and TE11; their entries are summed once into the same physical station. Slash-combined interchange codes are normalised before matching.
+
+The pinned coordinate CSV has older operational labels. I add Keppel, Cantonment and Prince Edward Road to the baseline: they opened on 12 July 2026 and occur in both months' actual data. CC33/CC34 are mapped to Marina Bay/Bayfront, with older CE2/CE1 retained as aliases. LTA's [CCL6 page](https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/circle_line_6.html) and [Art in Transit labels](https://www.lta.gov.sg/content/ltagov/en/getting_around/public_transport/a_better_public_transport_experience/art_in_public_transport/art_in_transit.html) support these corrections. TE30, TE31, DT36 and DT37 do not occur in either monthly dataset; I do not create zero observations for them from a target opening year.
+
+The two monthly rosters match all 184 baseline physical stations with no unresolved mappings or missing morning code-hour records. An independent read of the original archives also found no missing or negative volume values. This reconciliation matters because duplicated interchanges would distort both observed shares and the Huff denominator.
+
+## PV tap-ins and OD origin totals differ
+
+The [DataMall API Guide](https://datamall.lta.gov.sg/content/dam/datamall/datasets/LTA_DataMall_API_User_Guide.pdf), version 6.11 dated 30 October 2026, distinguishes station tap-ins/tap-outs from OD trip totals. I retain both measures instead of assuming they must be identical.
+
+```{r}
+#| label: tbl-ridership-audit
+#| tbl-cap: "The observed response uses direct station tap-ins; the OD difference remains visible."
+knitr::kable(row.names = FALSE, data.frame(
+  Month = ridership$month,
+  `PV tap-ins` = fmt(ridership$weekday_0600_0959_monthly_entries),
+  `OD origin trips` = fmt(ridership$od_origin_trips),
+  `PV minus OD` = fmt(-ridership$od_minus_pv),
+  `Gap / PV` = pct(-ridership$od_relative_difference, 3),
+  check.names = FALSE), align = c("l", "r", "r", "r", "r"))
+```
+
+The gap persists after code reconciliation. The relevant guide sections do not state a suppression, rounding or processing rule that explains it, so I do not assign a cause. Because the requested response is entries, **direct PV `TOTAL_TAP_IN_VOLUME` controls `observed_boardings`**. OD origin sums provide a diagnostic and are not rescaled to force equality. The data preparation stops on unresolved stations or missing required inputs rather than silently replacing them with zeros.
+
+```{r}
+#| label: fig-study-area
+#| fig-cap: "Study population, current physical stations and the assignment's proposed line stations."
+#| fig-alt: "Population by MP2019 subzone with current station circles and proposed JRL and CRL station markers."
+#| out-width: "100%"
+fig("01-study-area")
+```
+
+The populated residential subzones define the origins of this model. The proposed JRL locations concentrate in the west, while CRL1 extends through the northeast and east. Some proposed markers coincide with existing stations because they add interchange lines. The 36 line-station targets add **29 distinct physical alternatives**: 21 under JRL and eight under CRL1. Seven enlarge existing interchanges. This distinction is important when interpreting a denser network: adding a line at an interchange changes its connectivity index without creating a second competing physical station.
+
+# Constructing the interaction data
+
+## Origins and market potential
+
+For origin subzone $i$, resident population $N_i$ gives the market weight. For month $m$, total observed network entries $T_m$ give the scale:
+
+$$
+M_{im}=T_m\frac{N_i}{\sum_i N_i}.
+$$
+
+`M` is a modelled local market potential measured in monthly entry equivalents. It assumes the same morning rail-entry propensity per resident in every populated subzone. It does not imply that all recorded entries originate at residents' homes, or that each resident makes the same number of trips. This simple residential allocation is a major limitation, especially for employment and school areas.
+
+```{r}
+#| label: origin-market-example
+#| echo: true
+#| code-summary: "Construct the September residential market"
+origin_frame <- tab("origins")
+stopifnot(!anyDuplicated(origin_frame$origin_id))
+stopifnot(abs(sum(origin_frame$market_potential) - total_sep) < 1e-6)
+knitr::kable(row.names = FALSE, data.frame(
+  Subzone = p$origins$SUBZONE_N[match(head(origin_frame$origin_id, 5), p$origins$origin_id)],
+  Residents = fmt(head(origin_frame$population, 5)),
+  `Market potential` = fmt(head(origin_frame$market_potential, 5), 1),
+  check.names = FALSE), align = c("l", "r", "r"))
+```
+
+## Destinations, attraction and observed entries
+
+Each destination contains its physical ID, point, number of nearby bus stops, number of distinct rail lines and observed September entries. Its independent attraction index in scenario $s$ is
+
+$$
+A_{js}=(1+B_j)L_{js},
+$$
+
+where $B_j$ is the number of unique operational bus stops within 500 m and $L_{js}$ is the number of distinct lines at the station. The added one ensures a station with no nearby bus stops still has positive attraction. All `r audit$value[audit$measure == "operational_bus_stops"]` supplied stops pass the operational-status and unique-ID checks. A stop counts once even if it serves several services.
+
+Bus-stop proximity is a rough feeder-access proxy, and line count represents interchange opportunities. Neither measures service frequency, destinations reachable, station capacity or the quality of walking connections. Crucially, observed station entries are the **calibration response**, not an input to $A_j$; using them as attraction would make the fit circular. For future scenarios, bus stops remain as observed in September 2026 and line counts change when JRL/CRL1 is added.
+
+## Existing and expanded spatial interaction frames
+
+The complete origin–station product is retained, rather than truncating choices at a radius. This gives 44,344 existing pairs (241 × 184) and 51,333 expanded pairs (241 × 213). The frame columns are `origin_id`, `station_id`, `distance_m` and `attraction`; market potential joins by origin ID and observed entries join by physical station ID. JRL-only and CRL-only calculations select their respective available destinations from the same distance matrix.
+
+The full [origin frame](output/tables/origins.csv), [destination frame with observations](output/tables/destinations.csv), [existing interaction frame](output/tables/si-existing.csv) and [expanded interaction frame](output/tables/si-expanded.csv) are available for inspection. Keeping both IDs on every pair makes row ordering less likely to cause an unnoticed allocation error.
+
+```{r}
+#| label: fig-observed
+#| fig-cap: "Observed September 2026 weekday 06:00–09:59 station tap-ins. Circle area represents monthly entries."
+#| fig-alt: "Map of direct September station tap-ins, with the five highest observed stations labelled."
+#| out-width: "100%"
+fig("02-observed")
+```
+
+Observed entries vary considerably across the network. The largest stations provide important tests for a model calibrated to aggregate shares, but a residential map alone cannot explain every high-volume station. The response also includes trips starting near workplaces, schools and other activities. I use this observed pattern as the comparison for calibration and validation, while keeping it separate from the station attraction index. The map describes the existing network in September; later scenario maps describe model outputs and should not be read as new observations.
+
+# Huff model and calibration
+
+## Choice probabilities and station totals
+
+The probability that an entry assigned to origin $i$ uses station $j$ is
+
+$$
+P_{ij}=\frac{A_j^{\gamma}\widetilde d_{ij}^{-\beta}}
+{\sum_{k\in J}A_k^{\gamma}\widetilde d_{ik}^{-\beta}},
+\qquad \widetilde d_{ij}=\max(d_{ij},100\text{ m}),
+$$
+
+and the predicted station total is $\widehat V_j=\sum_i M_iP_{ij}$. $\gamma$ controls the influence of attraction and $\beta$ controls distance decay. Both are **shared across all stations**. The 100 m floor prevents zero or very short representative-point distances from giving extreme or undefined weights. Probabilities sum to one within each origin, so predicted station entries sum to the supplied network total.
+
+This follows the probabilistic market-share structure documented by the [MCI package reference](https://stat.ethz.ch/CRAN/web/packages/MCI/refman/MCI.html). I implement the calculation directly in `model-core.R` to make ID checks, the floor and the optimisation objective explicit. MCI uses a signed distance exponent in some functions; here $\beta>0$ appears with a minus sign in the equation.
+
+## Fitting strategy and reference model
+
+`fit_huff()` minimises squared differences between predicted and observed **station shares**:
+
+$$
+\underset{0\leq\gamma\leq3,\;0.5\leq\beta\leq6}{\operatorname{minimise}}
+\sum_j\left(\frac{\widehat V_j}{T}-\frac{V_j}{T}\right)^2.
+$$
+
+The bounds restrict the search to nonnegative attraction effects and decreasing distance weights. `optim(method = "L-BFGS-B")` runs from nine combinations of $\gamma\in\{0.5,1,2\}$ and $\beta\in\{1,2,4\}$; the converged solution with the smallest objective is retained. Log weights are centred within each origin before exponentiation to avoid numerical overflow. The reference gives every station equal attraction and uses $\beta=2$, so it tests whether the fitted attraction specification improves a simple distance-only allocation.
+
+The sequence separates fitting from evaluation: fit August shares, apply August parameters to September with September's known total, then refit September for scenario analysis. No future station observations are used.
+
+```{r}
+#| label: tbl-parameters
+#| tbl-cap: "Estimated common parameters; each month's nine starts converged."
+knitr::kable(row.names = FALSE, data.frame(
+  Fit = c("August calibration", "September final refit"),
+  Gamma = fmt(parameters$gamma, 4),
+  Beta = fmt(parameters$beta, 4),
+  `Share SSE` = fmt(parameters$objective, 7),
+  check.names = FALSE), align = c("l", "r", "r", "r"))
+```
+
+The estimates are close across the two months and lie inside the parameter bounds. At the September estimate, doubling attraction multiplies an unnormalised station weight by approximately `r fmt(2 ^ study$fits$september$gamma, 2)`; doubling distance above the floor multiplies it by approximately `r fmt(2 ^ (-study$fits$september$beta), 2)`. The final probability also depends on competing stations. All 18 optimisation runs converge to nearly identical solutions, which supports numerical stability for these starts. It does not establish behavioural causality, global identification or high forecasting accuracy.
+
+# Validation and existing station estimates
+
+## Conditional validation: spatial and historical-share references
+
+I report MAE and RMSE in entries per physical station, and WAPE as total absolute station error divided by observed network entries. RMSE gives greater weight to large errors. WAPE is an error measure, not an accuracy percentage.
+
+In addition to the distance-only reference, I check whether the spatial model improves on retaining each existing station's August share. For physical station $j$, this historical-share prediction is
+
+$$
+\widehat V_{j,\mathrm{history}}=T_{\mathrm{Sep}}\frac{V_{j,\mathrm{Aug}}}{T_{\mathrm{Aug}}}.
+$$
+
+The calculation matches stations by physical ID and uses no September station shares. Like the spatial validation, it uses the known September network total, so all three comparisons assess conditional station allocation. This reference provides a useful test of short-term prediction at existing stations; it cannot assign shares to stations that have not opened.
+
+```{r}
+#| label: tbl-model-performance
+#| tbl-cap: "Calibration, conditional validation with two references, and final in-sample fit. All volumes are monthly morning entries."
+performance <- rbind(metrics[1:3, c("MAE", "RMSE", "WAPE")], val_persistence,
+                     metrics[4, c("MAE", "RMSE", "WAPE")])
+knitr::kable(row.names = FALSE, data.frame(
+  Evaluation = c("August fit", "September: August parameters", "September: distance-only reference",
+                 "September: August-share reference", "September refit"),
+  MAE = fmt(performance$MAE), RMSE = fmt(performance$RMSE), WAPE = pct(performance$WAPE),
+  check.names = FALSE), align = c("l", "r", "r", "r"))
+```
+
+```{r}
+#| label: fig-validation
+#| fig-cap: "Comparison of the two spatial allocations in September validation. The performance table also includes the historical-share reference."
+#| fig-alt: "Observed versus predicted September station entries and model error comparisons for Huff and the reference."
+#| out-width: "100%"
+fig("03-validation")
+```
+
+The fitted model reduces September WAPE by `r fmt(100 * (val_ref$WAPE - val_huff$WAPE), 2)` percentage points relative to the distance-only reference. Its `r pct(val_huff$WAPE)` WAPE is nevertheless much worse than the August-share reference's `r pct(val_persistence$WAPE)`. Existing station shares are stable across these adjacent months. The model's local errors and the small improvement after September refitting point to limitations in its origin/access specification. Future station allocations should be treated as planning hypotheses requiring stronger validation.
+
+## Large residuals expose limitations of the residential proxy
+
+Residuals are prediction minus observation. Positive values indicate overprediction and negative values indicate underprediction. The largest errors are useful diagnostics because a reasonable network total can hide very poor local allocations.
+
+```{r}
+#| label: tbl-largest-errors
+#| tbl-cap: "Six largest absolute September validation residuals."
+largest_errors <- validation[order(-abs(validation$residual)), ][1:6, ]
+knitr::kable(row.names = FALSE, data.frame(
+  Station = station_name(largest_errors$station_id),
+  Observed = fmt(largest_errors$observed), Predicted = fmt(largest_errors$predicted),
+  Residual = fmt(largest_errors$residual), check.names = FALSE),
+  align = c("l", "r", "r", "r"))
+```
+
+```{r}
+#| label: fig-residuals
+#| fig-cap: "September validation residuals. Orange denotes overprediction and blue denotes underprediction; area represents absolute error."
+#| fig-alt: "Map of positive and negative validation errors at current stations."
+#| out-width: "100%"
+fig("04-residuals")
+```
+
+Tampines East and several LRT stations are strongly overpredicted, while Kranji, Newton and Punggol are among the underpredicted stations. A whole subzone's population can be concentrated near one station by its representative point. Missing employment origins, access barriers, feeder services and differences between MRT and LRT may also contribute. These are possible explanations, rather than causes established by the map. The model has no evidence that can separate their effects. The large local errors should remain in view when interpreting the proposed-station rankings.
+
+## Final current-network estimates
+
+The September refit supplies the baseline used in all scenario comparisons. The following table shows its eight largest station allocations alongside observations. Complete station estimates and subsequent changes are retained in the [station scenario table](output/tables/scenario-station-changes.csv), while the [validation table](output/tables/model-validation.csv) preserves the independent-period comparison.
+
+```{r}
+#| label: tbl-current-estimates
+#| tbl-cap: "Largest current-network model allocations after the September refit."
+current <- changes[changes$scenario == "existing", ]
+current <- current[order(-current$predicted), ][1:8, ]
+obs_sep <- tab("observed-202609")
+knitr::kable(row.names = FALSE, data.frame(
+  Station = station_name(current$station_id),
+  `September observed` = fmt(obs_sep$observed_boardings[match(current$station_id, obs_sep$station_id)]),
+  `September refit` = fmt(current$predicted), check.names = FALSE),
+  align = c("l", "r", "r"))
+```
+
+Tampines East leads the model ranking despite its large positive residual. Thus, a high allocation indicates what this residential-access specification produces; it does not independently establish unmet real demand or an investment priority.
+
+# Adding JRL and CRL1
+
+## Scenario design
+
+The four scenarios are the existing network, existing + JRL24, existing + CRL1, and existing + both. The JRL selection is JS1–JS12, JE1–JE7 and JW1–JW5; it excludes the later JS2A Forest Hill addition. CRL1 is CR2–CR13. The [official JRL information](https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/jurong_region_line.html) and [CRL1 alignment](https://www.lta.gov.sg/content/dam/ltagov/news/press/2023/230118_CRL1_alignment_map_AnnexA.pdf) distinguish the assignment's line stations from genuinely new physical stations.
+
+I freeze the September parameters, residential markets and bus-stop data. Each scenario changes available stations and distinct line counts, then recalculates every origin's denominator. Existing interchanges remain one physical destination: Choa Chu Kang, Boon Lay and Jurong East gain JRL; Pasir Ris, Hougang, Ang Mo Kio and Bright Hill gain CRL. This gives 184, 205, 192 and 213 physical destinations respectively.
+
+The exercise is a **September-equivalent full-opening comparison**, not a time-sequenced forecast for 2028–2030. It does not estimate future population, new housing, employment, induced trips or a redesigned bus network. Every scenario conserves `r fmt(total_sep)` entries. New stations have no baseline observation, so their baseline, change and percentage-change fields are `NA`.
+
+## Allocations to proposed stations
+
+```{r}
+#| label: fig-new-stations
+#| fig-cap: "All 29 new physical stations in the combined scenario, grouped by proposed line. Values are modelled monthly morning entries."
+#| fig-alt: "Horizontal bars compare combined-scenario allocations to new JRL and CRL physical stations."
+#| out-width: "100%"
+fig("05-new-stations")
+```
+
+In the combined scenario, Pasir Ris East receives about `r fmt(new_both$predicted[1])` monthly entry equivalents, followed by Tampines North and Choa Chu Kang West. These are allocations of the fixed September market under the fitted specification. New stations collectively receive `r fmt(sum(new_both$predicted))` entries, or `r pct(sum(new_both$predicted) / total_sep)` of the network total. Smaller allocations at some industrial or emerging-development locations partly reflect the residential-only origins and frozen 2025 population. They do not establish that those stations will have little future use.
+
+```{r}
+#| label: tbl-new-station-leaders
+#| tbl-cap: "Eight largest new-physical-station allocations, combined scenario."
+top_new <- head(new_both, 8)
+knitr::kable(row.names = FALSE, data.frame(
+  Station = station_name(top_new$station_id),
+  `Monthly entries` = fmt(top_new$predicted),
+  `Network share` = pct(top_new$predicted / total_sep), check.names = FALSE),
+  align = c("l", "r", "r"))
+```
+
+JRL-only and CRL-only results are close to their combined-scenario values in their respective corridors, but are not exactly additive. Competition is recalculated across the whole available choice set. The full estimates for all 36 proposed line stations, including existing interchanges, are provided in Appendix A.
+
+## Existing stations: compare with the model baseline
+
+For an existing station, I calculate $\Delta_j=\widehat V_{j,s}-\widehat V_{j,\mathrm{existing}}$ and $100\Delta_j/\widehat V_{j,\mathrm{existing}}$. The reference is the **September fitted existing network**, not observed September entries. Comparing a scenario directly with observations would mix the expansion effect with the model's existing error.
+
+```{r}
+#| label: fig-existing-change
+#| fig-cap: "Existing physical stations: percentage change under both lines relative to the September fitted existing-network baseline."
+#| fig-alt: "Map of modelled existing station percentage gains and losses in the combined expansion scenario."
+#| out-width: "100%"
+fig("06-existing-change")
+```
+
+Hougang, Ang Mo Kio, Bright Hill and Choa Chu Kang gain allocated entries in the combined scenario. Their additional line raises the attraction index, although greater competition offsets this effect at some other interchanges. Pioneer, Tampines, Lakeside and Chinese Garden have the largest absolute losses. These results follow the model's trade-off between nearby alternatives and interchange attraction. Losses describe redistribution within the fixed total; they do not imply that actual future station entries must fall, because future demand growth is held outside this comparison.
+
+```{r}
+#| label: tbl-existing-changes
+#| tbl-cap: "Largest existing-station gains and losses, combined scenario versus model baseline."
+ranked <- rbind(head(existing_both[order(-existing_both$change), ], 4),
+                head(existing_both[order(existing_both$change), ], 5))
+knitr::kable(row.names = FALSE, data.frame(
+  Station = station_name(ranked$station_id),
+  Baseline = fmt(ranked$baseline), `With both lines` = fmt(ranked$predicted),
+  Change = fmt(ranked$change), `Change (%)` = paste0(fmt(ranked$percent_change, 1), "%"),
+  check.names = FALSE), align = c("l", "r", "r", "r", "r"))
+```
+
+The JRL-only scenario produces a small gain at Choa Chu Kang and substantial reallocation from Pioneer, Lakeside and Chinese Garden. Under CRL1 alone, Hougang, Ang Mo Kio and Bright Hill gain, while Tampines and Tampines East lose. The relatively large percentage gain at Bright Hill starts from a small fitted baseline, so absolute changes should be considered alongside percentages.
+
+## Existing station market areas
+
+A probabilistic market overlaps: every origin can allocate entries to more than one station. For a readable map, I define a subzone's **dominant station** as the station with its largest $P_{ij}$. This assigns one label to the whole subzone and discards the remaining probabilities. It is therefore a summary of the model, not a surveyed catchment boundary or the claim that every resident uses the same station.
+
+```{r}
+#| label: tbl-market-switches
+#| tbl-cap: "Population proxy for changes in dominant station, each compared with the existing-network model."
+s <- switches[switches$scenario != "existing", ]
+new_totals <- vapply(s$scenario, function(z) sum(changes$predicted[changes$scenario == z & changes$status == "new"]), numeric(1))
+knitr::kable(row.names = FALSE, data.frame(
+  Scenario = unname(pretty_scenario[s$scenario]),
+  `Switching subzones` = s$switched_origins,
+  `Residents in those subzones` = fmt(s$switched_population),
+  `Resident share` = pct(s$population_share),
+  `Entries at new stations` = fmt(new_totals), check.names = FALSE),
+  align = c("l", "r", "r", "r", "r"))
+```
+
+```{r}
+#| label: fig-catchment-switches
+#| fig-cap: "Subzones whose dominant modelled station changes under JRL, CRL1 and both lines."
+#| fig-alt: "Three subzone maps highlight dominant station changes and report population proxy totals."
+#| out-width: "100%"
+fig("07-catchment-switches")
+```
+
+JRL changes the dominant station in 11 origins containing `r fmt(s$switched_population[s$scenario == "jrl"])` residents; CRL1 changes ten origins containing `r fmt(s$switched_population[s$scenario == "crl"])`. Together, 21 origins contain `r fmt(both_switch$switched_population)` residents (`r pct(both_switch$population_share)`). The spatial concentration follows the two expansion corridors. These are residents of whole subzones with changed winners, not observed riders switching station, individual switch probabilities or modal shift. Gradual changes in station probabilities can also occur in subzones whose winner stays the same.
+
+# Sensitivity and planning interpretation
+
+## A larger distance floor leaves winners unchanged but moves volumes
+
+I repeat all scenarios with a **250 m** floor while holding September parameters and the network total fixed. This isolates sensitivity to the treatment of very short distances. It does not recalibrate parameters or provide a confidence interval.
+
+```{r}
+#| label: fig-sensitivity
+#| fig-cap: "Combined-scenario station allocations with 100 m and 250 m distance floors; parameters and total entries remain fixed."
+#| fig-alt: "Scatter plot compares combined-network allocations under two minimum distance assumptions with an identity line."
+#| out-width: "100%"
+fig("08-sensitivity")
+```
+
+Dominant-station switch counts and population totals are unchanged under this check. Station volumes are more sensitive: in the combined scenario, half the sum of absolute changes is approximately 381,912 entries, or 2.00% of the fixed market. Some small station allocations change by more than 100%; Coral Edge loses about 96,102 entries while Riviera gains about 19,783. Stable winners therefore do not establish stable volumes. The floor affects the concentration of origin demand among nearby alternatives, especially when one representative point is very close to a station.
+
+```{r}
+#| label: tbl-sensitivity
+#| tbl-cap: "Volume reallocation when the floor changes from 100 m to 250 m, with no parameter refit."
+sensitivity <- tab("sensitivity-station-predictions")
+half_l1 <- vapply(names(pretty_scenario), function(z) {
+  sum(abs(sensitivity$change_from_100m[sensitivity$scenario == z & sensitivity$min_distance_m == 250])) / 2
+}, numeric(1))
+knitr::kable(row.names = FALSE, data.frame(
+  Scenario = unname(pretty_scenario),
+  `Entries reallocated (half L1)` = fmt(half_l1),
+  `Share of total` = pct(half_l1 / total_sep), check.names = FALSE),
+  align = c("l", "r", "r"))
+```
+
+## What this adds to an urban transport discussion
+
+The scenarios identify locations where an expanded network may alter access competition and feeder relationships. The western reallocation around JRL suggests reviewing bus–rail access around both new stations and nearby existing stations. The CRL1 results highlight the dual role of new local access and stronger existing interchanges. These are useful places for more detailed investigation, rather than station-level capacity recommendations supported by this model alone.
+
+For sustainable transport planning, the residential market maps can help frame questions about access and coverage. They cannot determine reductions in car use, emissions or road congestion because competing modes and induced demand are absent. Similarly, a decrease in modelled entries at an existing station may reflect improved nearby access, but this analysis has no passenger welfare or travel-time measure with which to assess that benefit.
+
+## Limitations that change the conclusion
+
+- **Residential demand is incomplete.** June 2025 resident counts omit the location of employment, school, visitor and nonresident trip origins. The same entry propensity is assigned to every resident. Future development around JRL/CRL1 is held fixed.
+- **Subzone points simplify access.** A single interior point may poorly represent a large or irregular subzone. Straight-line distance misses crossings, barriers, entrances, walking time and bus travel time. The distance-floor check demonstrates meaningful local volume sensitivity.
+- **Attraction is a coarse index.** Nearby stop counts and distinct lines omit frequencies, routes served, reliability, station capacity and the MRT/LRT transfer hierarchy. A larger line count mechanically improves attraction; its scenario effect is not a separately estimated causal interchange benefit.
+- **Temporal evidence is narrow.** Two adjacent months offer one conditional holdout. Shared-parameter stability does not establish accuracy during line opening, changing land use or a different travel regime. The final September fit is in-sample.
+- **Network demand is fixed.** All scenarios allocate the observed September total. They cannot forecast total demand in 2030, induced rail use, fare effects, transfers or line loads. No confidence intervals are estimated; the 100/250 m comparison covers only one modelling choice.
+
+The exercise therefore provides a transparent first comparison of station access competition. The Huff allocation improves on a simple spatial reference, but the historical-share reference performs much better at existing stations. More credible forecasts would require finer residential and nonresidential origins, network-based access costs and service information, followed by validation on more periods or an actual network opening. The new-station scenarios remain conditional comparisons rather than validated future forecasts.
+
+# Reproduction and source notes
+
+The report runs from the exercise directory. The YAML parameter `recompute: true` calls `ensure_ex03_analysis()` in `R/workflow.R`, which executes the local preparation, ridership, model and figure stages. It performs no downloads or package installation. Setting `recompute: false` reuses valid saved outputs after cache checks. Raw data must already be present; missing or inconsistent inputs stop the workflow.
+
+```{.powershell}
+# From Take-home_Ex/Take-home_Ex03 after obtaining the documented raw inputs:
+quarto render technical-report.qmd
+quarto render executive-summary.qmd
+quarto render Take-home_Ex03.qmd
+
+# Reuse checked outputs for a prose-only revision:
+quarto render technical-report.qmd -P recompute:false
+```
+
+Acquisition is separate from rendering. `acquire-public.py` verifies or explicitly downloads public inputs, and `acquire-ridership.py` requires authorised LTA DataMall access for the monthly archives. Credentials are not part of the report or source package. Input hashes, source versions, retained originals and code fingerprints document what was used. The nonsecret source and rail-evidence catalogues are under `data/metadata`; local runtime records are under `_workflow`. Raw archives remain local under the recorded source terms.
+
+The main dependencies are R, Quarto, `sf`, `units`, `readr`, `digest`, `jsonlite`, `ggplot2`, `patchwork`, `ggrepel` and `knitr`; `optim()` is supplied by base R's `stats` package. Python is used for acquisition and an independent archive audit, not for the Huff model. The exact R environment used for this rendering appears in Appendix B. Package installation is an explicit environment-setup step rather than a side effect of opening the report.
+
+Primary references used for definitions, geography and scope are:
+
+- [ISSS626 Take-home Exercise 3 brief](https://isss626-ay2026-27aug.netlify.app/take-home_ex03.html), updated 30 October 2026.
+- [LTA DataMall API User Guide](https://datamall.lta.gov.sg/content/dam/datamall/datasets/LTA_DataMall_API_User_Guide.pdf), v6.11, 30 October 2026, sections 2.7–2.8 and Annexes A–B: station and OD volume definitions.
+- [LTA static datasets](https://datamall.lta.gov.sg/content/datamall/en/static-data.html) and [DataMall terms](https://datamall.lta.gov.sg/content/datamall/en/term-of-use.html): station, bus-stop and code data provenance.
+- [SingStat geographic distribution](https://www.singstat.gov.sg/find-data/explore-data-themes/population/geographic-distribution): supplied June 2025 resident data and accompanying rounding notes.
+- [URA MP2019 no-sea subzones](https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view): official origin boundaries.
+- [Pinned station coordinate library](https://github.com/elliotwutingfeng/singapore_train_station_coordinates/tree/9f5972c71db8a529801eee9c527946a45a78e409): supplementary coordinates and proposed station records.
+- [LTA JRL project](https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/jurong_region_line.html), [CRL project](https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/cross_island_line.html) and [CRL1 alignment](https://www.lta.gov.sg/content/dam/ltagov/news/press/2023/230118_CRL1_alignment_map_AnnexA.pdf): scenario scope and interchange evidence.
+- [MCI package reference manual](https://stat.ethz.ch/CRAN/web/packages/MCI/refman/MCI.html): Huff attraction–distance shares and aggregation concepts. The direct implementation used here is reproduced below.
+
+# Appendix A: estimates for every proposed line station {.unnumbered}
+
+The table uses the combined scenario so that all proposed stations share one comparison. Existing interchange rows report the whole physical station's entries, including its existing lines. They are not new-line-only entries. `N/A` marks new physical stations, which have no existing-network baseline from which to calculate a change.
+
+```{r}
+#| label: proposed-estimate-helper
+proposal_estimates <- function(line) {
+  x <- p$proposals[p$proposals$line == line, ]
+  id <- p$crosswalk$station_id[match(x$station_code, p$crosswalk$station_code)]
+  y <- changes[changes$scenario == "both", ]
+  y <- y[match(id, y$station_id), ]
+  data.frame(Code = x$station_code, Station = x$station_name,
+    Unit = ifelse(y$status == "new", "New physical station", "Existing interchange"),
+    `Monthly entries` = fmt(y$predicted),
+    `Change at existing station` = ifelse(is.na(y$change), "N/A", fmt(y$change)),
+    check.names = FALSE)
+}
+```
+
+::: {.callout-note collapse="true" title="JRL: all 24 line stations"}
+
+```{r}
+knitr::kable(row.names = FALSE, proposal_estimates("JRL"), align = c("l", "l", "l", "r", "r"))
+```
+
+:::
+
+::: {.callout-note collapse="true" title="CRL Phase 1: all 12 line stations"}
+
+```{r}
+knitr::kable(row.names = FALSE, proposal_estimates("CRL"), align = c("l", "l", "l", "r", "r"))
+```
+
+:::
+
+# Appendix B: executable source and environment {.unnumbered}
+
+The source is split by purpose. `data-core.R` checks and aggregates source records; `01-prepare-public.R` builds geography and independent attraction features; `02-prepare-ridership.R` aligns observed physical stations and prepares the two interaction frames. `model-core.R` defines probabilities, fitting, evaluation and baseline comparisons; `03-model-scenarios.R` applies these functions consistently across months and scenarios. `04-figures.R` turns the saved results into the eight report figures, and `workflow.R` controls stage execution and reuse. The following listings come from the actual local scripts at render time.
+
+```{r}
+#| label: source-listings
+#| results: asis
+source_files <- c("R/data-core.R", "R/01-prepare-public.R", "R/02-prepare-ridership.R",
+                  "R/model-core.R", "R/03-model-scenarios.R", "R/04-figures.R",
+                  "R/cache-guard.R", "R/workflow.R")
+for (path in source_files) {
+  cat("\n<details><summary>", path, "</summary>\n\n", sep = "")
+  cat("```r\n", paste(readLines(path, warn = FALSE), collapse = "\n"), "\n```\n\n", sep = "")
+  cat("</details>\n")
+}
+```
+
+::: {.callout-note collapse="true" title="R session and installed dependency versions"}
+
+```{r}
+#| label: session-information
+sessionInfo()
+```
+
+:::

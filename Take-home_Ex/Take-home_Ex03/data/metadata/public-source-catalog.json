@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "reference_date": "2026-09",
+  "checked_on": "2026-11-02",
+  "github_commit": "9f5972c71db8a529801eee9c527946a45a78e409",
+  "acquisition_policy": {
+    "public_only": true,
+    "requires_account": false,
+    "network_on_render": false,
+    "preserve_existing_originals": true,
+    "bounded_attempts": 3,
+    "timeout_seconds": 40,
+    "notes": "Only explicitly run R/acquire-public.py --download performs networking; default is offline --verify. No OD/ridership, account key, HDB, or OSM requested or fetched."
+  },
+  "files": [
+    {
+      "filename": "train-stations-sep2026.zip",
+      "sha256": "f6d745bfd3f23af5656f58cbc1cd264e8185f61ec38ac786406a9e2958b2b8f4",
+      "kind": "local-copy",
+      "local_source": "TrainStation_Sep2026.zip",
+      "source_url": "https://datamall.lta.gov.sg/content/dam/datamall/datasets/Geospatial/TrainStation_Sep2026.zip",
+      "version": "LTA static page: September 2026",
+      "license": "LTA DataMall Terms of Use; no blanket SODL assertion for this direct download.",
+      "license_url": "https://datamall.lta.gov.sg/content/datamall/en/term-of-use.html",
+      "notes": "User-supplied local ZIP copied byte-for-byte; public URL recorded as dataset origin, not independently downloaded. 234 station polygon records; STN_NAM is a code, not an English name."
+    },
+    {
+      "filename": "population-2025.csv",
+      "sha256": "e6fad37e3804078318527d8ea75d7148fdbe66f30b04447ac9d6f2cf0f8928ce",
+      "kind": "local-copy",
+      "local_source": "respopagesextod2025/respopagesextod2025.csv",
+      "source_url": "https://www.singstat.gov.sg/find-data/explore-data-themes/population/geographic-distribution",
+      "version": "June 2025; accompanying notes generated 29 September 2025",
+      "license": "Singapore Department of Statistics supplied data; cite SingStat. No license file accompanies local CSV, so no independent open-license claim.",
+      "notes": "100928 rows. 2025 retained deliberately although the current catalogue offers 2026. MP2019 geography, rounded to nearest 10, totals may not add up. PA,SZ,AG,Sex,TOD,Pop,Time."
+    },
+    {
+      "filename": "population-2025-notes.csv",
+      "sha256": "b015966671707ec3f7446deaf0abbb2a3e4baa4bc101dbc8d64f033be03ee7bd",
+      "kind": "local-copy",
+      "local_source": "respopagesextod2025/Notes_respopagesextod2025.csv",
+      "source_url": "https://www.singstat.gov.sg/find-data/explore-data-themes/population/geographic-distribution",
+      "version": "29 September 2025 notes",
+      "license": "See population-2025.csv license note.",
+      "notes": "Local notes copied byte-for-byte."
+    },
+    {
+      "filename": "subzones-mp2019.geojson",
+      "sha256": "77e30aa02b1784b649d9b6f23e3b2ebb825af787de554f3a3fb76bbee3013c42",
+      "kind": "data-gov-poll",
+      "source_url": "https://api-open.data.gov.sg/v1/public/api/datasets/d_8594ae9ff96d0c708bc2af633048edfb/poll-download",
+      "landing_url": "https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view",
+      "version": "MP2019; data from September 2021; portal updated 3 December 2025",
+      "license": "Singapore Open Data Licence 1.0",
+      "license_url": "https://data.gov.sg/open-data-licence",
+      "notes": "Official URA no-sea subzones, 332 features, WGS84 GeoJSON. Download follows temporary public S3 URL; signed URL deliberately not persisted."
+    },
+    {
+      "filename": "bus-stops-sep2026.zip",
+      "sha256": "326a42fd3dd0b4c7c7baec94907732091796c6c06f0c6689408ba0917f59f885",
+      "kind": "public-download",
+      "source_url": "https://datamall.lta.gov.sg/content/dam/datamall/datasets/Geospatial/BusStopLocation_Sep2026.zip",
+      "version": "LTA static page: September 2026",
+      "license": "LTA DataMall Terms of Use; no blanket SODL assertion for this direct download.",
+      "license_url": "https://datamall.lta.gov.sg/content/datamall/en/term-of-use.html",
+      "notes": "5205 SVY21 point records; member BusStopLocation_Sep2026/BusStop.shp. STATUS values and BUS_STOP_N require explicit filtering/uniqueness checks in preparation."
+    },
+    {
+      "filename": "station-codes.zip",
+      "sha256": "2d518f326e0e76444722caa96e784b5b86f8767652a2f730417294f1b4c4f2b6",
+      "kind": "public-download",
+      "source_url": "https://datamall.lta.gov.sg/content/dam/datamall/datasets/Geospatial/Train%20Station%20Codes%20and%20Chinese%20Names.zip",
+      "version": "LTA static page: January 2025",
+      "license": "LTA DataMall Terms of Use; no blanket SODL assertion for this direct download.",
+      "license_url": "https://datamall.lta.gov.sg/content/datamall/en/term-of-use.html",
+      "notes": "Actual archive member is Train Station Codes and Chinese Names.xls, not CSV. Mapping is older than reference month, contains line-code rows and is not evidence of operational status."
+    },
+    {
+      "filename": "future-stations.csv",
+      "sha256": "16f61a996ca6b9d295d3efc751ef93a8fe233a62c18f3c34f86468141ba13b28",
+      "kind": "public-download",
+      "source_url": "https://raw.githubusercontent.com/elliotwutingfeng/singapore_train_station_coordinates/9f5972c71db8a529801eee9c527946a45a78e409/future_stations.csv",
+      "version": "Pinned GitHub commit 9f5972c71db8a529801eee9c527946a45a78e409",
+      "license": "Dataset: Singapore Open Data Licence 1.0 (LICENSE-DATASET.md); repository code separately Apache-2.0.",
+      "license_url": "https://github.com/elliotwutingfeng/singapore_train_station_coordinates/blob/9f5972c71db8a529801eee9c527946a45a78e409/LICENSE-DATASET.md",
+      "github_blob_sha": "98966b055e6e8ac69e9cdbb80158253db6e18c9e",
+      "notes": "65 code rows; inspected first through GitHub connector; saved exact pinned raw bytes. Includes JS2A, CRL2 and other projects outside assignment. CC30/31/32 stale future labels require override using official opening evidence."
+    },
+    {
+      "filename": "operational-stations.csv",
+      "sha256": "bb3e876ae1ae0e342bf368c691e0db6cfbdb4ca30cdc7321c1698308c1ad6b2c",
+      "kind": "public-download",
+      "source_url": "https://raw.githubusercontent.com/elliotwutingfeng/singapore_train_station_coordinates/9f5972c71db8a529801eee9c527946a45a78e409/operational_stations.csv",
+      "version": "Pinned GitHub commit 9f5972c71db8a529801eee9c527946a45a78e409",
+      "license": "Dataset: Singapore Open Data Licence 1.0 (LICENSE-DATASET.md); repository code separately Apache-2.0.",
+      "license_url": "https://github.com/elliotwutingfeng/singapore_train_station_coordinates/blob/9f5972c71db8a529801eee9c527946a45a78e409/LICENSE-DATASET.md",
+      "github_blob_sha": "f0d0eefdedd4584be120786cdb9b5d67eedf120d",
+      "notes": "213 code rows, not unique physical stations. Includes NE18, DT4, PW2; excludes BP14. Not an authoritative September 2026 operational roster; misses opened CCL6 code rows."
+    },
+    {
+      "filename": "station-codes.xls",
+      "sha256": "0a653a62a312da15064571aa8345310b95f53817188fb67add216d91d8dec02b",
+      "kind": "zip-member",
+      "parent": "station-codes.zip",
+      "member": "Train Station Codes and Chinese Names.xls",
+      "version": "Unmodified extracted January 2025 XLS",
+      "license": "Same as station-codes.zip.",
+      "notes": "Extract only this named archive member without unpacking arbitrary paths."
+    },
+    {
+      "filename": "station-codes.csv",
+      "sha256": "6a97bece2b46b928ffd11022f930360048b30c4e7e98bc0feeb28499dd144c8f",
+      "kind": "xls-to-csv",
+      "parent": "station-codes.xls",
+      "version": "Derived from original XLS using R readxl; UTF-8, LF newlines",
+      "license": "Same as station-codes.zip.",
+      "notes": "213 rows, 5 columns. R C locale emits <U+...> instead of Chinese; script sets UTF-8 locale and rejects that corruption. stn_code,mrt_station_english,mrt_station_chinese,mrt_line_english,mrt_line_chinese."
+    }
+  ],
+  "sources": [
+    {
+      "id": "assignment",
+      "url": "https://isss626-ay2026-27aug.netlify.app/take-home_ex03.html",
+      "description": "Professor's exercise requirements; 24 JRL plus 12 CRL Phase 1 scope."
+    },
+    {
+      "id": "lta-static",
+      "url": "https://datamall.lta.gov.sg/content/datamall/en/static-data.html",
+      "description": "Static page last updated 21 October 2026; bus stops/train station September 2026; names mapping January 2025."
+    },
+    {
+      "id": "lta-terms",
+      "url": "https://datamall.lta.gov.sg/content/datamall/en/term-of-use.html",
+      "description": "Direct LTA DataMall terms recorded; generic site terms describe personal/non-commercial use and copyright restrictions. These raw files are retained locally for coursework review."
+    },
+    {
+      "id": "ura-dataset",
+      "url": "https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view",
+      "description": "URA MP2019 no-sea subzones, September 2021 vintage, last portal update 3 December 2025."
+    },
+    {
+      "id": "sodl",
+      "url": "https://data.gov.sg/open-data-licence",
+      "description": "Singapore Open Data Licence governing the portal dataset."
+    },
+    {
+      "id": "jrl",
+      "url": "https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/jurong_region_line.html",
+      "description": "Updated 17 March 2026; current 25 includes later JS2A; original 24 and three existing-network interchanges."
+    },
+    {
+      "id": "rail-2026",
+      "url": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2026/3/news-releases/next-phase-of-rail-development.html",
+      "description": "4 March 2026: JRL1 revised to mid-2028; JS2A mid-2030s; CRL1 2030."
+    },
+    {
+      "id": "jrl-original-map",
+      "url": "https://file.go.gov.sg/jrlnewsletter2025.pdf",
+      "description": "Official 2025 JRL newsletter, original 24 working station names/codes; timeline superseded by 2026 update."
+    },
+    {
+      "id": "crl1-map",
+      "url": "https://www.lta.gov.sg/content/dam/ltagov/news/press/2023/230118_CRL1_alignment_map_AnnexA.pdf",
+      "description": "18 January 2023 official CRL1 alignment: CR2-CR13, 12 stations, four existing-network interchanges."
+    },
+    {
+      "id": "crl",
+      "url": "https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/cross_island_line.html",
+      "description": "CRL1 2030 opening target."
+    },
+    {
+      "id": "ccl6",
+      "url": "https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/circle_line_6.html",
+      "description": "Updated 3 September 2026; Keppel/Cantonment/Prince Edward Road opened 12 July 2026."
+    },
+    {
+      "id": "tel",
+      "url": "https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/thomson_east_coast_line.html",
+      "description": "Updated 7 July 2026; TEL4 seven opened stations 23 June 2024; TE10/TE21/TE22A deferred; TEL5 scheduled 2026 but actual opening unverified in bounded check."
+    },
+    {
+      "id": "hume",
+      "url": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/1/news-releases/hume_station_to_open.html",
+      "description": "Hume DT4 opened 28 February 2025."
+    },
+    {
+      "id": "punggol-coast",
+      "url": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2024/10/news-releases/punggol_coast_station_to_open_for_passenger_service.html",
+      "description": "Punggol Coast NE18 opened 10 December 2024."
+    },
+    {
+      "id": "teck-lee",
+      "url": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2024/7/news-releases/Teck_Lee_LRT_station_to_start_operations.html",
+      "description": "Teck Lee PW2 opened 15 August 2024."
+    },
+    {
+      "id": "bp14-closure",
+      "url": "https://www.lta.gov.sg/content/dam/ltagov/news/press/2018/20181212_BPLRT_train_timings_AnnexA.pdf",
+      "description": "Official timetable from 13 January 2019: Ten Mile Junction Service C permanently closed."
+    },
+    {
+      "id": "github-commit",
+      "url": "https://api.github.com/repos/elliotwutingfeng/singapore_train_station_coordinates/commits/9f5972c71db8a529801eee9c527946a45a78e409",
+      "description": "Pinned commit metadata; main was resolved through public GitHub API after connector file inspection."
+    },
+    {
+      "id": "bp14-closure-smrt",
+      "url": "https://www.smrt.com.sg/getmedia/fb89c6fd-e872-4ddb-8aa2-244869762cd7/bplrt-jan19-annex-a-revised.pdf",
+      "description": "Official operator timetable confirms permanent Service C closure from 13 January 2019; fallback after direct LTA PDF acquisition returned 404."
+    }
+  ],
+  "limitations": [
+    "Historical public-input acquisition stage only: monthly train OD and station-volume archives had not yet been acquired by this public downloader, which uses no LTA AccountKey. Passenger acquisition and final monthly reconciliation are separate; see data/README.md and output/tables/ridership-audit.csv for the completed analysis status.",
+    "Direct public fetch with Python's default user agent initially returned 403; ordinary Mozilla/5.0 user agent succeeded. No authentication bypass or session/account access used.",
+    "data.gov.sg public poll-download endpoint returns an expiring public S3 URL; only stable API/landing URLs and downloaded content hash are retained.",
+    "SingStat current page catalogue was discoverable in search, but body fetch was unreadable/challenge content; population data and notes are user-provided originals, not independently downloaded from the current catalogue.",
+    "LTA mapping archive is January 2025 XLS, not a current station roster. CSV conversion is a reproducible convenience derivative.",
+    "Official 2026 JRL page expands to 25 stations; assignment's 24 original stations exclude JS2A. Predictions remain JRL24 + CRL1_12.",
+    "TE30/TE31/DT36/DT37 actual opening by September 2026 could not be established in bounded official-source check; target-year language is not proof of operation."
+  ]
+}

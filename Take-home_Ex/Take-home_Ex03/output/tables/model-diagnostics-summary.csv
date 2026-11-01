@@ -1,0 +1,13 @@
+"section","scenario","metric","value"
+"conservation","existing","total_prediction",19116754
+"conservation","jrl","total_prediction",19116754
+"conservation","crl","total_prediction",19116754
+"conservation","both","total_prediction",19116754
+"switching","existing","population_share",0
+"switching","jrl","population_share",0.0528057349031523
+"switching","crl","population_share",0.0496676794530953
+"switching","both","population_share",0.102473414356248
+"sensitivity","existing","half_L1_share_250m_vs_100m",0.0171759690646278
+"sensitivity","jrl","half_L1_share_250m_vs_100m",0.0178799374106246
+"sensitivity","crl","half_L1_share_250m_vs_100m",0.0192710986648619
+"sensitivity","both","half_L1_share_250m_vs_100m",0.019977866456122

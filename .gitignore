@@ -41,3 +41,10 @@
 /Take-home_Ex/Take-home_Ex02/_workflow/EHSA_FINDINGS.md
 /Take-home_Ex/Take-home_Ex02/_workflow/PUBLICATION.md
 /Take-home_Ex/Take-home_Ex02/_workflow/*validation.json
+
+# Exercise 3 source inputs, local analysis caches and recovery records.
+/Take-home_Ex/Take-home_Ex03/data/raw/
+/Take-home_Ex/Take-home_Ex03/data/processed/
+/Take-home_Ex/Take-home_Ex03/output/*.rds
+/Take-home_Ex/Take-home_Ex03/_workflow/
+/Take-home_Ex/Take-home_Ex03/**/__pycache__/

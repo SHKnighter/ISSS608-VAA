@@ -1,0 +1,198 @@
+[
+  {
+    "id": "assignment",
+    "url": "https://isss626-ay2026-27aug.netlify.app/take-home_ex03.html",
+    "description": "Professor's exercise requirements; 24 JRL plus 12 CRL Phase 1 scope.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:18+00:00",
+    "sha256": "d83d29ff5fcd4bca0f1ab6869d758bc7c41501aa5e2d0935b04e04e7885c0173",
+    "bytes": 51744,
+    "title": "Take-home Exercise 3: Geospatial Analytics for Urban Sustainability – ISSS626",
+    "body_retained": false
+  },
+  {
+    "id": "lta-static",
+    "url": "https://datamall.lta.gov.sg/content/datamall/en/static-data.html",
+    "description": "Static page last updated 21 October 2026; bus stops/train station September 2026; names mapping January 2025.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "9972283ee162bb51e986bcb680b89f32e6108073d130d66d8bec6fa992051271",
+    "bytes": 175135,
+    "title": "LTA | Static Datasets",
+    "body_retained": false
+  },
+  {
+    "id": "lta-terms",
+    "url": "https://datamall.lta.gov.sg/content/datamall/en/term-of-use.html",
+    "description": "Direct LTA DataMall terms recorded; generic site terms describe personal/non-commercial use and copyright restrictions. These raw files are retained locally for coursework review.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "3f55981a871bc9bd799db245942c33657c5b121b461eb3f1f138b86e48160f0b",
+    "bytes": 28668,
+    "title": "LTA | Term of Use",
+    "body_retained": false
+  },
+  {
+    "id": "ura-dataset",
+    "url": "https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view",
+    "description": "URA MP2019 no-sea subzones, September 2021 vintage, last portal update 3 December 2025.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:18+00:00",
+    "sha256": "3a25468abfb9a2d0685bb678af366101cd90e2063e0452b4ba2b8755fd47721f",
+    "bytes": 2963235,
+    "title": "Master Plan 2019 Subzone Boundary (No Sea) (GEOJSON) | URA | data.gov.sg",
+    "body_retained": false
+  },
+  {
+    "id": "sodl",
+    "url": "https://data.gov.sg/open-data-licence",
+    "description": "Singapore Open Data Licence governing the portal dataset.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "fa325fb25dc15b4cca5cbf57030f3cca9d4c2a1ad7a79a0bc20c3adc0cc71508",
+    "bytes": 99837,
+    "title": "data.gov.sg",
+    "body_retained": false
+  },
+  {
+    "id": "jrl",
+    "url": "https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/jurong_region_line.html",
+    "description": "Updated 17 March 2026; current 25 includes later JS2A; original 24 and three existing-network interchanges.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "7faf58fa1bf59b5e12afe239847562b5fd3cce886d9c01aa8fc4a1280f32c56c",
+    "bytes": 93182,
+    "title": "LTA | Jurong Region Line",
+    "body_retained": false
+  },
+  {
+    "id": "rail-2026",
+    "url": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2026/3/news-releases/next-phase-of-rail-development.html",
+    "description": "4 March 2026: JRL1 revised to mid-2028; JS2A mid-2030s; CRL1 2030.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "8fd17c1fe654526052055fc0807cddd88cad767eecb290703838710c0c5b2650",
+    "bytes": 56582,
+    "title": "LTA | Factsheet: The Next Phase of Rail Development",
+    "body_retained": false
+  },
+  {
+    "id": "jrl-original-map",
+    "url": "https://file.go.gov.sg/jrlnewsletter2025.pdf",
+    "description": "Official 2025 JRL newsletter, original 24 working station names/codes; timeline superseded by 2026 update.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "de17c1b27b2d8e61904ae3c62b1c7e076302e8a49c3137259422d67b372c75c5",
+    "bytes": 3144667,
+    "title": null,
+    "body_retained": false
+  },
+  {
+    "id": "crl1-map",
+    "url": "https://www.lta.gov.sg/content/dam/ltagov/news/press/2023/230118_CRL1_alignment_map_AnnexA.pdf",
+    "description": "18 January 2023 official CRL1 alignment: CR2-CR13, 12 stations, four existing-network interchanges.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "f09a632f55ebaf648712b9ed3c4c757fe51496090fc952f9e615f118c05fa01e",
+    "bytes": 120571,
+    "title": null,
+    "body_retained": false
+  },
+  {
+    "id": "crl",
+    "url": "https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/cross_island_line.html",
+    "description": "CRL1 2030 opening target.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "7377028c2df66f44596f33348a59fecf7108386f2adcdd85d60c5cd4cf0e145b",
+    "bytes": 107343,
+    "title": "LTA | Cross Island Line",
+    "body_retained": false
+  },
+  {
+    "id": "ccl6",
+    "url": "https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/circle_line_6.html",
+    "description": "Updated 3 September 2026; Keppel/Cantonment/Prince Edward Road opened 12 July 2026.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "5059a6d441e1619e6c84bf5bcff3e87bcf28cf0d108f0c041ae4d5b4be7baeb4",
+    "bytes": 74701,
+    "title": "LTA | Circle Line 6",
+    "body_retained": false
+  },
+  {
+    "id": "tel",
+    "url": "https://www.lta.gov.sg/content/ltagov/en/upcoming_projects/rail_expansion/thomson_east_coast_line.html",
+    "description": "Updated 7 July 2026; TEL4 seven opened stations 23 June 2024; TE10/TE21/TE22A deferred; TEL5 scheduled 2026 but actual opening unverified in bounded check.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "fb51b5dbc75f36ebf2b68c67667cc14b8c8b7357e55e117d8a2870061dc59d30",
+    "bytes": 103584,
+    "title": "LTA | Thomson-East Coast Line",
+    "body_retained": false
+  },
+  {
+    "id": "hume",
+    "url": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/1/news-releases/hume_station_to_open.html",
+    "description": "Hume DT4 opened 28 February 2025.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "5de459b19020d75d9d666dcb34fbe6ca9f418c8ef23de6ab06524adf7d0cc8cb",
+    "bytes": 50707,
+    "title": "LTA | Hume Station to Open on 28 February 2025",
+    "body_retained": false
+  },
+  {
+    "id": "punggol-coast",
+    "url": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2024/10/news-releases/punggol_coast_station_to_open_for_passenger_service.html",
+    "description": "Punggol Coast NE18 opened 10 December 2024.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "5862dfb9fa948c23e86a1eaff99f7ef5cb2402cad21953d937dc914a8989e780",
+    "bytes": 50724,
+    "title": "LTA | Punggol Coast Station to Open for Passenger Service from 10 December 2024",
+    "body_retained": false
+  },
+  {
+    "id": "teck-lee",
+    "url": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2024/7/news-releases/Teck_Lee_LRT_station_to_start_operations.html",
+    "description": "Teck Lee PW2 opened 15 August 2024.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:17+00:00",
+    "sha256": "aa7c458d409d866b03e053c8c2601677301a70dbc31b6ebfa91a2de845612a2d",
+    "bytes": 49913,
+    "title": "LTA | Teck Lee LRT Station to Start Operations on 15 August 2024",
+    "body_retained": false
+  },
+  {
+    "id": "bp14-closure",
+    "url": "https://www.lta.gov.sg/content/dam/ltagov/news/press/2018/20181212_BPLRT_train_timings_AnnexA.pdf",
+    "description": "Official timetable from 13 January 2019: Ten Mile Junction Service C permanently closed.",
+    "status": "failed",
+    "attempted_utc": "2026-11-01T18:52:17+00:00",
+    "failure": "Public GET failed after at most 3 attempts: HTTP 404",
+    "body_retained": false
+  },
+  {
+    "id": "github-commit",
+    "url": "https://api.github.com/repos/elliotwutingfeng/singapore_train_station_coordinates/commits/9f5972c71db8a529801eee9c527946a45a78e409",
+    "description": "Pinned commit metadata; main was resolved through public GitHub API after connector file inspection.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:52:18+00:00",
+    "sha256": "f004a7d48c3e96126eaef974f845442e29cdf86f26a9df834516d9d6f658cc69",
+    "bytes": 6637,
+    "title": null,
+    "body_retained": false
+  },
+  {
+    "id": "bp14-closure-smrt",
+    "url": "https://www.smrt.com.sg/getmedia/fb89c6fd-e872-4ddb-8aa2-244869762cd7/bplrt-jan19-annex-a-revised.pdf",
+    "description": "Official operator timetable confirms permanent Service C closure from 13 January 2019; fallback after direct LTA PDF acquisition returned 404.",
+    "status": "retrieved",
+    "acquired_utc": "2026-11-01T18:53:45+00:00",
+    "sha256": "263e83ecfbbb8224a69b97966cb54f8a3bd775242a33f1a5b86217a46143d8c0",
+    "bytes": 98437,
+    "title": null,
+    "body_retained": false
+  }
+]

@@ -1,0 +1,585 @@
+{
+  "checked_on": "2026-11-02",
+  "reference_month": "2026-09",
+  "source_catalog": "public-source-catalog.json",
+  "scope": "Original JRL24 plus CRL Phase1_12 station-code targets; names are planned/working names, no ridership outcomes.",
+  "jrl24": [
+    {
+      "code": "JS1",
+      "name": "Choa Chu Kang",
+      "stage": 1,
+      "interchange_codes": [
+        "NS4",
+        "BP1"
+      ],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS2",
+      "name": "Choa Chu Kang West",
+      "stage": 1,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS3",
+      "name": "Tengah",
+      "stage": 1,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS4",
+      "name": "Hong Kah",
+      "stage": 1,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS5",
+      "name": "Corporation",
+      "stage": 1,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS6",
+      "name": "Jurong West",
+      "stage": 1,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS7",
+      "name": "Bahar Junction",
+      "stage": 1,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS8",
+      "name": "Boon Lay",
+      "stage": 1,
+      "interchange_codes": [
+        "EW27"
+      ],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS9",
+      "name": "Enterprise",
+      "stage": 3,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2029",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS10",
+      "name": "Tukang",
+      "stage": 3,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2029",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS11",
+      "name": "Jurong Hill",
+      "stage": 3,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2029",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JS12",
+      "name": "Jurong Pier",
+      "stage": 3,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2029",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JW1",
+      "name": "Gek Poh",
+      "stage": 1,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JW2",
+      "name": "Tawas",
+      "stage": 1,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JW3",
+      "name": "Nanyang Gateway",
+      "stage": 3,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2029",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JW4",
+      "name": "Nanyang Crescent",
+      "stage": 3,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2029",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JW5",
+      "name": "Peng Kang Hill",
+      "stage": 3,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2029",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JE1",
+      "name": "Tengah Plantation",
+      "stage": 2,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JE2",
+      "name": "Tengah Park",
+      "stage": 2,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JE3",
+      "name": "Bukit Batok West",
+      "stage": 2,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JE4",
+      "name": "Toh Guan",
+      "stage": 2,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JE5",
+      "name": "Jurong East",
+      "stage": 2,
+      "interchange_codes": [
+        "NS1",
+        "EW24"
+      ],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JE6",
+      "name": "Jurong Town Hall",
+      "stage": 2,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    },
+    {
+      "code": "JE7",
+      "name": "Pandan Reservoir",
+      "stage": 2,
+      "interchange_codes": [],
+      "sources": [
+        "jrl-original-map",
+        "jrl"
+      ],
+      "target_opening": "2028",
+      "opening_source": "rail-2026"
+    }
+  ],
+  "crl1_12": [
+    {
+      "code": "CR2",
+      "name": "Aviation Park",
+      "interchange_codes": [],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR3",
+      "name": "Loyang",
+      "interchange_codes": [],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR4",
+      "name": "Pasir Ris East",
+      "interchange_codes": [],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR5",
+      "name": "Pasir Ris",
+      "interchange_codes": [
+        "EW1"
+      ],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR6",
+      "name": "Tampines North",
+      "interchange_codes": [],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR7",
+      "name": "Defu",
+      "interchange_codes": [],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR8",
+      "name": "Hougang",
+      "interchange_codes": [
+        "NE14"
+      ],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR9",
+      "name": "Serangoon North",
+      "interchange_codes": [],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR10",
+      "name": "Tavistock",
+      "interchange_codes": [],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR11",
+      "name": "Ang Mo Kio",
+      "interchange_codes": [
+        "NS16"
+      ],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR12",
+      "name": "Teck Ghee",
+      "interchange_codes": [],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    },
+    {
+      "code": "CR13",
+      "name": "Bright Hill",
+      "interchange_codes": [
+        "TE7"
+      ],
+      "sources": [
+        "crl1-map"
+      ],
+      "target_opening": "2030",
+      "opening_sources": [
+        "rail-2026",
+        "crl"
+      ]
+    }
+  ],
+  "excluded_from_assignment": [
+    {
+      "code": "JS2A",
+      "name": "Forest Hill",
+      "reason": "New 25th JRL station, targets mid-2030s; not among assignment's original 24.",
+      "source": "rail-2026"
+    }
+  ],
+  "caveats": [
+    {
+      "codes": [
+        "CC30",
+        "CC31",
+        "CC32"
+      ],
+      "names": [
+        "Keppel",
+        "Cantonment",
+        "Prince Edward Road"
+      ],
+      "status": "opened",
+      "opening_date": "2026-07-12",
+      "source": "ccl6",
+      "action": "Add to September 2026 current candidate roster; professor CSV still labels them future. Keep unmodified source CSV."
+    },
+    {
+      "codes": [
+        "NE18"
+      ],
+      "names": [
+        "Punggol Coast"
+      ],
+      "status": "opened",
+      "opening_date": "2024-12-10",
+      "source": "punggol-coast",
+      "action": "Already in professor operational CSV."
+    },
+    {
+      "codes": [
+        "DT4"
+      ],
+      "names": [
+        "Hume"
+      ],
+      "status": "opened",
+      "opening_date": "2025-02-28",
+      "source": "hume",
+      "action": "Already in professor operational CSV."
+    },
+    {
+      "codes": [
+        "PW2"
+      ],
+      "names": [
+        "Teck Lee"
+      ],
+      "status": "opened",
+      "opening_date": "2024-08-15",
+      "source": "teck-lee",
+      "action": "Already in professor operational CSV if LRT retained."
+    },
+    {
+      "codes": [
+        "BP14"
+      ],
+      "names": [
+        "Ten Mile Junction"
+      ],
+      "status": "closed",
+      "closing_date": "2019-01-13",
+      "action": "Absent from professor operational CSV; do not reintroduce from an older mapping.",
+      "sources": [
+        "bp14-closure",
+        "bp14-closure-smrt"
+      ]
+    },
+    {
+      "codes": [
+        "TE10",
+        "TE21",
+        "TE22A"
+      ],
+      "names": [
+        "Mount Pleasant",
+        "Marina South",
+        "Founders' Memorial"
+      ],
+      "status": "deferred",
+      "source": "tel",
+      "action": "Do not infer operation merely from inclusion on a line diagram."
+    },
+    {
+      "codes": [
+        "TE30",
+        "TE31",
+        "DT36",
+        "DT37"
+      ],
+      "names": [
+        "Bedok South",
+        "Sungei Bedok",
+        "Xilin",
+        "Sungei Bedok"
+      ],
+      "status": "actual_opening_unverified",
+      "source": "tel",
+      "action": "Official project sources target 2026. Bounded check found no authoritative actual passenger-service opening announcement by 2 November; target year is not proof for September operation."
+    }
+  ],
+  "model_input_caveats": [
+    "Source CSVs are station-code rows, so interchanges share names/coordinates and cannot be counted as separate physical stations without an explicit unit-of-analysis decision.",
+    "Use source, comment and exact code selection; future CSV includes non-target projects and non-URA/manual coordinates.",
+    "The train ZIP contains polygon footprints and both future/current features; its date does not establish operation.",
+    "Official opening evidence defines candidate overrides; actual OD availability and final target/station reconciliation still required before model fitting."
+  ]
+}

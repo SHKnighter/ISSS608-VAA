@@ -2,6 +2,13 @@ project:
   type: website
   output-dir: _site
   resources:
+    - "!Take-home_Ex/Take-home_Ex03/data/**"
+    - "!Take-home_Ex/Take-home_Ex03/_workflow/**"
+    - "!Take-home_Ex/Take-home_Ex03/R/**"
+    - "!Take-home_Ex/Take-home_Ex03/tests/**"
+    - "!Take-home_Ex/Take-home_Ex03/output/*.rds"
+    - "!Take-home_Ex/Take-home_Ex03/download-ridership.ps1"
+    - "!Take-home_Ex/Take-home_Ex03/download-ridership.cmd"
     - "!Take-home_Ex/Take-home_Ex02/data/**"
     - "!Take-home_Ex/Take-home_Ex02/_workflow/**"
     - "!Take-home_Ex/Take-home_Ex02/R/**"
@@ -55,6 +62,8 @@ website:
             href: Take-home_Ex/Take-home_Ex01/Take-home_Ex01.qmd
           - text: "Take-Home Exercise 2"
             href: Take-home_Ex/Take-home_Ex02/Take-home_Ex02.qmd
+          - text: "Take-Home Exercise 3"
+            href: Take-home_Ex/Take-home_Ex03/Take-home_Ex03.qmd
 
     right:
       - href: index.html

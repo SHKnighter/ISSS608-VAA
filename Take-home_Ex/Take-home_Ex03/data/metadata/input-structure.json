@@ -1,0 +1,449 @@
+{
+  "bus-stops-sep2026.zip": {
+    "rows": 5205,
+    "shapefile_member": "BusStopLocation_Sep2026/BusStop.shp",
+    "shape_type": 1,
+    "dbf_fields": [
+      {
+        "name": "JOB_NUM",
+        "dbf_type": "C",
+        "width": 20,
+        "decimals": 0
+      },
+      {
+        "name": "BUS_STOP_N",
+        "dbf_type": "C",
+        "width": 65,
+        "decimals": 0
+      },
+      {
+        "name": "BUS_ROOF_N",
+        "dbf_type": "C",
+        "width": 10,
+        "decimals": 0
+      },
+      {
+        "name": "STATUS",
+        "dbf_type": "C",
+        "width": 20,
+        "decimals": 0
+      },
+      {
+        "name": "SERVICE_TY",
+        "dbf_type": "C",
+        "width": 20,
+        "decimals": 0
+      },
+      {
+        "name": "LVL_NUM",
+        "dbf_type": "N",
+        "width": 5,
+        "decimals": 0
+      },
+      {
+        "name": "RD_CD",
+        "dbf_type": "C",
+        "width": 6,
+        "decimals": 0
+      },
+      {
+        "name": "LOC_DESC",
+        "dbf_type": "C",
+        "width": 254,
+        "decimals": 0
+      },
+      {
+        "name": "PKG_REF",
+        "dbf_type": "C",
+        "width": 50,
+        "decimals": 0
+      },
+      {
+        "name": "EXCEPTION_",
+        "dbf_type": "C",
+        "width": 1,
+        "decimals": 0
+      },
+      {
+        "name": "LAST_UPD_U",
+        "dbf_type": "C",
+        "width": 8,
+        "decimals": 0
+      },
+      {
+        "name": "LAST_UPD_D",
+        "dbf_type": "D",
+        "width": 8,
+        "decimals": 0
+      },
+      {
+        "name": "CRT_USRID_",
+        "dbf_type": "C",
+        "width": 8,
+        "decimals": 0
+      },
+      {
+        "name": "CRT_DTTM",
+        "dbf_type": "D",
+        "width": 8,
+        "decimals": 0
+      },
+      {
+        "name": "REMARKS",
+        "dbf_type": "C",
+        "width": 200,
+        "decimals": 0
+      }
+    ],
+    "prj": "PROJCS[\"SVY21\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"False_Easting\",28001.642],PARAMETER[\"False_Northing\",38744.572],PARAMETER[\"Central_Meridian\",103.8333333333333],PARAMETER[\"Scale_Factor\",1.0],PARAMETER[\"Latitude_Of_Origin\",1.366666666666667],UNIT[\"Meter\",1.0]]",
+    "sample_records": [
+      {
+        "JOB_NUM": "LTAGDMDM20090610-014",
+        "BUS_STOP_N": "47579",
+        "BUS_ROOF_N": "B03",
+        "STATUS": "OP",
+        "SERVICE_TY": "BO",
+        "LVL_NUM": "2",
+        "RD_CD": "WOA03F",
+        "LOC_DESC": "Blk 556",
+        "PKG_REF": "",
+        "EXCEPTION_": "",
+        "LAST_UPD_U": "SYS_GDM",
+        "LAST_UPD_D": "18991230",
+        "CRT_USRID_": "SYSTEM",
+        "CRT_DTTM": "20260818",
+        "REMARKS": ""
+      },
+      {
+        "JOB_NUM": "LTAGDMDM20100108-010",
+        "BUS_STOP_N": "47581",
+        "BUS_ROOF_N": "NIL",
+        "STATUS": "OP",
+        "SERVICE_TY": "BA",
+        "LVL_NUM": "2",
+        "RD_CD": "WOA03F",
+        "LOC_DESC": "Opp Blk 521",
+        "PKG_REF": "",
+        "EXCEPTION_": "",
+        "LAST_UPD_U": "SYS_GDM",
+        "LAST_UPD_D": "18991230",
+        "CRT_USRID_": "SYSTEM",
+        "CRT_DTTM": "20260818",
+        "REMARKS": ""
+      },
+      {
+        "JOB_NUM": "GDMDM20110614-005",
+        "BUS_STOP_N": "47589",
+        "BUS_ROOF_N": "B05",
+        "STATUS": "OP",
+        "SERVICE_TY": "BA",
+        "LVL_NUM": "2",
+        "RD_CD": "WOA03F",
+        "LOC_DESC": "Blk 519A CP",
+        "PKG_REF": "",
+        "EXCEPTION_": "",
+        "LAST_UPD_U": "SYS_GDM",
+        "LAST_UPD_D": "18991230",
+        "CRT_USRID_": "SYSTEM",
+        "CRT_DTTM": "20260818",
+        "REMARKS": ""
+      }
+    ],
+    "status_counts": {
+      "OP": 5205
+    },
+    "service_type_counts": {
+      "BO": 647,
+      "BA": 4052,
+      "0": 418,
+      "BT": 9,
+      "NA": 31,
+      "BI": 43,
+      "NB": 3,
+      "BD": 2
+    },
+    "unique_stop_codes": 5205
+  },
+  "train-stations-sep2026.zip": {
+    "rows": 234,
+    "shapefile_member": "TrainStation_Sep2026/RapidTransitSystemStation.shp",
+    "shape_type": 5,
+    "dbf_fields": [
+      {
+        "name": "JOB_NUM",
+        "dbf_type": "C",
+        "width": 20,
+        "decimals": 0
+      },
+      {
+        "name": "TYP_CD",
+        "dbf_type": "N",
+        "width": 5,
+        "decimals": 0
+      },
+      {
+        "name": "STN_NAM",
+        "dbf_type": "C",
+        "width": 250,
+        "decimals": 0
+      },
+      {
+        "name": "EXCEPTION_",
+        "dbf_type": "C",
+        "width": 1,
+        "decimals": 0
+      },
+      {
+        "name": "LAST_UPD_U",
+        "dbf_type": "C",
+        "width": 8,
+        "decimals": 0
+      },
+      {
+        "name": "LAST_UPD_D",
+        "dbf_type": "D",
+        "width": 8,
+        "decimals": 0
+      },
+      {
+        "name": "CRT_USRID_",
+        "dbf_type": "C",
+        "width": 8,
+        "decimals": 0
+      },
+      {
+        "name": "CRT_DTTM",
+        "dbf_type": "D",
+        "width": 8,
+        "decimals": 0
+      },
+      {
+        "name": "RTS_LVL_NU",
+        "dbf_type": "N",
+        "width": 5,
+        "decimals": 0
+      },
+      {
+        "name": "LIN_NAM",
+        "dbf_type": "C",
+        "width": 75,
+        "decimals": 0
+      },
+      {
+        "name": "PKG_REF",
+        "dbf_type": "C",
+        "width": 50,
+        "decimals": 0
+      },
+      {
+        "name": "REMARKS",
+        "dbf_type": "C",
+        "width": 200,
+        "decimals": 0
+      },
+      {
+        "name": "ATTACHEMEN",
+        "dbf_type": "C",
+        "width": 100,
+        "decimals": 0
+      },
+      {
+        "name": "SHAPE_AREA",
+        "dbf_type": "F",
+        "width": 19,
+        "decimals": 11
+      },
+      {
+        "name": "SHAPE_LEN",
+        "dbf_type": "F",
+        "width": 19,
+        "decimals": 11
+      }
+    ],
+    "prj": "PROJCS[\"SVY21\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"False_Easting\",28001.642],PARAMETER[\"False_Northing\",38744.572],PARAMETER[\"Central_Meridian\",103.8333333333333],PARAMETER[\"Scale_Factor\",1.0],PARAMETER[\"Latitude_Of_Origin\",1.366666666666667],UNIT[\"Meter\",1.0]]",
+    "sample_records": [
+      {
+        "JOB_NUM": "GDMDM20190314-025",
+        "TYP_CD": "33",
+        "STN_NAM": "PE3",
+        "EXCEPTION_": "",
+        "LAST_UPD_U": "SAID",
+        "LAST_UPD_D": "20190314",
+        "CRT_USRID_": "RATINAR",
+        "CRT_DTTM": "20050624",
+        "RTS_LVL_NU": "3",
+        "LIN_NAM": "PLRT",
+        "PKG_REF": "",
+        "REMARKS": "",
+        "ATTACHEMEN": "",
+        "SHAPE_AREA": "1.05461163884e+03",
+        "SHAPE_LEN": "1.70560957227e+02"
+      },
+      {
+        "JOB_NUM": "GDMDM20190314-025",
+        "TYP_CD": "34",
+        "STN_NAM": "EW5",
+        "EXCEPTION_": "",
+        "LAST_UPD_U": "SAID",
+        "LAST_UPD_D": "20190314",
+        "CRT_USRID_": "system",
+        "CRT_DTTM": "20041027",
+        "RTS_LVL_NU": "3",
+        "LIN_NAM": "EWL",
+        "PKG_REF": "",
+        "REMARKS": "",
+        "ATTACHEMEN": "",
+        "SHAPE_AREA": "4.71064579735e+03",
+        "SHAPE_LEN": "3.84785953959e+02"
+      },
+      {
+        "JOB_NUM": "GDMDM20190314-025",
+        "TYP_CD": "33",
+        "STN_NAM": "PTC",
+        "EXCEPTION_": "",
+        "LAST_UPD_U": "SAID",
+        "LAST_UPD_D": "20190314",
+        "CRT_USRID_": "RATINAR",
+        "CRT_DTTM": "20050624",
+        "RTS_LVL_NU": "3",
+        "LIN_NAM": "PLRT",
+        "PKG_REF": "",
+        "REMARKS": "",
+        "ATTACHEMEN": "",
+        "SHAPE_AREA": "1.15065035252e+04",
+        "SHAPE_LEN": "6.48115862225e+02"
+      }
+    ],
+    "line_name_counts": {
+      "PLRT": 15,
+      "EWL": 28,
+      "DTL": 39,
+      "BPLRT": 14,
+      "CCL": 35,
+      "TEC": 34,
+      "NEL": 18,
+      "NSL": 25,
+      "SLRT": 15,
+      "DTCC": 1,
+      "TWE": 5,
+      "EWNS": 3,
+      "CA": 2
+    }
+  },
+  "future-stations.csv": {
+    "columns": [
+      "station_code",
+      "station_name",
+      "lat",
+      "lon",
+      "source",
+      "comment"
+    ],
+    "rows": 65,
+    "sample_records": [
+      {
+        "station_code": "TE30",
+        "station_name": "Bedok South",
+        "lat": "1.3166456856882618",
+        "lon": "103.94923038001318",
+        "source": "ura",
+        "comment": ""
+      },
+      {
+        "station_code": "TE31",
+        "station_name": "Sungei Bedok",
+        "lat": "1.3203959599740995",
+        "lon": "103.95720762079861",
+        "source": "ura",
+        "comment": ""
+      }
+    ]
+  },
+  "operational-stations.csv": {
+    "columns": [
+      "station_code",
+      "station_name",
+      "lat",
+      "lon",
+      "source",
+      "comment"
+    ],
+    "rows": 213,
+    "sample_records": [
+      {
+        "station_code": "BP1",
+        "station_name": "Choa Chu Kang",
+        "lat": "1.3851254680366532",
+        "lon": "103.74434408893133",
+        "source": "ura",
+        "comment": ""
+      },
+      {
+        "station_code": "BP2",
+        "station_name": "South View",
+        "lat": "1.380298286261839",
+        "lon": "103.74529179982976",
+        "source": "ura",
+        "comment": ""
+      }
+    ]
+  },
+  "station-codes.csv": {
+    "columns": [
+      "stn_code",
+      "mrt_station_english",
+      "mrt_station_chinese",
+      "mrt_line_english",
+      "mrt_line_chinese"
+    ],
+    "rows": 213,
+    "sample_records": [
+      {
+        "stn_code": "NS1",
+        "mrt_station_english": "Jurong East",
+        "mrt_station_chinese": "裕廊东",
+        "mrt_line_english": "North-South Line",
+        "mrt_line_chinese": "南北线"
+      },
+      {
+        "stn_code": "NS2",
+        "mrt_station_english": "Bukit Batok",
+        "mrt_station_chinese": "武吉巴督",
+        "mrt_line_english": "North-South Line",
+        "mrt_line_chinese": "南北线"
+      }
+    ]
+  },
+  "population-2025.csv": {
+    "columns": [
+      "PA",
+      "SZ",
+      "AG",
+      "Sex",
+      "TOD",
+      "Pop",
+      "Time"
+    ],
+    "rows": 100928,
+    "sample_records": [
+      {
+        "PA": "Ang Mo Kio",
+        "SZ": "Ang Mo Kio Town Centre",
+        "AG": "0_to_4",
+        "Sex": "Males",
+        "TOD": "HDB 1- and 2-Room Flats",
+        "Pop": "0",
+        "Time": "2025"
+      },
+      {
+        "PA": "Ang Mo Kio",
+        "SZ": "Ang Mo Kio Town Centre",
+        "AG": "0_to_4",
+        "Sex": "Males",
+        "TOD": "HDB 3-Room Flats",
+        "Pop": "0",
+        "Time": "2025"
+      }
+    ]
+  }
+}

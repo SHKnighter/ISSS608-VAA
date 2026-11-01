@@ -1,0 +1,18 @@
+---
+title: "Take-Home Exercise 3"
+subtitle: "Geospatial Analytics for Urban Sustainability"
+author: "Bao Sihan"
+toc: false
+---
+
+## Morning rail station demand in Singapore
+
+This exercise calibrates a Huff model for weekday 06:00–09:59 MRT/LRT station entries and examines the original 24-station JRL and 12-station CRL Phase 1 expansion scope. Proposed lines add 29 physical station choices after existing interchanges are merged.
+
+The analysis combines June 2025 residents, MP2019 subzones, station and bus-stop layers, and August/September 2026 passenger observations. The Huff model improves a simple distance-based reference, but retaining August's observed shares performs much better at existing stations. Substantial validation error and local distance sensitivity limit the precision of the expansion estimates.
+
+- [Read the technical report](technical-report.qmd) — source checks, market preparation, model calibration, scenarios, visual evidence and limitations.
+- [View the executive summary](executive-summary.qmd) — cover and eight body slides.
+- [Project repository](https://github.com/SHKnighter/ISSS608-VAA).
+
+The expansion results redistribute a fixed September-equivalent morning market. They support conditional catchment comparisons and do not forecast total 2030 demand or induced rail use.
